@@ -1,0 +1,23 @@
+Initial Commit: Cấu trúc cơ bản và hoàn thiện FR-01 (Quản lý Tài Khoản)
+
+Dự án: ReMarket - Second-hand Marketplace
+Đã hoàn thành toàn bộ flow FR-01 bao gồm Front-end UX và Back-end API:
+
+1. Authentication & Security:
+   - Đăng nhập, đăng ký bằng email/password và Google OAuth.
+   - Thêm tính năng gửi email qua Nodemailer tích hợp Gmail SMTP.
+   - Các tính năng: Quên mật khẩu, đổi mật khẩu (có check pass cũ), gửi lại email xác nhận.
+   - AuthMiddleware ở BE check JWT trước khi cho pass vào API nội bộ.
+
+2. Quản lý Hồ sơ cá nhân (Profile):
+   - Tạo Controller, Service và Supabase policies để tự động insert profile khi tạo tài khoản.
+   - Trang Profile: Xem thông tin và nút Save tích hợp Multer buffer giúp upload avatar thẳng lên Supabase public bucket `avatar`.
+
+3. Lịch sử Giao dịch (Transactions):
+   - Chức năng Dashboard giao dịch phân theo tab Đã mua / Đã bán với các chỉ số thống kê (Stats grid).
+   - Truy vấn CSDL Supabase với Phân trang (Pagination).
+
+4. Environment & Database configs:
+   - Ghi lại template `.env.example` hướng dẫn tạo Service Role Key & App password.
+   - Scripts check bucket exist & Supabase migration SQL (chứa RLS policies).
+   - Set up `.gitignore` cho repo gốc và README.md chi tiết cài đặt môi trường.
