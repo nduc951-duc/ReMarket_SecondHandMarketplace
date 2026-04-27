@@ -153,7 +153,7 @@ async function uploadAvatar(userId, fileBuffer, mimeType, originalName) {
   const filePath = `avatars/${userId}/avatar_${Date.now()}.${extension}`;
 
   // Upload to storage
-  const { data: uploadData, error: uploadError } = await client.storage
+  const { error: uploadError } = await client.storage
     .from('avatar')
     .upload(filePath, fileBuffer, {
       contentType: mimeType,

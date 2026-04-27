@@ -61,7 +61,9 @@ async function getProductById(productId) {
       profiles:seller_id (
         full_name,
         avatar_url,
-        phone
+        phone,
+        rating_avg,
+        rating_count
       )
     `)
     .eq('id', productId)
@@ -94,7 +96,9 @@ async function getProducts(options = {}) {
       *,
       profiles:seller_id (
         full_name,
-        avatar_url
+        avatar_url,
+        rating_avg,
+        rating_count
       )
     `, { count: 'exact' })
     .eq('status', 'active') // Only active products by default

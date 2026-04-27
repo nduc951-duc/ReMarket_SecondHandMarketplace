@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useRealtimeBadges } from '../../hooks/useRealtimeBadges';
 import { getProducts } from '../../services/productService';
 import { useAuthStore } from '../../store/authStore';
+import { isAdminUser } from '../../utils/adminAccess';
 
 const CATEGORIES = [
   'Điện tử', 'Thời trang', 'Đồ gia dụng', 'Sách vở',
@@ -39,6 +41,7 @@ function ClientHomePage() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const { chatUnread, notificationUnread } = useRealtimeBadges();
 
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 });
@@ -126,6 +129,7 @@ function ClientHomePage() {
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Người dùng';
   const hasActiveFilters = search || category || condition || minPrice || maxPrice;
+  const canAccessAdmin = isAdminUser(user);
 
   return (
     <main className="page-shell">
@@ -140,6 +144,20 @@ function ClientHomePage() {
             <Link to="/my-products" className="nav-link">📦 Sản phẩm</Link>
             <Link to="/seller/dashboard" className="nav-link">🏪 Đơn bán</Link>
             <Link to="/transactions" className="nav-link">📋 Đơn mua</Link>
+            <Link to="/chat" className="nav-link nav-link-with-badge">
+              <span>💬 Chat</span>
+              {chatUnread > 0 && (
+                <span className="nav-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
+              )}
+            </Link>
+            <Link to="/wishlist" className="nav-link">♡ Wishlist</Link>
+            <Link to="/notifications" className="nav-link nav-link-with-badge">
+              <span>🔔 Thông báo</span>
+              {notificationUnread > 0 && (
+                <span className="nav-badge">{notificationUnread > 99 ? '99+' : notificationUnread}</span>
+              )}
+            </Link>
+            {canAccessAdmin && <Link to="/admin/dashboard" className="nav-link">🛡️ Admin</Link>}
             <Link to="/profile" className="nav-link">👤 Hồ sơ</Link>
           </div>
           <div className="home-nav-user">

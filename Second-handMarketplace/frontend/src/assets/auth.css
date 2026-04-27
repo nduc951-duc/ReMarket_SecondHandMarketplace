@@ -78,13 +78,11 @@ body {
   padding: 56px 52px;
   background:
     linear-gradient(150deg, rgba(8, 145, 178, 0.15), rgba(234, 88, 12, 0.08)),
-    repeating-linear-gradient(
-      -42deg,
+    repeating-linear-gradient(-42deg,
       rgba(255, 255, 255, 0.48) 0px,
       rgba(255, 255, 255, 0.48) 14px,
       rgba(255, 255, 255, 0.22) 14px,
-      rgba(255, 255, 255, 0.22) 28px
-    );
+      rgba(255, 255, 255, 0.22) 28px);
 }
 
 .brand-label {
@@ -397,6 +395,7 @@ body {
 }
 
 @keyframes floatY {
+
   0%,
   100% {
     transform: translateY(0);
@@ -517,7 +516,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ==============================================
@@ -1609,11 +1610,30 @@ body {
   border-radius: 6px;
 }
 
-.seller-status-pending { color: #92400e; background: rgba(245, 158, 11, 0.15); }
-.seller-status-confirmed { color: #0369a1; background: rgba(14, 165, 233, 0.12); }
-.seller-status-shipped { color: #7c3aed; background: rgba(124, 58, 237, 0.1); }
-.seller-status-completed { color: var(--success); background: rgba(22, 101, 52, 0.1); }
-.seller-status-cancelled { color: var(--danger); background: rgba(180, 35, 24, 0.1); }
+.seller-status-pending {
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.seller-status-confirmed {
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.seller-status-shipped {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.seller-status-completed {
+  color: var(--success);
+  background: rgba(22, 101, 52, 0.1);
+}
+
+.seller-status-cancelled {
+  color: var(--danger);
+  background: rgba(180, 35, 24, 0.1);
+}
 
 .seller-order-actions {
   display: flex;
@@ -1833,10 +1853,25 @@ body {
   font-size: 0.75rem;
 }
 
-.my-product-status-active { color: var(--success); background: rgba(22, 101, 52, 0.1); }
-.my-product-status-sold { color: #0369a1; background: rgba(14, 165, 233, 0.12); }
-.my-product-status-hidden { color: #92400e; background: rgba(245, 158, 11, 0.15); }
-.my-product-status-banned { color: var(--danger); background: rgba(180, 35, 24, 0.1); }
+.my-product-status-active {
+  color: var(--success);
+  background: rgba(22, 101, 52, 0.1);
+}
+
+.my-product-status-sold {
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.my-product-status-hidden {
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.my-product-status-banned {
+  color: var(--danger);
+  background: rgba(180, 35, 24, 0.1);
+}
 
 .my-product-actions {
   display: flex;
@@ -1860,21 +1895,27 @@ body {
   color: var(--success);
 }
 
-.my-action-btn.ok:hover { background: rgba(22, 101, 52, 0.15); }
+.my-action-btn.ok:hover {
+  background: rgba(22, 101, 52, 0.15);
+}
 
 .my-action-btn.warn {
   background: rgba(245, 158, 11, 0.1);
   color: #92400e;
 }
 
-.my-action-btn.warn:hover { background: rgba(245, 158, 11, 0.2); }
+.my-action-btn.warn:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
 
 .my-action-btn.danger {
   background: rgba(180, 35, 24, 0.06);
   color: var(--danger);
 }
 
-.my-action-btn.danger:hover { background: rgba(180, 35, 24, 0.12); }
+.my-action-btn.danger:hover {
+  background: rgba(180, 35, 24, 0.12);
+}
 
 /* ==============================================
    PRODUCT FORM PAGE
@@ -2047,18 +2088,37 @@ body {
    ============================================== */
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes skeletonPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* ==============================================
@@ -2089,7 +2149,9 @@ body {
   flex-shrink: 0;
 }
 
-.brand-icon { font-size: 1.4rem; }
+.brand-icon {
+  font-size: 1.4rem;
+}
 
 .home-nav-links {
   display: flex;
@@ -2196,7 +2258,9 @@ body {
   transition: opacity 0.15s ease;
 }
 
-.search-btn:hover { opacity: 0.9; }
+.search-btn:hover {
+  opacity: 0.9;
+}
 
 /* ==============================================
    FILTER BAR
@@ -2272,7 +2336,10 @@ body {
   animation: slideUp 0.2s ease;
 }
 
-.filter-group { display: grid; gap: 6px; }
+.filter-group {
+  display: grid;
+  gap: 6px;
+}
 
 .filter-label {
   font-size: 0.82rem;
@@ -2321,7 +2388,9 @@ body {
   margin-bottom: 16px;
 }
 
-.results-query { color: var(--teal-strong); }
+.results-query {
+  color: var(--teal-strong);
+}
 
 /* ==============================================
    PRODUCT GRID
@@ -2395,11 +2464,25 @@ body {
   backdrop-filter: blur(4px);
 }
 
-.condition-new { color: var(--success); }
-.condition-like_new { color: #0369a1; }
-.condition-good { color: var(--teal-strong); }
-.condition-fair { color: #92400e; }
-.condition-poor { color: var(--muted); }
+.condition-new {
+  color: var(--success);
+}
+
+.condition-like_new {
+  color: #0369a1;
+}
+
+.condition-good {
+  color: var(--teal-strong);
+}
+
+.condition-fair {
+  color: #92400e;
+}
+
+.condition-poor {
+  color: var(--muted);
+}
 
 .product-card-body {
   padding: 14px 16px;
@@ -2434,7 +2517,9 @@ body {
   margin-top: 2px;
 }
 
-.product-card-seller { font-weight: 600; }
+.product-card-seller {
+  font-weight: 600;
+}
 
 .product-card-location {
   white-space: nowrap;
@@ -2443,7 +2528,9 @@ body {
 }
 
 /* Skeleton */
-.skeleton-card { pointer-events: none; }
+.skeleton-card {
+  pointer-events: none;
+}
 
 .skeleton-card .product-card-image-wrap,
 .skeleton-card .product-card-image {
@@ -2591,7 +2678,9 @@ body {
   color: var(--muted);
 }
 
-.detail-badge-location { color: #475569; }
+.detail-badge-location {
+  color: #475569;
+}
 
 .detail-badge-sold {
   color: #dc2626;
@@ -2621,7 +2710,9 @@ body {
   color: var(--muted);
 }
 
-.detail-actions { margin-top: 4px; }
+.detail-actions {
+  margin-top: 4px;
+}
 
 .detail-buy-btn {
   width: 100%;

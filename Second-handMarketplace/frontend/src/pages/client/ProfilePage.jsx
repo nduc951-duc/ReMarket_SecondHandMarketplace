@@ -2,12 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { getProfile, updateProfile, uploadAvatar } from '../../services/profileService';
+import { getReviewsByUser } from '../../services/reviewService';
 
 const defaultFormErrors = {};
 
 function ProfilePage() {
   const user = useAuthStore((state) => state.user);
   const [profile, setProfile] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -33,6 +36,16 @@ function ProfilePage() {
         address: data.address || '',
         bio: data.bio || '',
       });
+
+      setIsLoadingReviews(true);
+      try {
+        const reviewData = await getReviewsByUser(data.id, { limit: 6 });
+        setReviews(reviewData.reviews || []);
+      } catch {
+        setReviews([]);
+      } finally {
+        setIsLoadingReviews(false);
+      }
     } catch (error) {
       setFeedback({ type: 'error', message: error.message });
     } finally {
@@ -153,6 +166,21 @@ function ProfilePage() {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const renderStars = (rating) => {
+    const normalized = Math.max(0, Math.min(5, Number(rating) || 0));
+    const rounded = Math.round(normalized);
+
+    return (
+      <span className="star-rating" aria-label={`${normalized.toFixed(1)} sao`}>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <span key={index} className={`star-btn ${index < rounded ? 'active' : ''}`}>
+            ★
+          </span>
+        ))}
+      </span>
+    );
+  };
 
   return (
     <main className="page-shell">
@@ -285,6 +313,19 @@ function ProfilePage() {
           ) : (
             <div className="profile-details">
               <div className="detail-row">
+                <span className="detail-label">⭐ Đánh giá</span>
+                <span className="detail-value">
+                  <span className="review-summary">
+                    {renderStars(profile?.rating_avg || 0)}
+                    <span>
+                      {(Number(profile?.rating_avg) || 0).toFixed(1)}
+                      {' '}
+                      ({profile?.rating_count || 0} đánh giá)
+                    </span>
+                  </span>
+                </span>
+              </div>
+              <div className="detail-row">
                 <span className="detail-label">📧 Email</span>
                 <span className="detail-value">{profile?.email || user?.email || '—'}</span>
               </div>
@@ -322,6 +363,28 @@ function ProfilePage() {
               </button>
             </div>
           )}
+
+          <div>
+            <h3 style={{ margin: 0, marginBottom: 10 }}>Đánh giá gần đây</h3>
+            {isLoadingReviews ? (
+              <p className="tx-note">Đang tải đánh giá...</p>
+            ) : reviews.length === 0 ? (
+              <p className="tx-note">Chưa có đánh giá nào.</p>
+            ) : (
+              <div className="review-list">
+                {reviews.map((review) => (
+                  <article key={review.id} className="review-item">
+                    <div className="review-summary">
+                      {renderStars(review.rating)}
+                      <strong>{review.reviewer_profile?.full_name || 'Người dùng'}</strong>
+                    </div>
+                    {review.comment && <p>{review.comment}</p>}
+                    <small>{new Date(review.created_at).toLocaleDateString('vi-VN')}</small>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       </div>
     </main>

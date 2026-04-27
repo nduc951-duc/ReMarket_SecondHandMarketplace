@@ -3,6 +3,7 @@ const {
   SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_URL,
 } = require('../config/env');
+const { createNotification } = require('./notificationService');
 
 const OPEN_ORDER_STATUSES = ['pending', 'confirmed'];
 const ORDER_FLOW_STATUSES = ['pending', 'confirmed', 'shipped', 'completed', 'cancelled'];
@@ -34,6 +35,129 @@ function getAdminClient() {
   });
 
   return adminClient;
+}
+
+function isRelationMissing(error, relationName) {
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    message.includes('relation')
+    && message.includes('does not exist')
+    && message.includes(relationName)
+  );
+}
+
+async function enrichTransactionsWithProfilesAndReviews(client, userId, transactions) {
+  if (!Array.isArray(transactions) || transactions.length === 0) {
+    return [];
+  }
+
+  const participantIds = Array.from(
+    new Set(
+      transactions
+        .flatMap((item) => [item.buyer_id, item.seller_id])
+        .filter(Boolean),
+    ),
+  );
+
+  let profileMap = new Map();
+
+  if (participantIds.length > 0) {
+    const { data: profileRows, error: profileError } = await client
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', participantIds);
+
+    if (profileError) {
+      throw buildServiceError(`Khong the lay profile giao dich: ${profileError.message}`, 500);
+    }
+
+    profileMap = new Map((profileRows || []).map((profile) => [profile.id, profile]));
+  }
+
+  const transactionIds = transactions.map((item) => item.id).filter(Boolean);
+  let reviewMap = new Map();
+
+  if (transactionIds.length > 0) {
+    const { data: reviewRows, error: reviewError } = await client
+      .from('reviews')
+      .select('id, transaction_id, rating, comment, created_at')
+      .eq('reviewer_id', userId)
+      .in('transaction_id', transactionIds);
+
+    if (reviewError && !isRelationMissing(reviewError, 'reviews')) {
+      throw buildServiceError(`Khong the lay review cua giao dich: ${reviewError.message}`, 500);
+    }
+
+    reviewMap = new Map((reviewRows || []).map((review) => [review.transaction_id, review]));
+  }
+
+  return transactions.map((transaction) => ({
+    ...transaction,
+    buyer: profileMap.get(transaction.buyer_id) || null,
+    seller: profileMap.get(transaction.seller_id) || null,
+    my_review: reviewMap.get(transaction.id) || null,
+  }));
+}
+
+async function notifyTransactionStatusChange({
+  transaction,
+  currentStatus,
+  newStatus,
+  actorUserId,
+}) {
+  let targetUserId = null;
+  let title = '';
+  let message = '';
+
+  if (newStatus === 'confirmed') {
+    targetUserId = transaction.buyer_id;
+    title = 'Don hang da duoc xac nhan';
+    message = `${transaction.product_name || 'San pham'} dang duoc nguoi ban xu ly.`;
+  }
+
+  if (newStatus === 'shipped') {
+    targetUserId = transaction.buyer_id;
+    title = 'Don hang da duoc giao';
+    message = `${transaction.product_name || 'San pham'} dang tren duong giao den ban.`;
+  }
+
+  if (newStatus === 'completed') {
+    targetUserId = transaction.seller_id;
+    title = 'Don hang da hoan thanh';
+    message = `Nguoi mua da xac nhan nhan ${transaction.product_name || 'san pham'}.`;
+  }
+
+  if (newStatus === 'cancelled') {
+    if (actorUserId === transaction.seller_id) {
+      targetUserId = transaction.buyer_id;
+      title = 'Don hang da bi huy';
+      message = currentStatus === 'pending'
+        ? `Nguoi ban da tu choi don ${transaction.product_name || 'san pham'}.`
+        : `Don ${transaction.product_name || 'san pham'} da bi huy boi nguoi ban.`;
+    } else if (actorUserId === transaction.buyer_id) {
+      targetUserId = transaction.seller_id;
+      title = 'Nguoi mua da huy don';
+      message = `Don ${transaction.product_name || 'san pham'} da bi nguoi mua huy.`;
+    }
+  }
+
+  if (!targetUserId || targetUserId === actorUserId) {
+    return;
+  }
+
+  await createNotification({
+    user_id: targetUserId,
+    type: 'transaction_status',
+    title,
+    message,
+    entity_type: 'transaction',
+    entity_id: transaction.id,
+    metadata: {
+      transaction_id: transaction.id,
+      status: newStatus,
+      actor_user_id: actorUserId,
+    },
+  });
 }
 
 /**
@@ -89,8 +213,14 @@ async function getTransactions(userId, options = {}) {
     throw buildServiceError(`Không thể lấy danh sách giao dịch: ${error.message}`, 500);
   }
 
+  const enrichedTransactions = await enrichTransactionsWithProfilesAndReviews(
+    client,
+    userId,
+    data || [],
+  );
+
   return {
-    transactions: data || [],
+    transactions: enrichedTransactions,
     total: count || 0,
     page,
     limit,
@@ -184,6 +314,26 @@ async function createTransaction(transactionData) {
       throw buildServiceError('Sản phẩm đã có đơn hàng pending/confirmed.', 409);
     }
     throw buildServiceError(`Không thể tạo giao dịch: ${error.message}`, 500);
+  }
+
+  if (data.seller_id && data.seller_id !== data.buyer_id) {
+    try {
+      await createNotification({
+        user_id: data.seller_id,
+        type: 'new_order',
+        title: 'Ban co don hang moi',
+        message: `Don mua moi cho ${data.product_name || 'san pham'}.`,
+        entity_type: 'transaction',
+        entity_id: data.id,
+        metadata: {
+          transaction_id: data.id,
+          product_id: data.product_id,
+          buyer_id: data.buyer_id,
+        },
+      });
+    } catch (notificationError) {
+      console.error('Create transaction notification error:', notificationError);
+    }
   }
 
   return data;
@@ -337,6 +487,17 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
     }
   }
 
+  try {
+    await notifyTransactionStatusChange({
+      transaction,
+      currentStatus,
+      newStatus,
+      actorUserId: userId,
+    });
+  } catch (notificationError) {
+    console.error('Notify transaction status error:', notificationError);
+  }
+
   return data;
 }
 
@@ -363,6 +524,12 @@ async function getTransactionById(transactionId, userId) {
 
   if (data.buyer_id !== userId && data.seller_id !== userId) {
     throw buildServiceError('Bạn không có quyền xem giao dịch này.', 403);
+  }
+
+  const enriched = await enrichTransactionsWithProfilesAndReviews(client, userId, [data]);
+
+  if (enriched.length > 0) {
+    return enriched[0];
   }
 
   return data;

@@ -1,18 +1,29 @@
 import { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { AuthOnlyRoute, ProtectedRoute, RootRedirect } from './components/auth/RouteGuards';
+import { Route, Routes } from 'react-router-dom';
+import {
+  AdminRoute,
+  AuthOnlyRoute,
+  ProtectedRoute,
+  RootRedirect,
+} from './components/auth/RouteGuards';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import ChatPage from './pages/client/ChatPage';
 import ClientHomePage from './pages/client/ClientHomePage';
 import MyProductsPage from './pages/client/MyProductsPage';
+import NotificationsPage from './pages/client/NotificationsPage';
 import ProductDetailPage from './pages/client/ProductDetailPage';
 import ProductFormPage from './pages/client/ProductFormPage';
 import ProfilePage from './pages/client/ProfilePage';
 import SellerDashboard from './pages/client/SellerDashboard';
 import TransactionHistoryPage from './pages/client/TransactionHistoryPage';
+import WishlistPage from './pages/client/WishlistPage';
+import NotFoundPage from './pages/system/NotFoundPage';
+import ServerErrorPage from './pages/system/ServerErrorPage';
 import { useAuthStore } from './store/authStore';
 
 function App() {
@@ -100,6 +111,39 @@ function App() {
         }
       />
       <Route
+        path="/chat"
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/wishlist"
+        element={
+          <ProtectedRoute>
+            <WishlistPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboardPage />
+          </AdminRoute>
+        }
+      />
+      <Route path="/500" element={<ServerErrorPage />} />
+      <Route
         path="/my-products"
         element={
           <ProtectedRoute>
@@ -115,7 +159,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

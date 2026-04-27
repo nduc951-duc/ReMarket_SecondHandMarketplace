@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { createReview } from '../../services/reviewService';
 import {
   getTransactionById,
   getTransactions,
@@ -32,6 +33,11 @@ function TransactionHistoryPage() {
   const [error, setError] = useState('');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const loadData = useCallback(async (type = 'all', page = 1) => {
     try {
@@ -94,6 +100,37 @@ function TransactionHistoryPage() {
       setError('');
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const openReviewModal = (transaction) => {
+    setReviewTarget(transaction);
+    setReviewRating(5);
+    setReviewComment('');
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!reviewTarget) {
+      return;
+    }
+
+    try {
+      setIsSubmittingReview(true);
+      await createReview({
+        transaction_id: reviewTarget.id,
+        rating: reviewRating,
+        comment: reviewComment,
+      });
+
+      setShowReviewModal(false);
+      setReviewTarget(null);
+      setReviewComment('');
+      await loadData(activeTab, pagination.page);
+    } catch (submitError) {
+      setError(submitError.message);
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -287,7 +324,21 @@ function TransactionHistoryPage() {
                           ✅ Xác nhận nhận hàng
                         </button>
                       )}
+                      {activeTab === 'buy' && tx.status === 'completed' && !tx.my_review && (
+                        <button
+                          type="button"
+                          className="tx-action-btn"
+                          onClick={() => openReviewModal(tx)}
+                        >
+                          ⭐ Đánh giá
+                        </button>
+                      )}
                     </div>
+                    {tx.my_review && (
+                      <span className="review-badge">
+                        ⭐ {tx.my_review.rating}/5 · Đã đánh giá
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -359,6 +410,75 @@ function TransactionHistoryPage() {
                       <p>{selectedTransaction.rejection_reason}</p>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showReviewModal && reviewTarget && (
+          <div className="dialog-overlay" onClick={() => !isSubmittingReview && setShowReviewModal(false)}>
+            <div className="dialog-panel" onClick={(event) => event.stopPropagation()}>
+              <div className="dialog-header">
+                <h3>Đánh giá giao dịch</h3>
+                <button
+                  type="button"
+                  className="dialog-close"
+                  onClick={() => !isSubmittingReview && setShowReviewModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="dialog-body">
+                <p className="dialog-description">
+                  Bạn đánh giá trải nghiệm mua sản phẩm <strong>{reviewTarget.product_name}</strong> như thế nào?
+                </p>
+
+                <div className="star-rating" style={{ marginBottom: 12 }}>
+                  {Array.from({ length: 5 }).map((_, index) => {
+                    const starValue = index + 1;
+                    return (
+                      <button
+                        key={starValue}
+                        type="button"
+                        className={`star-btn ${starValue <= reviewRating ? 'active' : ''}`}
+                        onClick={() => setReviewRating(starValue)}
+                        disabled={isSubmittingReview}
+                      >
+                        ★
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <label className="dialog-label" htmlFor="review-comment">Nhận xét (tùy chọn)</label>
+                <textarea
+                  id="review-comment"
+                  className="dialog-textarea"
+                  rows={4}
+                  value={reviewComment}
+                  onChange={(event) => setReviewComment(event.target.value)}
+                  maxLength={500}
+                  placeholder="Chia sẻ trải nghiệm của bạn về người bán..."
+                />
+
+                <div className="dialog-actions">
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => setShowReviewModal(false)}
+                    disabled={isSubmittingReview}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleSubmitReview}
+                    disabled={isSubmittingReview}
+                  >
+                    {isSubmittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
+                  </button>
                 </div>
               </div>
             </div>

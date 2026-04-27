@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { isAdminUser } from '../../utils/adminAccess';
 
 function AuthLoadingScreen() {
   return (
@@ -46,6 +47,26 @@ export function ProtectedRoute({ children }) {
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+export function AdminRoute({ children }) {
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const location = useLocation();
+
+  if (isLoading) {
+    return <AuthLoadingScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!isAdminUser(user)) {
+    return <Navigate to="/app" replace />;
   }
 
   return children;

@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getProductById, getProducts } from '../../services/productService';
+import { getReviewsByUser } from '../../services/reviewService';
 import { createTransaction } from '../../services/transactionService';
+import { getWishlistStatus, toggleWishlist } from '../../services/wishlistService';
 import { useAuthStore } from '../../store/authStore';
 
 const CONDITION_LABELS = {
@@ -22,6 +25,11 @@ function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [wishlisted, setWishlisted] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [sellerReviews, setSellerReviews] = useState([]);
+  const [reviewMeta, setReviewMeta] = useState({ total: 0 });
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
   // Order modal
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -37,6 +45,34 @@ function ProductDetailPage() {
       const data = await getProductById(id);
       setProduct(data);
       setSelectedImage(0);
+
+      if (user) {
+        try {
+          const status = await getWishlistStatus(id);
+          setWishlisted(status);
+        } catch {
+          setWishlisted(false);
+        }
+      } else {
+        setWishlisted(false);
+      }
+
+      if (data.seller_id) {
+        setIsLoadingReviews(true);
+        try {
+          const reviewData = await getReviewsByUser(data.seller_id, { limit: 6 });
+          setSellerReviews(reviewData.reviews || []);
+          setReviewMeta({ total: reviewData.total || 0 });
+        } catch {
+          setSellerReviews([]);
+          setReviewMeta({ total: 0 });
+        } finally {
+          setIsLoadingReviews(false);
+        }
+      } else {
+        setSellerReviews([]);
+        setReviewMeta({ total: 0 });
+      }
 
       // Load related products (same category)
       if (data.category) {
@@ -57,7 +93,7 @@ function ProductDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     loadProduct();
@@ -95,6 +131,38 @@ function ProductDetailPage() {
     }
   };
 
+  const handleWishlistToggle = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: `/products/${id}` } } });
+      return;
+    }
+
+    try {
+      setIsWishlistLoading(true);
+      const result = await toggleWishlist(id);
+      setWishlisted(Boolean(result.wishlisted));
+    } catch (wishlistError) {
+      setError(wishlistError.message);
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
+
+  const renderStars = (rating) => {
+    const normalized = Math.max(0, Math.min(5, Number(rating) || 0));
+    const rounded = Math.round(normalized);
+
+    return (
+      <span className="star-rating" aria-label={`${normalized.toFixed(1)} sao`}>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <span key={index} className={`star-btn ${index < rounded ? 'active' : ''}`}>
+            ★
+          </span>
+        ))}
+      </span>
+    );
+  };
+
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 
@@ -106,10 +174,18 @@ function ProductDetailPage() {
   };
 
   const isOwner = user && product && product.seller_id === user.id;
+  const pageTitle = product ? `${product.title} | ReMarket` : 'Chi tiet san pham | ReMarket';
+  const pageDescription = product?.description
+    ? product.description.slice(0, 160)
+    : 'Xem chi tiet san pham do cu tren ReMarket.';
+  const canonicalUrl = `${window.location.origin}/products/${id}`;
 
   if (isLoading) {
     return (
       <main className="page-shell">
+        <Helmet>
+          <title>Dang tai san pham | ReMarket</title>
+        </Helmet>
         <div className="page-loading">
           <div className="loading-spinner" />
           <p>Đang tải sản phẩm...</p>
@@ -121,6 +197,10 @@ function ProductDetailPage() {
   if (error || !product) {
     return (
       <main className="page-shell">
+        <Helmet>
+          <title>Khong tim thay san pham | ReMarket</title>
+          <meta name="description" content="San pham khong ton tai hoac da bi an." />
+        </Helmet>
         <div className="page-container">
           <div className="empty-state">
             <span className="empty-icon">😔</span>
@@ -137,6 +217,15 @@ function ProductDetailPage() {
 
   return (
     <main className="page-shell">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={canonicalUrl} />
+        {product.images?.[0] && <meta property="og:image" content={product.images[0]} />}
+      </Helmet>
       <div className="page-container page-container-wide">
         {/* Back */}
         <div className="page-header">
@@ -223,12 +312,36 @@ function ProductDetailPage() {
                     Sản phẩm đã bán
                   </button>
                 ) : (
-                  <button
-                    className="btn-primary detail-buy-btn"
-                    onClick={() => setShowOrderModal(true)}
-                  >
-                    🛒 Đặt mua ngay
-                  </button>
+                  <div className="detail-actions-row">
+                    <button
+                      className="btn-primary detail-buy-btn"
+                      onClick={() => setShowOrderModal(true)}
+                    >
+                      🛒 Đặt mua ngay
+                    </button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Link
+                        to={`/chat?receiver=${product.seller_id}&product=${product.id}`}
+                        className="btn-outline"
+                        style={{ flex: 1, textDecoration: 'none', textAlign: 'center' }}
+                      >
+                        💬 Nhắn người bán
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn-outline"
+                        style={{ flex: 1 }}
+                        onClick={handleWishlistToggle}
+                        disabled={isWishlistLoading}
+                      >
+                        {isWishlistLoading
+                          ? 'Đang xử lý...'
+                          : wishlisted
+                            ? '💖 Đã yêu thích'
+                            : '♡ Yêu thích'}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -256,8 +369,43 @@ function ProductDetailPage() {
                     )}
                   </div>
                 </div>
+                <div className="review-summary">
+                  {renderStars(product.profiles.rating_avg || 0)}
+                  <span>
+                    {(Number(product.profiles.rating_avg) || 0).toFixed(1)}
+                    {' '}
+                    ({product.profiles.rating_count || 0} đánh giá)
+                  </span>
+                </div>
               </div>
             )}
+
+            <div className="detail-seller-card">
+              <h3>Đánh giá gần đây</h3>
+              {isLoadingReviews ? (
+                <p className="tx-note">Đang tải đánh giá...</p>
+              ) : sellerReviews.length === 0 ? (
+                <p className="tx-note">Người bán chưa có đánh giá nào.</p>
+              ) : (
+                <div className="review-list">
+                  {sellerReviews.map((review) => (
+                    <article key={review.id} className="review-item">
+                      <div className="review-summary">
+                        {renderStars(review.rating)}
+                        <strong>{review.reviewer_profile?.full_name || 'Người mua'}</strong>
+                      </div>
+                      {review.comment && <p>{review.comment}</p>}
+                      <small>
+                        {new Date(review.created_at).toLocaleDateString('vi-VN')}
+                      </small>
+                    </article>
+                  ))}
+                  {reviewMeta.total > sellerReviews.length && (
+                    <small className="tx-note">và còn {reviewMeta.total - sellerReviews.length} đánh giá khác.</small>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

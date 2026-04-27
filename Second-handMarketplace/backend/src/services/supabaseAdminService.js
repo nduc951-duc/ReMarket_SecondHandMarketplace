@@ -94,12 +94,6 @@ async function generateSignupLink({ email, password, userMetadata }) {
 async function resendVerificationEmail(email) {
   const client = getAdminClient();
 
-  // First check if user exists and is unconfirmed
-  const { data: usersData, error: listError } = await client.auth.admin.listUsers({
-    page: 1,
-    perPage: 1,
-  });
-
   // Use generateLink with type 'signup' for existing unconfirmed users
   // Supabase will return the confirmation link for the existing user
   const { data, error } = await client.auth.admin.generateLink({
