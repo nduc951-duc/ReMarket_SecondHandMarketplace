@@ -2,6 +2,8 @@
 
 ReMarket là nền tảng thương mại điện tử mua bán đồ cũ (Second-hand) an toàn, trực quan và dễ sử dụng. Dự án được phân chia rõ ràng giữa Backend và Frontend, giao tiếp qua RESTful APIs và bảo mật bằng JWT token qua hệ thống Supabase.
 
+Cập nhật mới nhất: Hoàn thiện toàn bộ các tính năng từ FR-01 đến FR-14. Hệ thống đã sẵn sàng cho luồng mua bán hoàn chỉnh.
+
 ## 🚀 Công nghệ sử dụng
 
 - **Frontend:** React.js, Vite, React Router DOM, Zustand (State Management), CSS thuần (thiết kế theo phong cách Glassmorphism & UI hiện đại).
@@ -9,23 +11,57 @@ ReMarket là nền tảng thương mại điện tử mua bán đồ cũ (Second
 - **Database & Auth:** Supabase (PostgreSQL, Supabase Auth, Storage bucket).
 - **Mailing:** Nodemailer (Gửi email qua Gmail SMTP).
 
-## ✨ Tính năng hiện tại (FR-01: Quản lý tài khoản)
+## ✨ Tính năng hiện tại (Hoàn thiện toàn bộ FR-01 đến FR-14)
 
-- **Đăng ký / Đăng nhập:**
-  - Qua hệ thống email + mật khẩu.
-  - Quản lý xác thực email qua mã gửi đến hòm thư (Gmail SMTP integration).
-  - Có tính năng **Gửi lại email xác nhận**.
-  - Đăng nhập dạng Google OAuth (Có sẵn qua Supabase).
-- **Quản lý mật khẩu:**
-  - Tính năng quên mật khẩu & đặt lại mật khẩu mới thông qua email link.
-  - Tính năng đổi mật khẩu bên trong app (cần nhập mật khẩu cũ).
-- **Quản lý hồ sơ cá nhân (Profile):**
-  - Hiển thị thông tin người dùng: Tên, SĐT, Địa chỉ, Tiểu sử (Bio), và ngày tham gia.
-  - Upload Avatar trực tiếp đổi ảnh đại diện (Lưu trên Supabase Storage `avatar` bucket) với giới hạn 5MB và định dạng chuẩn (JPG, PNG).
-- **Quản lý lịch sử giao dịch (Transactions):**
-  - Xem danh sách giao dịch cả "Mua" và "Bán".
-  - Hiển thị tóm tắt, trạng thái giao dịch (Hoàn thành, Đang xử lý, v.v...).
-  - Cập nhật số liệu thống kê (Stats grid).
+### 1. Quản lý tài khoản & Xác thực (FR-01)
+- **Đăng ký / Đăng nhập:** Bằng email/mật khẩu hoặc Google OAuth. Gửi email xác nhận đăng ký.
+- **Quản lý mật khẩu:** Quên mật khẩu qua email link, đổi mật khẩu trong app.
+- **Hồ sơ cá nhân (Profile):** Cập nhật thông tin cơ bản, đổi Avatar (lưu trên Supabase Storage `avatar` bucket).
+
+### 2. Khám phá & Tìm kiếm Sản phẩm (FR-08, FR-09, FR-10)
+- **Trang Chủ (Home Page):** Hiển thị lưới sản phẩm với hiệu ứng Skeleton loading mượt mà. Phân trang dữ liệu.
+- **Tìm kiếm & Bộ lọc (Search & Filter):** Cho phép lọc sản phẩm theo Danh mục, Tình trạng (Mới, Cũ, ...), Khoảng giá và sắp xếp theo ngày/giá.
+- **Chi tiết Sản phẩm (Product Detail):** Xem thông tin chi tiết, thư viện ảnh (gallery), thông tin người bán và các sản phẩm liên quan.
+
+### 3. Giao dịch & Quản lý Đơn hàng (FR-11, FR-12, FR-13)
+- **Đặt hàng:** Người mua dễ dàng "Đặt mua" với thông điệp xác nhận rõ ràng.
+- **Dashboard Người Bán (Seller Dashboard):** Quản lý các đơn đặt mua, Xác nhận giao hàng hoặc Từ chối đơn (bắt buộc nhập lý do từ chối). Cung cấp các thẻ thống kê KPI.
+- **Lịch sử Giao dịch (Transaction History):** Người mua có thể theo dõi đơn hàng, xem chuỗi Timeline trạng thái đơn (Chờ xác nhận -> Đã giao -> Hoàn thành) và "Xác nhận nhận hàng".
+
+### 4. Quản lý Sản phẩm Của Tôi (FR-14)
+- **Danh sách (My Products):** Người bán tự quản lý kho sản phẩm của mình, lọc theo trạng thái.
+- **Thao tác:** Hỗ trợ Tạo mới, Chỉnh sửa sản phẩm, "Ẩn nhanh" khỏi cửa hàng, và kích hoạt lại sản phẩm dễ dàng. Giao diện upload hỗ trợ nhiều ảnh với chức năng preview/xóa ảnh linh hoạt.
+
+## 🗺️ Client Route Checklist (For Testing)
+
+Frontend base URL:
+- http://localhost:5173
+- If port 5173 is busy, use: http://localhost:5174
+
+### Auth and Redirect Rules
+- `/` -> auto redirect to `/app` (if logged in) or `/login` (if not logged in)
+- Auth-only routes (`/login`, `/register`, `/forgot-password`) redirect to `/app` when already logged in
+- Protected routes redirect to `/login` when not logged in
+
+### Route List
+
+| Path | Page | Access | Notes |
+|---|---|---|---|
+| `/` | RootRedirect | Public | Auto route based on auth state |
+| `/login` | LoginPage | Auth-only | For users not logged in |
+| `/register` | RegisterPage | Auth-only | For new account registration |
+| `/forgot-password` | ForgotPasswordPage | Auth-only | Password reset request |
+| `/reset-password` | ResetPasswordPage | Public | Usually opened from email link |
+| `/app` | ClientHomePage | Protected | Main client home |
+| `/profile` | ProfilePage | Protected | User profile |
+| `/change-password` | ChangePasswordPage | Protected | Change password |
+| `/transactions` | TransactionHistoryPage | Protected | Buyer/seller order history + timeline |
+| `/products/:id` | ProductDetailPage | Public | View product details, gallery, and order |
+| `/products/:id/edit` | ProductFormPage | Protected | Edit an existing product |
+| `/products/new` | ProductFormPage | Protected | Create a product listing |
+| `/seller/dashboard` | SellerDashboard | Protected | Seller order management |
+| `/my-products` | MyProductsPage | Protected | Seller product management |
+| `*` | Fallback redirect | Public | Redirects to `/` |
 
 ## 🛠 Cài đặt và Chạy môi trường Development
 
@@ -83,8 +119,9 @@ VITE_BACKEND_URL=http://localhost:4000
 ### 4. Thiết lập Database ở Supabase
 
 1. Vào [Supabase SQL Editor](https://supabase.com/dashboard).
-2. Copy và chạy toàn bộ mã SQL trong file `backend/supabase_migration.sql` để tạo bảng `profiles`, `transactions`, và các RLS Policies.
+2. Copy và chạy toàn bộ mã SQL trong file `backend/supabase_migration.sql` để tạo bảng và các RLS Policies.
 3. Vào phần **Storage** tạo một bucket mới tên là `avatar` và đặt nó ở chế độ **Public**.
+4. (Tùy chọn) Chạy script DB Seed có sẵn để có 5 users và 15 sản phẩm phục vụ test.
 
 ### 5. Chạy dự án
 
@@ -98,13 +135,6 @@ cd Second-handMarketplace/frontend
 npm run dev
 ```
 Trang web sẽ tự động bật tại: `http://localhost:5173`.
-
-## 📜 Cấu trúc Source Code chính
-
-- `frontend/src/pages/auth`: Quản lý các trang liên quan đăng ký, đăng nhập, quên mật khẩu.
-- `frontend/src/pages/client`: Quản lý trang người dùng khi đã vào app: `ClientHomePage`, `ProfilePage`, `TransactionHistoryPage`.
-- `backend/src/controllers`: Trung tâm xử lý API cho `Auth`, `Profile` và `Transactions`.
-- `backend/src/services`: Xử lý tương tác logic phức tạp, kết nối Supabase Admin Client và cấu hình NodeMailer gửi mail.
 
 ---
 *Developed with modern web tooling to ensure the best UI/UX and stability.*
