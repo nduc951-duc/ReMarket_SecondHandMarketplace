@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Navbar from '../../components/layout/Navbar';
 import { useRealtimeBadges } from '../../hooks/useRealtimeBadges';
 import { getProducts } from '../../services/productService';
 import { useAuthStore } from '../../store/authStore';
@@ -115,59 +116,16 @@ function ClientHomePage() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login', { replace: true });
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Người dùng';
   const hasActiveFilters = search || category || condition || minPrice || maxPrice;
   const canAccessAdmin = isAdminUser(user);
 
   return (
     <main className="page-shell">
+      <Navbar />
       <div className="page-container page-container-wide">
-        {/* Navigation Bar */}
-        <nav className="home-nav">
-          <Link to="/app" className="home-nav-brand">
-            <span className="brand-icon">🏪</span>
-            <span>ReMarket</span>
-          </Link>
-          <div className="home-nav-links">
-            <Link to="/my-products" className="nav-link">📦 Sản phẩm</Link>
-            <Link to="/seller/dashboard" className="nav-link">🏪 Đơn bán</Link>
-            <Link to="/transactions" className="nav-link">📋 Đơn mua</Link>
-            <Link to="/chat" className="nav-link nav-link-with-badge">
-              <span>💬 Chat</span>
-              {chatUnread > 0 && (
-                <span className="nav-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
-              )}
-            </Link>
-            <Link to="/wishlist" className="nav-link">♡ Wishlist</Link>
-            <Link to="/notifications" className="nav-link nav-link-with-badge">
-              <span>🔔 Thông báo</span>
-              {notificationUnread > 0 && (
-                <span className="nav-badge">{notificationUnread > 99 ? '99+' : notificationUnread}</span>
-              )}
-            </Link>
-            {canAccessAdmin && <Link to="/admin/dashboard" className="nav-link">🛡️ Admin</Link>}
-            <Link to="/profile" className="nav-link">👤 Hồ sơ</Link>
-          </div>
-          <div className="home-nav-user">
-            <span className="nav-user-name">{displayName}</span>
-            <button type="button" className="btn-logout-sm" onClick={handleLogout}>
-              Đăng xuất
-            </button>
-          </div>
-        </nav>
-
         {/* Hero Search */}
         <section className="home-hero">
           <h1>Khám phá sản phẩm</h1>

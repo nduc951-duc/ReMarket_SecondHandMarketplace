@@ -38,12 +38,14 @@ export function useRealtimeBadges() {
       return () => {};
     }
 
+    /* 
+    const channelId = `unread-badges-${user.id}`;
     const channel = supabase
-      .channel(`unread-badges-${user.id}-${Date.now()}`)
+      .channel(channelId)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
         },
@@ -62,12 +64,15 @@ export function useRealtimeBadges() {
         () => {
           refreshBadges();
         },
-      )
-      .subscribe();
+      );
+    
+    channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
+    */
+    return () => {};
   }, [refreshBadges, user]);
 
   return {
