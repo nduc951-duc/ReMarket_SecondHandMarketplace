@@ -1,30 +1,37 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getTransactions, getTransactionStats } from '../../services/profileService';
+import {
+  getTransactionById,
+  getTransactions,
+  getTransactionStats,
+  updateTransactionStatus,
+} from '../../services/transactionService';
 
 const STATUS_LABELS = {
-  pending: 'Chờ xử lý',
-  processing: 'Đang xử lý',
+  pending: 'Chờ xác nhận',
+  confirmed: 'Đã xác nhận',
+  shipped: 'Đã giao hàng',
   completed: 'Hoàn thành',
   cancelled: 'Đã hủy',
-  refunded: 'Hoàn tiền',
 };
 
 const STATUS_CLASSES = {
   pending: 'status-pending',
-  processing: 'status-processing',
+  confirmed: 'status-confirmed',
+  shipped: 'status-shipped',
   completed: 'status-completed',
   cancelled: 'status-cancelled',
-  refunded: 'status-refunded',
 };
 
 function TransactionHistoryPage() {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('buy'); // Default to buy for buyers
   const [transactions, setTransactions] = useState([]);
   const [stats, setStats] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showTimeline, setShowTimeline] = useState(false);
 
   const loadData = useCallback(async (type = 'all', page = 1) => {
     try {
@@ -68,6 +75,75 @@ function TransactionHistoryPage() {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       loadData(activeTab, newPage);
     }
+  };
+
+  const handleViewTimeline = async (transaction) => {
+    try {
+      const fullTransaction = await getTransactionById(transaction.id);
+      setSelectedTransaction(fullTransaction);
+      setShowTimeline(true);
+    } catch (err) {
+      setError('Không thể tải chi tiết giao dịch');
+    }
+  };
+
+  const handleConfirmReceipt = async (transactionId) => {
+    try {
+      await updateTransactionStatus(transactionId, 'completed');
+      await loadData(activeTab, pagination.page); // Reload current page
+      setError('');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const getTimelineEvents = (transaction) => {
+    const events = [
+      {
+        status: 'pending',
+        label: 'Đặt hàng',
+        timestamp: transaction.created_at,
+        completed: true,
+      },
+    ];
+
+    if (transaction.confirmed_at) {
+      events.push({
+        status: 'confirmed',
+        label: 'Xác nhận đơn hàng',
+        timestamp: transaction.confirmed_at,
+        completed: true,
+      });
+    }
+
+    if (transaction.shipped_at) {
+      events.push({
+        status: 'shipped',
+        label: 'Đã giao hàng',
+        timestamp: transaction.shipped_at,
+        completed: true,
+      });
+    }
+
+    if (transaction.completed_at) {
+      events.push({
+        status: 'completed',
+        label: 'Hoàn thành',
+        timestamp: transaction.completed_at,
+        completed: true,
+      });
+    }
+
+    if (transaction.cancelled_at) {
+      events.push({
+        status: 'cancelled',
+        label: 'Đã hủy',
+        timestamp: transaction.cancelled_at,
+        completed: true,
+      });
+    }
+
+    return events;
   };
 
   const formatCurrency = (amount) => {
@@ -184,6 +260,9 @@ function TransactionHistoryPage() {
                       {tx.payment_method && (
                         <span className="tx-payment">{tx.payment_method}</span>
                       )}
+                      {tx.note && (
+                        <span className="tx-note">Ghi chú: {tx.note}</span>
+                      )}
                     </div>
                   </div>
                   <div className="tx-item-right">
@@ -191,6 +270,24 @@ function TransactionHistoryPage() {
                     <span className={`tx-status ${STATUS_CLASSES[tx.status] || ''}`}>
                       {STATUS_LABELS[tx.status] || tx.status}
                     </span>
+                    <div className="tx-actions">
+                      <button
+                        type="button"
+                        className="tx-action-btn"
+                        onClick={() => handleViewTimeline(tx)}
+                      >
+                        📋 Chi tiết
+                      </button>
+                      {activeTab === 'buy' && tx.status === 'shipped' && (
+                        <button
+                          type="button"
+                          className="tx-action-btn confirm-btn"
+                          onClick={() => handleConfirmReceipt(tx.id)}
+                        >
+                          ✅ Xác nhận nhận hàng
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -223,6 +320,49 @@ function TransactionHistoryPage() {
 
             <p className="tx-total-info">Tổng: {pagination.total} giao dịch</p>
           </>
+        )}
+
+        {/* Timeline Modal */}
+        {showTimeline && selectedTransaction && (
+          <div className="modal-overlay" onClick={() => setShowTimeline(false)}>
+            <div className="modal-content timeline-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Chi tiết giao dịch</h3>
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={() => setShowTimeline(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="timeline-container">
+                  <div className="timeline-header">
+                    <h4>{selectedTransaction.product_name}</h4>
+                    <p className="timeline-amount">{formatCurrency(selectedTransaction.amount)}</p>
+                  </div>
+                  <div className="timeline">
+                    {getTimelineEvents(selectedTransaction).map((event, index) => (
+                      <div key={index} className={`timeline-item ${event.completed ? 'completed' : 'pending'}`}>
+                        <div className="timeline-marker"></div>
+                        <div className="timeline-content">
+                          <h5>{event.label}</h5>
+                          <p className="timeline-timestamp">{formatDate(event.timestamp)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedTransaction.rejection_reason && (
+                    <div className="rejection-reason">
+                      <h5>Lý do từ chối:</h5>
+                      <p>{selectedTransaction.rejection_reason}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </main>

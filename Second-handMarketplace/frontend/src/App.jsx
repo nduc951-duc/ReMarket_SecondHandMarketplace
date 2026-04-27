@@ -7,7 +7,11 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import ClientHomePage from './pages/client/ClientHomePage';
+import MyProductsPage from './pages/client/MyProductsPage';
+import ProductDetailPage from './pages/client/ProductDetailPage';
+import ProductFormPage from './pages/client/ProductFormPage';
 import ProfilePage from './pages/client/ProfilePage';
+import SellerDashboard from './pages/client/SellerDashboard';
 import TransactionHistoryPage from './pages/client/TransactionHistoryPage';
 import { useAuthStore } from './store/authStore';
 
@@ -67,6 +71,39 @@ function App() {
         element={
           <ProtectedRoute>
             <TransactionHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/new"
+        element={
+          <ProtectedRoute>
+            <ProductFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/:id/edit"
+        element={
+          <ProtectedRoute>
+            <ProductFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/products/:id" element={<ProductDetailPage />} />
+      <Route
+        path="/seller/dashboard"
+        element={
+          <ProtectedRoute>
+            <SellerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-products"
+        element={
+          <ProtectedRoute>
+            <MyProductsPage />
           </ProtectedRoute>
         }
       />

@@ -1,0 +1,21 @@
+feat: hoàn thiện toàn bộ tính năng và UI Marketplace (FR-08 đến FR-14)
+
+1. Giao diện cốt lõi (UI/UX)
+- Cấu trúc lại toàn bộ class CSS (`auth.css`) với hệ thống Design System mới: thẻ sản phẩm, badges trạng thái, modal, lưới grid, hiệu ứng skeleton, và nút bấm. Đảm bảo UI thống nhất trên mọi thiết bị (responsive).
+
+2. Khám phá Sản phẩm (Home & Product Detail)
+- `ClientHomePage`: Thêm Product Grid với Skeleton loading. Tích hợp bộ lọc (Danh mục, Giá, Tình trạng), thanh tìm kiếm, sắp xếp và phân trang.
+- `ProductDetailPage`: Xây dựng trang chi tiết sản phẩm. Thêm thư viện ảnh (gallery), thông tin người bán, và lưới sản phẩm liên quan. Tích hợp modal "Đặt mua" nối với backend xử lý giao dịch.
+
+3. Quản lý Đơn hàng (Dashboard & History)
+- `SellerDashboard`: Thêm tính năng để người bán xem đơn đến, Xác nhận giao hàng, hoặc Từ chối đơn hàng (có kèm lý do).
+- `TransactionHistoryPage`: Trang lịch sử mua/bán với thiết kế Tab. Tích hợp chuỗi thời gian (Timeline) theo dõi hành trình đơn hàng. Thêm tính năng "Xác nhận nhận hàng".
+
+4. Quản lý Sản phẩm (My Products)
+- `MyProductsPage`: Hiển thị sản phẩm người dùng đã đăng. Thêm tính năng lọc trạng thái, thao tác "Ẩn nhanh" và "Hiện lại".
+- `ProductFormPage`: Viết lại form hoàn toàn mới chuẩn UI, hỗ trợ cả 2 chế độ: Tạo mới và Chỉnh sửa sản phẩm. Hỗ trợ xoá/chỉnh sửa kho ảnh sản phẩm mượt mà.
+
+5. Routing & Cơ sở dữ liệu
+- Sửa lỗi conflict routing khi gọi các Endpoint parameterized (`/products/:id`) trong App.jsx và `productRoutes.js`.
+- Cung cấp SQL script tạo mock data 5 users và 15 sản phẩm để test flow mua bán.
+- Cập nhật README.md với đầy đủ route mới.

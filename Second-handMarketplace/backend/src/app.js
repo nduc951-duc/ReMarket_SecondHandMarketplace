@@ -5,6 +5,8 @@ const authRoutes = require('./routes/authRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const productRoutes = require('./routes/productRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
@@ -27,5 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/upload', uploadRoutes);
 
 module.exports = app;

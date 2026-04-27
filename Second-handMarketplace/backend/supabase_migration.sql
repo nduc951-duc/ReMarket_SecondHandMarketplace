@@ -69,9 +69,14 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   product_image TEXT DEFAULT '',
   amount DECIMAL(12,2) NOT NULL DEFAULT 0,
   status TEXT DEFAULT 'pending'
-    CHECK (status IN ('pending', 'processing', 'completed', 'cancelled', 'refunded')),
+    CHECK (status IN ('pending', 'confirmed', 'shipped', 'completed', 'cancelled')),
   payment_method TEXT DEFAULT '',
   note TEXT DEFAULT '',
+  rejection_reason TEXT DEFAULT '',
+  confirmed_at TIMESTAMPTZ,
+  shipped_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  cancelled_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -94,17 +99,141 @@ CREATE INDEX IF NOT EXISTS idx_transactions_buyer ON public.transactions(buyer_i
 CREATE INDEX IF NOT EXISTS idx_transactions_seller ON public.transactions(seller_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_status ON public.transactions(status);
 CREATE INDEX IF NOT EXISTS idx_transactions_created ON public.transactions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_product ON public.transactions(product_id);
 
 
--- 3. STORAGE BUCKET FOR AVATARS
+-- 3. PRODUCTS TABLE
+-- Stores product listings for the marketplace
+CREATE TABLE IF NOT EXISTS public.products (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  seller_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  price DECIMAL(12,2) NOT NULL DEFAULT 0,
+  category TEXT DEFAULT '',
+  condition TEXT DEFAULT 'good' CHECK (condition IN ('new', 'like_new', 'good', 'fair', 'poor')),
+  images TEXT[] DEFAULT '{}', -- Array of image URLs
+  location TEXT DEFAULT '',
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'sold', 'hidden', 'banned')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read active products
+CREATE POLICY "Anyone can read active products"
+  ON public.products FOR SELECT
+  USING (status = 'active');
+
+-- Users can read their own products (including hidden/sold/banned)
+CREATE POLICY "Users can read own products"
+  ON public.products FOR SELECT
+  USING (auth.uid() = seller_id);
+
+-- Users can insert their own products
+CREATE POLICY "Users can insert own products"
+  ON public.products FOR INSERT
+  WITH CHECK (auth.uid() = seller_id);
+
+-- Users can update their own products
+CREATE POLICY "Users can update own products"
+  ON public.products FOR UPDATE
+  USING (auth.uid() = seller_id);
+
+-- Users can delete their own products
+CREATE POLICY "Users can delete own products"
+  ON public.products FOR DELETE
+  USING (auth.uid() = seller_id);
+
+-- Service role can do everything (for backend admin API)
+CREATE POLICY "Service role full access on products"
+  ON public.products FOR ALL
+  USING (auth.role() = 'service_role');
+
+-- Indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_products_seller ON public.products(seller_id);
+CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);
+CREATE INDEX IF NOT EXISTS idx_products_status ON public.products(status);
+CREATE INDEX IF NOT EXISTS idx_products_created ON public.products(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_products_price ON public.products(price);
+
+-- Keep schema aligned with business statuses when re-running migration
+UPDATE public.products
+SET status = 'hidden'
+WHERE status = 'inactive';
+
+UPDATE public.products
+SET condition = 'good'
+WHERE condition = 'used';
+
+UPDATE public.products
+SET condition = 'like_new'
+WHERE condition = 'refurbished';
+
+UPDATE public.transactions
+SET status = 'confirmed'
+WHERE status = 'processing';
+
+UPDATE public.transactions
+SET status = 'completed'
+WHERE status = 'delivered';
+
+UPDATE public.transactions
+SET status = 'cancelled'
+WHERE status = 'refunded';
+
+ALTER TABLE public.transactions
+  DROP CONSTRAINT IF EXISTS transactions_status_check;
+
+ALTER TABLE public.transactions
+  ADD CONSTRAINT transactions_status_check
+  CHECK (status IN ('pending', 'confirmed', 'shipped', 'completed', 'cancelled'));
+
+ALTER TABLE public.products
+  DROP CONSTRAINT IF EXISTS products_condition_check;
+
+ALTER TABLE public.products
+  ADD CONSTRAINT products_condition_check
+  CHECK (condition IN ('new', 'like_new', 'good', 'fair', 'poor'));
+
+ALTER TABLE public.products
+  DROP CONSTRAINT IF EXISTS products_status_check;
+
+ALTER TABLE public.products
+  ADD CONSTRAINT products_status_check
+  CHECK (status IN ('active', 'sold', 'hidden', 'banned'));
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'transactions_product_id_fkey'
+  ) THEN
+    ALTER TABLE public.transactions
+      ADD CONSTRAINT transactions_product_id_fkey
+      FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
+-- Prevent duplicate open orders for the same product (race-condition guard)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_transactions_open_order_per_product
+ON public.transactions(product_id)
+WHERE product_id IS NOT NULL
+  AND status IN ('pending', 'confirmed');
+
+
+-- 4. STORAGE BUCKET FOR PRODUCT IMAGES
 -- NOTE: You need to create this manually in Supabase Dashboard → Storage
--- Create a bucket named "avatars" and set it to Public
+-- Create a bucket named "products" and set it to Public
 --
 -- Or run this (requires service_role permissions):
--- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true)
 -- ON CONFLICT (id) DO NOTHING;
 
 
--- 4. DONE
+-- 5. DONE
 -- After running this SQL, your backend profile & transaction APIs will work.
--- Make sure to also create the "avatars" storage bucket in Supabase Dashboard.
+-- Make sure to also create the "avatars" storage bucket for profile images in Supabase Dashboard.
