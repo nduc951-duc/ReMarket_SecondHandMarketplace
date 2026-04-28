@@ -166,22 +166,26 @@ function MyProductsPage() {
             <section className="my-products-grid">
               {products.map((product) => (
                 <article key={product.id} className="my-product-card">
-                  <div className="my-product-image-wrap">
-                    {product.images && product.images.length > 0 ? (
-                      <img
-                        src={product.images[0]}
-                        alt={product.title}
-                        className="my-product-image"
-                      />
-                    ) : (
-                      <div className="my-product-placeholder">📦</div>
-                    )}
-                  </div>
+                  <Link to={`/products/${product.id}`} className="wishlist-image-wrap" style={{ textDecoration: 'none' }}>
+                    <div className="my-product-image-wrap">
+                      {product.images && product.images.length > 0 ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.title}
+                          className="my-product-image"
+                        />
+                      ) : (
+                        <div className="my-product-placeholder">📦</div>
+                      )}
+                    </div>
+                  </Link>
 
                   <div className="my-product-content">
-                    <h3 className="my-product-title">
-                      {product.title}
-                    </h3>
+                    <Link to={`/products/${product.id}`} className="wishlist-title-link">
+                      <h3 className="my-product-title">
+                        {product.title}
+                      </h3>
+                    </Link>
 
                     <p className="my-product-price">
                       {formatCurrency(product.price)}
@@ -236,6 +240,14 @@ function MyProductsPage() {
                           Ẩn nhanh
                         </button>
                       )}
+
+                      <Link
+                        to={`/products/${product.id}`}
+                        className="my-action-btn warn"
+                        style={{ textDecoration: 'none', textAlign: 'center' }}
+                      >
+                        Chi tiết
+                      </Link>
                     </div>
                   </div>
                 </article>

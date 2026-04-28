@@ -61,6 +61,26 @@ const Navbar = () => {
               );
             })}
           </div>
+
+          <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-1">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={cn(
+                    'px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200',
+                    isActive
+                      ? 'bg-[#0D9488]/10 text-[#0D9488]'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                  )}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* RIGHT SIDE */}

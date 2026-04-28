@@ -174,27 +174,84 @@ async function getTransactions(userId, options = {}) {
   const type = options.type || 'all';
   const status = options.status || null;
 
-  let query = client
-    .from('transactions')
-    .select('*', { count: 'exact' });
+  let data = [];
+  let count = 0;
+  let error = null;
 
-  if (type === 'buy') {
-    query = query.eq('buyer_id', userId);
-  } else if (type === 'sell') {
-    query = query.eq('seller_id', userId);
+  if (type === 'all') {
+    const rangeEnd = offset + limit - 1;
+
+    const [buyResponse, sellResponse] = await Promise.all([
+      (async () => {
+        let query = client
+          .from('transactions')
+          .select('*', { count: 'exact' })
+          .eq('buyer_id', userId)
+          .order('created_at', { ascending: false })
+          .range(0, rangeEnd);
+
+        if (status) {
+          query = query.eq('status', status);
+        }
+
+        return query;
+      })(),
+      (async () => {
+        let query = client
+          .from('transactions')
+          .select('*', { count: 'exact' })
+          .eq('seller_id', userId)
+          .order('created_at', { ascending: false })
+          .range(0, rangeEnd);
+
+        if (status) {
+          query = query.eq('status', status);
+        }
+
+        return query;
+      })(),
+    ]);
+
+    if (buyResponse.error || sellResponse.error) {
+      error = buyResponse.error || sellResponse.error;
+    } else {
+      const merged = [...(buyResponse.data || []), ...(sellResponse.data || [])];
+      const uniqueMap = new Map();
+      for (const item of merged) {
+        uniqueMap.set(item.id, item);
+      }
+
+      const mergedUnique = Array.from(uniqueMap.values()).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+
+      data = mergedUnique.slice(offset, offset + limit);
+      count = (buyResponse.count || 0) + (sellResponse.count || 0);
+    }
   } else {
-    query = query.or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
+    let query = client
+      .from('transactions')
+      .select('*', { count: 'exact' });
+
+    if (type === 'buy') {
+      query = query.eq('buyer_id', userId);
+    } else {
+      query = query.eq('seller_id', userId);
+    }
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const response = await query;
+    data = response.data || [];
+    count = response.count || 0;
+    error = response.error || null;
   }
-
-  if (status) {
-    query = query.eq('status', status);
-  }
-
-  query = query
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  const { data, error, count } = await query;
 
   if (error) {
     if (

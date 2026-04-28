@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
-import { useRealtimeBadges } from '../../hooks/useRealtimeBadges';
 import { getProducts } from '../../services/productService';
-import { useAuthStore } from '../../store/authStore';
-import { isAdminUser } from '../../utils/adminAccess';
 
 const CATEGORIES = [
   'Điện tử', 'Thời trang', 'Đồ gia dụng', 'Sách vở',
@@ -39,11 +36,6 @@ function SkeletonCard() {
 }
 
 function ClientHomePage() {
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
-  const { chatUnread, notificationUnread } = useRealtimeBadges();
-
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -120,7 +112,6 @@ function ClientHomePage() {
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 
   const hasActiveFilters = search || category || condition || minPrice || maxPrice;
-  const canAccessAdmin = isAdminUser(user);
 
   return (
     <main className="page-shell">

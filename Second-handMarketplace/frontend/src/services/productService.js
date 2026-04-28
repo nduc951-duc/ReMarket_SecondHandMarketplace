@@ -36,12 +36,20 @@ export async function getProducts(params = {}) {
  */
 export async function getProductById(productId) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
+  const { supabase } = await import('../lib/supabaseClient');
+  const { data: session } = await supabase.auth.getSession();
+
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  if (session?.session?.access_token) {
+    headers.Authorization = `Bearer ${session.session.access_token}`;
+  }
 
   const response = await fetch(`${backendUrl}/api/products/${productId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
   });
 
   const data = await response.json();

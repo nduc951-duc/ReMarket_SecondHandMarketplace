@@ -150,8 +150,10 @@ async function getProductByIdHandler(req, res) {
       });
     }
 
-    // Public endpoint only returns visible listings.
-    if (!['active', 'sold'].includes(product.status)) {
+    const isOwner = req.user && product.seller_id === req.user.id;
+
+    // Public endpoint only returns visible listings unless owner.
+    if (!isOwner && !['active', 'sold'].includes(product.status)) {
       return res.status(404).json({
         ok: false,
         message: 'Không tìm thấy sản phẩm.',

@@ -44,9 +44,31 @@ function TransactionHistoryPage() {
       setIsLoading(true);
       setError('');
 
-      const [txResult, statsResult] = await Promise.all([
-        getTransactions({ type, page, limit: 10 }),
+      const [statsResult, txResult] = await Promise.all([
         stats === null ? getTransactionStats() : Promise.resolve(stats),
+        type === 'all'
+          ? Promise.all([
+              getTransactions({ type: 'buy', page, limit: 10 }),
+              getTransactions({ type: 'sell', page, limit: 10 }),
+            ]).then(([buyResult, sellResult]) => {
+              const merged = [...(buyResult.transactions || []), ...(sellResult.transactions || [])];
+              const uniqueMap = new Map();
+              for (const item of merged) {
+                uniqueMap.set(item.id, item);
+              }
+
+              const mergedUnique = Array.from(uniqueMap.values()).sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+              );
+
+              return {
+                transactions: mergedUnique,
+                page,
+                totalPages: Math.max(buyResult.totalPages || 0, sellResult.totalPages || 0),
+                total: (buyResult.total || 0) + (sellResult.total || 0),
+              };
+            })
+          : getTransactions({ type, page, limit: 10 }),
       ]);
 
       setTransactions(txResult.transactions || []);
