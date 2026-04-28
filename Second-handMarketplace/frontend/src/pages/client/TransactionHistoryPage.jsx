@@ -125,6 +125,24 @@ function TransactionHistoryPage() {
     }
   };
 
+  const handleUpdateStatus = async (transactionId, status) => {
+    try {
+      let rejectionReason = '';
+      // Nếu người bán từ chối đơn hàng (Huỷ đơn), hiển thị prompt yêu cầu nhập lý do
+      if (status === 'cancelled') {
+        const reason = window.prompt('Vui lòng nhập lý do từ chối đơn hàng:');
+        if (reason === null) return; // Huỷ bỏ thao tác nếu bấm Cancel
+        rejectionReason = reason;
+      }
+
+      await updateTransactionStatus(transactionId, status, rejectionReason);
+      await loadData(activeTab, pagination.page); // Tải lại dữ liệu trang hiện tại
+      setError('');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const openReviewModal = (transaction) => {
     setReviewTarget(transaction);
     setReviewRating(5);
@@ -353,6 +371,33 @@ function TransactionHistoryPage() {
                           onClick={() => openReviewModal(tx)}
                         >
                           ⭐ Đánh giá
+                        </button>
+                      )}
+                      {activeTab === 'sell' && tx.status === 'pending' && (
+                        <>
+                          <button
+                            type="button"
+                            className="tx-action-btn confirm-btn"
+                            onClick={() => handleUpdateStatus(tx.id, 'confirmed')}
+                          >
+                            ✅ Xác nhận đơn
+                          </button>
+                          <button
+                            type="button"
+                            className="tx-action-btn cancel-btn"
+                            onClick={() => handleUpdateStatus(tx.id, 'cancelled')}
+                          >
+                            ❌ Từ chối
+                          </button>
+                        </>
+                      )}
+                      {activeTab === 'sell' && tx.status === 'confirmed' && (
+                        <button
+                          type="button"
+                          className="tx-action-btn ship-btn"
+                          onClick={() => handleUpdateStatus(tx.id, 'shipped')}
+                        >
+                          🚚 Báo đã giao hàng
                         </button>
                       )}
                     </div>

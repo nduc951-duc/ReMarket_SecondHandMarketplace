@@ -27,6 +27,7 @@ const Navbar = () => {
     { name: 'Danh sách sản phẩm', path: '/app', icon: ShoppingBag },
     { name: 'Đơn hàng', path: '/transactions', icon: ClipboardList },
     { name: 'Yêu thích', path: '/wishlist', icon: Heart },
+    { name: 'Sản phẩm của tôi', path: '/my-products', icon: Heart },  
   ];
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Người dùng';
