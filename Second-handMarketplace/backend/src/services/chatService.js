@@ -590,6 +590,7 @@ async function sendMessage({
   receiverId,
   productId,
   content,
+  clientMessageId,
 }) {
   const client = getAdminClient();
   const normalizedContent = normalizeMessageContent(content);
@@ -600,6 +601,38 @@ async function sendMessage({
 
   if (normalizedContent.length > 2000) {
     throw buildServiceError('Noi dung tin nhan khong duoc vuot qua 2000 ky tu.', 400);
+  }
+
+  // Idempotency: if clientMessageId is provided, check for an existing message.
+  // Gracefully skip if the client_message_id column hasn't been added yet.
+  const normalizedClientMessageId = String(clientMessageId || '').trim() || null;
+  let idempotencyColumnExists = true;
+  if (normalizedClientMessageId) {
+    try {
+      const { data: existing, error: idempotencyError } = await client
+        .from('chat_messages')
+        .select('id, conversation_id, sender_id, content, is_system, metadata, created_at')
+        .eq('client_message_id', normalizedClientMessageId)
+        .eq('sender_id', userId)
+        .maybeSingle();
+
+      if (idempotencyError) {
+        // Column likely doesn't exist — skip idempotency silently
+        const msg = String(idempotencyError.message || '').toLowerCase();
+        if (msg.includes('client_message_id') || msg.includes('schema cache') || msg.includes('column')) {
+          idempotencyColumnExists = false;
+        }
+      } else if (existing) {
+        const senderProfileMap = await fetchProfilesMap(client, [userId]);
+        return {
+          ...existing,
+          sender_profile: senderProfileMap.get(userId) || null,
+        };
+      }
+    } catch {
+      // If anything fails during idempotency check, just proceed normally
+      idempotencyColumnExists = false;
+    }
   }
 
   let resolvedConversationId = String(conversationId || '').trim();
@@ -618,15 +651,22 @@ async function sendMessage({
 
   const now = new Date().toISOString();
 
+  const insertPayload = {
+    conversation_id: resolvedConversationId,
+    sender_id: userId,
+    content: normalizedContent,
+    is_system: false,
+    created_at: now,
+  };
+
+  // Only attach client_message_id if the column exists in the DB
+  if (normalizedClientMessageId && idempotencyColumnExists) {
+    insertPayload.client_message_id = normalizedClientMessageId;
+  }
+
   const { data, error } = await client
     .from('chat_messages')
-    .insert({
-      conversation_id: resolvedConversationId,
-      sender_id: userId,
-      content: normalizedContent,
-      is_system: false,
-      created_at: now,
-    })
+    .insert(insertPayload)
     .select(
       `
       id,

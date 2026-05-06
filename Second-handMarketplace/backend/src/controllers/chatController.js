@@ -70,6 +70,7 @@ async function sendMessageHandler(req, res) {
       receiverId: req.body?.receiver_id,
       productId: req.body?.product_id,
       content: req.body?.content,
+      clientMessageId: req.body?.client_message_id,
     });
 
     return res.status(201).json({
