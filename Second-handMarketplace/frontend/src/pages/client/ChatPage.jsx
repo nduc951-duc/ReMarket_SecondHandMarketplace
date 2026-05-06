@@ -234,25 +234,23 @@ function ChatPage({
      Bug 3 fix: Smart realtime — append only
      ──────────────────────────────────────────── */
   useEffect(() => {
-    if (!user || !supabase) {
+    if (!user || !supabase || !selectedConversationId) {
       return () => {};
     }
 
     const channel = supabase
-      .channel(`chat-realtime-${user.id}-${Date.now()}`)
+      .channel(`chat-messages:${selectedConversationId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
+          filter: `conversation_id=eq.${selectedConversationId}`,
         },
         (payload) => {
           const newMsg = payload.new;
           if (!newMsg) return;
-
-          const incomingConversationId = newMsg.conversation_id;
-          const currentConversationId = selectedConversationRef.current;
 
           // If the message was sent by the current user (optimistic already shown),
           // just update the optimistic message status to 'sent'
@@ -283,48 +281,28 @@ function ChatPage({
                 return prev;
               }
 
-              // Otherwise, if it's for the current conversation, append it
-              if (currentConversationId === incomingConversationId) {
-                return [...prev, { ...newMsg, _status: 'sent' }];
-              }
-
-              return prev;
+              return [...prev, { ...newMsg, _status: 'sent' }];
             });
           } else {
             // Message from another user — append to current conversation
-            if (currentConversationId === incomingConversationId) {
-              setMessages((prev) => {
-                // Don't duplicate
-                if (prev.some((m) => m.id === newMsg.id)) {
-                  return prev;
-                }
-                return [...prev, newMsg];
-              });
-            }
+            setMessages((prev) => {
+              // Don't duplicate
+              if (prev.some((m) => m.id === newMsg.id)) {
+                return prev;
+              }
+              return [...prev, newMsg];
+            });
           }
 
-          // Update conversation list: update last message + timestamp locally
+          // Update conversation list locally for the active conversation
           setConversations((prev) => {
-            const idx = prev.findIndex((c) => c.id === incomingConversationId);
-            if (idx === -1) {
-              // New conversation — need to reload to get full data
-              loadConversations();
-              return prev;
-            }
+            const idx = prev.findIndex((c) => c.id === selectedConversationId);
+            if (idx === -1) return prev;
 
             const updated = [...prev];
             const conv = { ...updated[idx] };
             conv.latest_message = newMsg;
             conv.updated_at = newMsg.created_at;
-
-            // Increment unread if not from current user and not the active conversation
-            if (
-              newMsg.sender_id !== user.id
-              && incomingConversationId !== currentConversationId
-            ) {
-              conv.unread_count = (conv.unread_count || 0) + 1;
-            }
-
             updated[idx] = conv;
 
             // Re-sort: most recently updated first
@@ -343,7 +321,7 @@ function ChatPage({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadConversations, user]);
+  }, [selectedConversationId, user]);
 
 
   const selectedConversation = conversations.find((conversation) => conversation.id === selectedConversationId);
@@ -589,20 +567,20 @@ function ChatPage({
           <small>{formatTime(message.created_at)}</small>
           {/* Optimistic UI status indicators */}
           {isMine && status === 'sending' && (
-            <span className="chat-bubble-status sending">⏳ Dang gui...</span>
+            <span className="chat-bubble-status sending">✓ Đang gửi</span>
           )}
           {isMine && status === 'sent' && (
-            <span className="chat-bubble-status sent">✓ Da gui</span>
+            <span className="chat-bubble-status sent">✓✓ Đã gửi</span>
           )}
           {isMine && status === 'failed' && (
             <span className="chat-bubble-status failed">
-              ✕ Gui that bai
+              ✕ Gửi thất bại
               <button
                 type="button"
                 className="chat-retry-btn"
                 onClick={() => handleRetryMessage(message)}
               >
-                ↻ Thu lai
+                ↻ Thử lại
               </button>
             </span>
           )}
