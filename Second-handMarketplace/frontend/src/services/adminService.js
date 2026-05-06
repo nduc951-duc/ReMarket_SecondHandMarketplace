@@ -64,6 +64,27 @@ export async function updateAdminProductStatus(productId, status) {
   });
 }
 
+export async function createAdminUser(payload) {
+  return fetchAdmin('/api/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateAdminUserRole(userId, role) {
+  return fetchAdmin(`/api/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function updateAdminUserStatus(userId, status) {
+  return fetchAdmin(`/api/admin/users/${userId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
 export async function getAdminTransactions(params = {}) {
   const query = new URLSearchParams();
   if (params.page) query.set('page', String(params.page));

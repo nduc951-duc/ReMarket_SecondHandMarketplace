@@ -38,8 +38,7 @@ export function useRealtimeBadges() {
       return () => {};
     }
 
-    /* 
-    const channelId = `unread-badges-${user.id}`;
+    const channelId = `unread-badges-${user.id}-${Date.now()}`;
     const channel = supabase
       .channel(channelId)
       .on(
@@ -65,14 +64,12 @@ export function useRealtimeBadges() {
           refreshBadges();
         },
       );
-    
+
     channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-    */
-    return () => {};
   }, [refreshBadges, user]);
 
   return {

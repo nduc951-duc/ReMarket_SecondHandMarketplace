@@ -97,6 +97,27 @@ export async function sendMessage(payload) {
   return result.data;
 }
 
+export async function ensureConversation(payload) {
+  const token = await getAccessToken();
+
+  const response = await fetch(`${getBackendUrl()}/api/chat/conversations/ensure`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Khong the tao conversation.');
+  }
+
+  return result.data;
+}
+
 export async function markConversationRead(conversationId) {
   const token = await getAccessToken();
 

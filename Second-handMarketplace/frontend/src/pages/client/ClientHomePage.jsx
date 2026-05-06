@@ -36,6 +36,8 @@ function SkeletonCard() {
 }
 
 function ClientHomePage() {
+  const zaloUrl = String(import.meta.env.VITE_ZALO_LINK || 'https://zalo.me').trim();
+  const messengerUrl = String(import.meta.env.VITE_MESSENGER_LINK || 'https://m.me').trim();
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -323,10 +325,27 @@ function ClientHomePage() {
           </>
         )}
 
-        {/* Quick Actions FAB */}
-        <Link to="/products/new" className="fab-btn" title="Đăng sản phẩm mới">
-          ＋
-        </Link>
+        {/* Contact FAB */}
+        <div className="fab-contact" aria-label="Lien lac ho tro">
+          <a
+            className="fab-btn fab-btn-zalo"
+            href={zaloUrl}
+            target="_blank"
+            rel="noreferrer"
+            title="Lien lac Zalo"
+          >
+            Z
+          </a>
+          <a
+            className="fab-btn fab-btn-messenger"
+            href={messengerUrl}
+            target="_blank"
+            rel="noreferrer"
+            title="Lien lac Messenger"
+          >
+            M
+          </a>
+        </div>
       </div>
     </main>
   );

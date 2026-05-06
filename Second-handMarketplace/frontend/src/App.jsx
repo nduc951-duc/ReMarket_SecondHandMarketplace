@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import {
   AdminRoute,
+  AgentRoute,
   AuthOnlyRoute,
   ProtectedRoute,
   RootRedirect,
 } from './components/auth/RouteGuards';
+import AgentInboxPage from './pages/agent/AgentInboxPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
@@ -20,9 +22,11 @@ import ProductDetailPage from './pages/client/ProductDetailPage';
 import ProductFormPage from './pages/client/ProductFormPage';
 import ProfilePage from './pages/client/ProfilePage';
 import SellerDashboard from './pages/client/SellerDashboard';
+import SupportChatPage from './pages/client/SupportChatPage';
 import TransactionHistoryPage from './pages/client/TransactionHistoryPage';
 import WishlistPage from './pages/client/WishlistPage';
 import NotFoundPage from './pages/system/NotFoundPage';
+import ForbiddenPage from './pages/system/ForbiddenPage';
 import ServerErrorPage from './pages/system/ServerErrorPage';
 import { useAuthStore } from './store/authStore';
 
@@ -119,6 +123,14 @@ function App() {
         }
       />
       <Route
+        path="/support-chat"
+        element={
+          <ProtectedRoute>
+            <SupportChatPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/wishlist"
         element={
           <ProtectedRoute>
@@ -142,6 +154,15 @@ function App() {
           </AdminRoute>
         }
       />
+      <Route
+        path="/agent/inbox"
+        element={
+          <AgentRoute>
+            <AgentInboxPage />
+          </AgentRoute>
+        }
+      />
+      <Route path="/403" element={<ForbiddenPage />} />
       <Route path="/500" element={<ServerErrorPage />} />
       <Route
         path="/my-products"

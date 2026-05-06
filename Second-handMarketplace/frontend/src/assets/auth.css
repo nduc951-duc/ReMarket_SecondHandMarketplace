@@ -1126,7 +1126,7 @@ body {
    ============================================== */
 
 .page-container-wide {
-  max-width: 960px;
+  max-width: 1440px;
 }
 
 /* ==============================================
@@ -2834,15 +2834,11 @@ body {
 
 /* FAB */
 .fab-btn {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--teal), #0a5a53);
   color: #fff;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2855,6 +2851,25 @@ body {
 .fab-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 12px 36px rgba(15, 118, 110, 0.45);
+}
+
+.fab-contact {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  display: grid;
+  gap: 10px;
+  z-index: 50;
+}
+
+.fab-btn-zalo {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  box-shadow: 0 10px 28px rgba(14, 165, 233, 0.35);
+}
+
+.fab-btn-messenger {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  box-shadow: 0 10px 28px rgba(99, 102, 241, 0.35);
 }
 
 /* ==============================================
