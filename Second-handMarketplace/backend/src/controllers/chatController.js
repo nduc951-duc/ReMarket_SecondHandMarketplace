@@ -2,6 +2,7 @@ const {
   getConversations,
   getMessages,
   sendMessage,
+  ensureConversation,
   markConversationRead,
   getUnreadConversationCount,
 } = require('../services/chatService');
@@ -81,6 +82,23 @@ async function sendMessageHandler(req, res) {
   }
 }
 
+async function ensureConversationHandler(req, res) {
+  try {
+    const data = await ensureConversation({
+      userId: req.user.id,
+      receiverId: req.body?.receiver_id,
+      productId: req.body?.product_id,
+    });
+
+    return res.status(200).json({
+      ok: true,
+      data,
+    });
+  } catch (error) {
+    return sendError(res, error, 'Khong the tao conversation.');
+  }
+}
+
 async function markConversationReadHandler(req, res) {
   try {
     const updated = await markConversationRead(req.user.id, req.params.id);
@@ -100,5 +118,6 @@ module.exports = {
   getUnreadConversationCountHandler,
   getMessagesHandler,
   sendMessageHandler,
+  ensureConversationHandler,
   markConversationReadHandler,
 };

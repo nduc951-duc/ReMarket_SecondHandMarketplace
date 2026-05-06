@@ -55,6 +55,19 @@ async function requireAuth(req, res, next) {
       });
     }
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.status === 'blocked') {
+      return res.status(403).json({
+        ok: false,
+        message: 'Tai khoan da bi khoa. Vui long lien he ho tro.',
+      });
+    }
+
     req.user = user;
     next();
   } catch (error) {

@@ -50,6 +50,160 @@ function normalizeMessageContent(content) {
   return String(content || '').trim();
 }
 
+async function fetchProfilesMap(client, userIds) {
+  const uniqueIds = Array.from(new Set((userIds || []).filter(Boolean)));
+
+  if (uniqueIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await client
+    .from('profiles')
+    .select('id, full_name, avatar_url')
+    .in('id', uniqueIds);
+
+  if (error) {
+    if (isRelationMissing(error, 'profiles')) {
+      return new Map();
+    }
+    throw buildServiceError(`Khong the lay thong tin profile: ${error.message}`, 500);
+  }
+
+  return new Map((data || []).map((profile) => [profile.id, profile]));
+}
+
+async function getProductSnapshot(client, productId) {
+  const normalizedId = String(productId || '').trim();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const { data, error } = await client
+    .from('products')
+    .select('id, seller_id, title, price, images, status')
+    .eq('id', normalizedId)
+    .maybeSingle();
+
+  if (error) {
+    throw buildServiceError(`Khong the lay san pham: ${error.message}`, 500);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    id: data.id,
+    seller_id: data.seller_id,
+    title: data.title,
+    price: data.price,
+    image_url: Array.isArray(data.images) ? data.images[0] || '' : '',
+    product_url: `/products/${data.id}`,
+    status: data.status,
+  };
+}
+
+function buildProductCardMetadata(productSnapshot) {
+  return {
+    type: 'product_card',
+    label: 'Ban dang hoi ve san pham nay',
+    product: {
+      id: productSnapshot.id,
+      title: productSnapshot.title,
+      price: productSnapshot.price,
+      image_url: productSnapshot.image_url,
+      url: productSnapshot.product_url,
+    },
+  };
+}
+
+async function createProductCardMessage({
+  client,
+  conversationId,
+  senderId,
+  productSnapshot,
+}) {
+  const metadata = buildProductCardMetadata(productSnapshot);
+  const now = new Date().toISOString();
+
+  const { data, error } = await client
+    .from('chat_messages')
+    .insert({
+      conversation_id: conversationId,
+      sender_id: senderId,
+      content: 'PRODUCT_CARD',
+      is_system: true,
+      metadata,
+      created_at: now,
+    })
+    .select(
+      `
+      id,
+      conversation_id,
+      sender_id,
+      content,
+      is_system,
+      metadata,
+      created_at
+    `,
+    )
+    .single();
+
+  if (error) {
+    throw buildServiceError(`Khong the tao product card: ${error.message}`, 500);
+  }
+
+  await Promise.all([
+    client
+      .from('conversations')
+      .update({ updated_at: now })
+      .eq('id', conversationId),
+    client
+      .from('conversation_participants')
+      .update({ last_read_at: now })
+      .eq('conversation_id', conversationId)
+      .eq('user_id', senderId),
+  ]);
+
+  const { data: participantRows, error: participantError } = await client
+    .from('conversation_participants')
+    .select('user_id')
+    .eq('conversation_id', conversationId);
+
+  if (!participantError && participantRows && participantRows.length > 0) {
+    const receiverIds = participantRows
+      .map((row) => row.user_id)
+      .filter((id) => id && id !== senderId);
+
+    if (receiverIds.length > 0) {
+      const preview = `Dang hoi ve san pham: ${productSnapshot.title || 'San pham'}`;
+
+      await Promise.all(
+        receiverIds.map((targetUserId) =>
+          createNotification({
+            user_id: targetUserId,
+            type: 'chat_message',
+            title: 'Tin nhan moi',
+            message: preview,
+            entity_type: 'conversation',
+            entity_id: conversationId,
+            metadata: {
+              conversation_id: conversationId,
+              message_id: data.id,
+              sender_id: senderId,
+              product_id: productSnapshot.id,
+            },
+          }).catch((notificationError) => {
+            console.error('Create product card notification error:', notificationError);
+          }),
+        ),
+      );
+    }
+  }
+
+  return data;
+}
+
 async function getConversationParticipant(userId, conversationId) {
   const client = getAdminClient();
 
@@ -121,17 +275,13 @@ async function getConversations(userId) {
         `
         conversation_id,
         user_id,
-        last_read_at,
-        profile:user_id (
-          full_name,
-          avatar_url
-        )
+        last_read_at
       `,
       )
       .in('conversation_id', conversationIds),
     client
       .from('chat_messages')
-      .select('id, conversation_id, sender_id, content, created_at')
+      .select('id, conversation_id, sender_id, content, is_system, metadata, created_at')
       .in('conversation_id', conversationIds)
       .order('created_at', { ascending: false }),
   ]);
@@ -152,11 +302,19 @@ async function getConversations(userId) {
   }
 
   const participantsByConversation = new Map();
+  const profileMap = await fetchProfilesMap(
+    client,
+    (participantsResponse.data || []).map((participant) => participant.user_id),
+  );
+
   for (const participant of participantsResponse.data || []) {
     if (!participantsByConversation.has(participant.conversation_id)) {
       participantsByConversation.set(participant.conversation_id, []);
     }
-    participantsByConversation.get(participant.conversation_id).push(participant);
+    participantsByConversation.get(participant.conversation_id).push({
+      ...participant,
+      profile: profileMap.get(participant.user_id) || null,
+    });
   }
 
   const latestMessageByConversation = new Map();
@@ -226,11 +384,8 @@ async function getMessages(userId, conversationId, options = {}) {
         sender_id,
         content,
         is_system,
-        created_at,
-        sender_profile:sender_id (
-          full_name,
-          avatar_url
-        )
+        metadata,
+        created_at
       `,
         { count: 'exact' },
       )
@@ -255,11 +410,7 @@ async function getMessages(userId, conversationId, options = {}) {
         ),
         participants:conversation_participants (
           user_id,
-          last_read_at,
-          profile:user_id (
-            full_name,
-            avatar_url
-          )
+          last_read_at
         )
       `,
       )
@@ -275,6 +426,17 @@ async function getMessages(userId, conversationId, options = {}) {
     throw buildServiceError(`Khong the lay thong tin conversation: ${conversationResponse.error.message}`, 500);
   }
 
+  const participants = conversationResponse.data?.participants || [];
+  const participantProfiles = await fetchProfilesMap(
+    client,
+    participants.map((item) => item.user_id),
+  );
+
+  const senderProfiles = await fetchProfilesMap(
+    client,
+    (messagesResponse.data || []).map((message) => message.sender_id),
+  );
+
   const now = new Date().toISOString();
   await client
     .from('conversation_participants')
@@ -289,8 +451,19 @@ async function getMessages(userId, conversationId, options = {}) {
   }
 
   return {
-    conversation: conversationResponse.data || null,
-    messages: (messagesResponse.data || []).reverse(),
+    conversation: conversationResponse.data
+      ? {
+        ...conversationResponse.data,
+        participants: participants.map((participant) => ({
+          ...participant,
+          profile: participantProfiles.get(participant.user_id) || null,
+        })),
+      }
+      : null,
+    messages: (messagesResponse.data || []).reverse().map((message) => ({
+      ...message,
+      sender_profile: senderProfiles.get(message.sender_id) || null,
+    })),
     page,
     limit,
     total: messagesResponse.count || 0,
@@ -298,7 +471,7 @@ async function getMessages(userId, conversationId, options = {}) {
   };
 }
 
-async function findSharedConversationId({ userId, receiverId, productId }) {
+async function findSharedConversationId({ userId, receiverId }) {
   const client = getAdminClient();
 
   const { data: mine, error: mineError } = await client
@@ -330,16 +503,12 @@ async function findSharedConversationId({ userId, receiverId, productId }) {
     return null;
   }
 
-  let query = client
+  const query = client
     .from('conversations')
     .select('id, product_id, updated_at')
     .in('id', sharedIds)
     .order('updated_at', { ascending: false })
     .limit(1);
-
-  if (productId) {
-    query = query.eq('product_id', productId);
-  }
 
   const { data: conversation, error } = await query.maybeSingle();
 
@@ -350,7 +519,7 @@ async function findSharedConversationId({ userId, receiverId, productId }) {
   return conversation?.id || null;
 }
 
-async function getOrCreateConversation({ userId, receiverId, productId }) {
+async function getOrCreateConversation({ userId, receiverId }) {
   const client = getAdminClient();
 
   if (!receiverId) {
@@ -364,7 +533,6 @@ async function getOrCreateConversation({ userId, receiverId, productId }) {
   const existingConversationId = await findSharedConversationId({
     userId,
     receiverId,
-    productId,
   });
 
   if (existingConversationId) {
@@ -375,7 +543,7 @@ async function getOrCreateConversation({ userId, receiverId, productId }) {
   const { data: conversation, error: conversationError } = await client
     .from('conversations')
     .insert({
-      product_id: productId || null,
+      product_id: null,
       created_by: userId,
       created_at: now,
       updated_at: now,
@@ -445,7 +613,6 @@ async function sendMessage({
     resolvedConversationId = await getOrCreateConversation({
       userId,
       receiverId,
-      productId,
     });
   }
 
@@ -467,11 +634,8 @@ async function sendMessage({
       sender_id,
       content,
       is_system,
-      created_at,
-      sender_profile:sender_id (
-        full_name,
-        avatar_url
-      )
+      metadata,
+      created_at
     `,
     )
     .single();
@@ -479,6 +643,12 @@ async function sendMessage({
   if (error) {
     throw buildServiceError(`Khong the gui tin nhan: ${error.message}`, 500);
   }
+
+  const senderProfileMap = await fetchProfilesMap(client, [userId]);
+  const messageWithProfile = {
+    ...data,
+    sender_profile: senderProfileMap.get(userId) || null,
+  };
 
   await Promise.all([
     client
@@ -503,7 +673,7 @@ async function sendMessage({
       .filter((id) => id && id !== userId);
 
     if (receiverIds.length > 0) {
-      const senderName = data?.sender_profile?.full_name || 'Nguoi ban';
+      const senderName = messageWithProfile?.sender_profile?.full_name || 'Nguoi ban';
       const preview = normalizedContent.length > 80
         ? `${normalizedContent.slice(0, 77)}...`
         : normalizedContent;
@@ -519,7 +689,7 @@ async function sendMessage({
             entity_id: resolvedConversationId,
             metadata: {
               conversation_id: resolvedConversationId,
-              message_id: data.id,
+              message_id: messageWithProfile.id,
               sender_id: userId,
             },
           }).catch((notificationError) => {
@@ -530,7 +700,45 @@ async function sendMessage({
     }
   }
 
-  return data;
+  return messageWithProfile;
+}
+
+async function ensureConversation({ userId, receiverId, productId }) {
+  const client = getAdminClient();
+  const productSnapshot = await getProductSnapshot(client, productId);
+  let resolvedReceiverId = receiverId;
+
+  if (productSnapshot) {
+    if (resolvedReceiverId && resolvedReceiverId !== productSnapshot.seller_id) {
+      throw buildServiceError('Nguoi nhan khong khop voi nguoi ban cua san pham.', 400);
+    }
+    resolvedReceiverId = productSnapshot.seller_id;
+  }
+
+  if (!resolvedReceiverId) {
+    throw buildServiceError('receiver_id la bat buoc khi tao conversation moi.', 400);
+  }
+
+  const conversationId = await getOrCreateConversation({
+    userId,
+    receiverId: resolvedReceiverId,
+  });
+
+  if (productSnapshot) {
+    const participant = await getConversationParticipant(userId, conversationId);
+    if (!participant) {
+      throw buildServiceError('Ban khong co quyen tao product card trong conversation nay.', 403);
+    }
+
+    await createProductCardMessage({
+      client,
+      conversationId,
+      senderId: userId,
+      productSnapshot,
+    });
+  }
+
+  return { conversation_id: conversationId };
 }
 
 async function markConversationRead(userId, conversationId) {
@@ -573,6 +781,7 @@ module.exports = {
   getConversations,
   getMessages,
   sendMessage,
+  ensureConversation,
   markConversationRead,
   getUnreadConversationCount,
 };

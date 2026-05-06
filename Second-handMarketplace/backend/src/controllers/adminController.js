@@ -4,6 +4,9 @@ const {
   getAdminProducts,
   updateProductStatusByAdmin,
   getAdminTransactions,
+  updateUserRole,
+  updateUserStatus,
+  createUser,
 } = require('../services/adminService');
 
 function sendError(res, error, fallbackMessage) {
@@ -103,10 +106,60 @@ async function getAdminTransactionsHandler(req, res) {
   }
 }
 
+async function createUserHandler(req, res) {
+  try {
+    const data = await createUser({
+      email: req.body?.email,
+      password: req.body?.password,
+      fullName: req.body?.full_name,
+      role: req.body?.role,
+    });
+
+    return res.status(201).json({
+      ok: true,
+      data,
+      message: 'Tao user thanh cong.',
+    });
+  } catch (error) {
+    return sendError(res, error, 'Khong the tao user.');
+  }
+}
+
+async function updateUserRoleHandler(req, res) {
+  try {
+    const data = await updateUserRole(req.params.id, req.body?.role);
+
+    return res.status(200).json({
+      ok: true,
+      data,
+      message: 'Cap nhat role thanh cong.',
+    });
+  } catch (error) {
+    return sendError(res, error, 'Khong the cap nhat role.');
+  }
+}
+
+async function updateUserStatusHandler(req, res) {
+  try {
+    const data = await updateUserStatus(req.params.id, req.body?.status);
+
+    return res.status(200).json({
+      ok: true,
+      data,
+      message: 'Cap nhat trang thai user thanh cong.',
+    });
+  } catch (error) {
+    return sendError(res, error, 'Khong the cap nhat trang thai user.');
+  }
+}
+
 module.exports = {
   getAdminOverviewHandler,
   getAdminUsersHandler,
   getAdminProductsHandler,
   updateProductStatusByAdminHandler,
   getAdminTransactionsHandler,
+  createUserHandler,
+  updateUserRoleHandler,
+  updateUserStatusHandler,
 };

@@ -14,6 +14,9 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'customer';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS rating_avg NUMERIC(3,2) NOT NULL DEFAULT 0;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS rating_count INTEGER NOT NULL DEFAULT 0;
 
@@ -57,6 +60,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   address TEXT DEFAULT '',
   bio TEXT DEFAULT '',
   avatar_url TEXT DEFAULT '',
+  email TEXT DEFAULT '',
+  role TEXT DEFAULT 'customer',
+  status TEXT DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -88,8 +94,14 @@ CREATE POLICY "Service role full access on profiles"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', ''));
+  INSERT INTO public.profiles (id, full_name, email, role, status)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'role', 'customer'),
+    'active'
+  );
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -310,8 +322,12 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
   sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   content TEXT NOT NULL,
   is_system BOOLEAN DEFAULT FALSE,
+  metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE public.chat_messages
+  ADD COLUMN IF NOT EXISTS metadata JSONB;
 
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversation_participants ENABLE ROW LEVEL SECURITY;

@@ -27,6 +27,25 @@ function getAdminClient() {
   return adminClient;
 }
 
+async function fetchProfilesMap(client, userIds) {
+  const uniqueIds = Array.from(new Set((userIds || []).filter(Boolean)));
+
+  if (uniqueIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await client
+    .from('profiles')
+    .select('id, full_name, avatar_url, phone, rating_avg, rating_count')
+    .in('id', uniqueIds);
+
+  if (error) {
+    throw new Error(`Không thể lấy thông tin người bán: ${error.message}`);
+  }
+
+  return new Map((data || []).map((profile) => [profile.id, profile]));
+}
+
 /**
  * Create a new product
  * @param {object} productData - { seller_id, title, description, price, category, condition, images, location }
@@ -56,16 +75,7 @@ async function getProductById(productId) {
 
   const { data, error } = await client
     .from('products')
-    .select(`
-      *,
-      profiles:seller_id (
-        full_name,
-        avatar_url,
-        phone,
-        rating_avg,
-        rating_count
-      )
-    `)
+    .select('*')
     .eq('id', productId)
     .single();
 
@@ -76,7 +86,12 @@ async function getProductById(productId) {
     throw new Error(`Không thể lấy sản phẩm: ${error.message}`);
   }
 
-  return data;
+  const profileMap = await fetchProfilesMap(client, [data?.seller_id]);
+
+  return {
+    ...data,
+    profiles: profileMap.get(data?.seller_id) || null,
+  };
 }
 
 /**
@@ -92,15 +107,7 @@ async function getProducts(options = {}) {
 
   let query = client
     .from('products')
-    .select(`
-      *,
-      profiles:seller_id (
-        full_name,
-        avatar_url,
-        rating_avg,
-        rating_count
-      )
-    `, { count: 'exact' })
+    .select('*', { count: 'exact' })
     .eq('status', 'active') // Only active products by default
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -136,8 +143,18 @@ async function getProducts(options = {}) {
     throw new Error(`Không thể lấy danh sách sản phẩm: ${error.message}`);
   }
 
+  const profileMap = await fetchProfilesMap(
+    client,
+    (data || []).map((item) => item.seller_id),
+  );
+
+  const products = (data || []).map((item) => ({
+    ...item,
+    profiles: profileMap.get(item.seller_id) || null,
+  }));
+
   return {
-    products: data,
+    products,
     pagination: {
       page,
       limit,
