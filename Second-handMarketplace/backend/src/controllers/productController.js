@@ -1,11 +1,13 @@
 const {
   createProduct,
-  getProductById,
-  getProducts,
+  getPublicProductById,
+  getPublicProducts,
   updateProduct,
   deleteProduct,
   getProductsBySeller,
+  getPublicProductsBySeller,
   hasOpenTransactionsForProduct,
+  incrementProductViewCount,
 } = require('../models/products/productModel');
 
 const ALLOWED_CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
@@ -25,6 +27,7 @@ async function createProductHandler(req, res) {
       condition,
       images,
       location,
+      is_negotiable,
     } = req.body;
 
     const normalizedTitle = title ? String(title).trim() : '';
@@ -32,6 +35,7 @@ async function createProductHandler(req, res) {
     const normalizedCategory = category ? String(category).trim() : '';
     const normalizedImages = Array.isArray(images) ? images : [];
     const normalizedCondition = condition || 'good';
+    const normalizedNegotiable = Boolean(is_negotiable);
 
     // Validation
     if (!normalizedTitle) {
@@ -85,6 +89,7 @@ async function createProductHandler(req, res) {
       condition: normalizedCondition,
       images: normalizedImages,
       location: location ? location.trim() : '',
+      is_negotiable: normalizedNegotiable,
     };
 
     const product = await createProduct(productData);
@@ -110,7 +115,12 @@ async function createProductHandler(req, res) {
  */
 async function getProductsHandler(req, res) {
   try {
-    const result = await getProducts({
+    const authHeader = req.headers.authorization || '';
+    const accessToken = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : '';
+
+    const result = await getPublicProducts({
       page: req.query.page,
       limit: req.query.limit,
       category: req.query.category,
@@ -118,7 +128,15 @@ async function getProductsHandler(req, res) {
       search: req.query.search,
       min_price: req.query.min_price,
       max_price: req.query.max_price,
-    });
+      sort: req.query.sort,
+      city: req.query.city,
+      district: req.query.district,
+      posted_within: req.query.posted_within,
+      has_images: req.query.has_images,
+      verified_seller: req.query.verified_seller,
+      in_stock: req.query.in_stock,
+      negotiable: req.query.negotiable,
+    }, accessToken);
 
     return res.status(200).json({
       ok: true,
@@ -140,6 +158,7 @@ async function getProductsHandler(req, res) {
 async function getProductByIdHandler(req, res) {
   try {
     const { id } = req.params;
+    const skipView = String(req.query.skip_view || '').toLowerCase() === 'true';
 
     const product = await getProductById(id);
 
@@ -158,6 +177,10 @@ async function getProductByIdHandler(req, res) {
         ok: false,
         message: 'Không tìm thấy sản phẩm.',
       });
+    }
+
+    if (!isOwner && !skipView) {
+      await incrementProductViewCount(id);
     }
 
     return res.status(200).json({
@@ -189,6 +212,7 @@ async function updateProductHandler(req, res) {
       images,
       location,
       status,
+      is_negotiable,
     } = req.body;
 
     const hasOpenOrders = await hasOpenTransactionsForProduct(id);
@@ -248,6 +272,13 @@ async function updateProductHandler(req, res) {
       });
     }
 
+    if (is_negotiable !== undefined && typeof is_negotiable !== 'boolean') {
+      return res.status(400).json({
+        ok: false,
+        message: 'Trạng thái thương lượng không hợp lệ.',
+      });
+    }
+
     const updateData = {};
     if (title !== undefined) updateData.title = title.trim();
     if (description !== undefined) updateData.description = description ? description.trim() : '';
@@ -257,6 +288,7 @@ async function updateProductHandler(req, res) {
     if (images !== undefined) updateData.images = images;
     if (location !== undefined) updateData.location = location ? location.trim() : '';
     if (status !== undefined) updateData.status = status;
+    if (is_negotiable !== undefined) updateData.is_negotiable = is_negotiable;
 
     const product = await updateProduct(id, req.user.id, updateData);
 
@@ -314,13 +346,17 @@ async function getProductsBySellerHandler(req, res) {
   try {
     const { sellerId } = req.params;
     const publicStatus = req.query.status === 'active' ? 'active' : null;
+    const authHeader = req.headers.authorization || '';
+    const accessToken = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : '';
 
-    const result = await getProductsBySeller(sellerId, {
+    const result = await getPublicProductsBySeller(sellerId, {
       page: req.query.page,
       limit: req.query.limit,
       status: publicStatus,
       includeAllStatuses: false,
-    });
+    }, accessToken);
 
     return res.status(200).json({
       ok: true,

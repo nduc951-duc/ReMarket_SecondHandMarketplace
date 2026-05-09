@@ -17,6 +17,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'customer';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS rating_avg NUMERIC(3,2) NOT NULL DEFAULT 0;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS rating_count INTEGER NOT NULL DEFAULT 0;
 
@@ -25,6 +26,12 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS location TEXT DEFAULT '';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS condition TEXT DEFAULT 'good';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS view_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS comment_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS avg_rating NUMERIC(3,2) NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS rating_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS is_negotiable BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sold_at TIMESTAMPTZ;
 
 ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_seller_id_fkey;
 ALTER TABLE public.products ADD CONSTRAINT products_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES auth.users(id) ON DELETE CASCADE;
@@ -63,6 +70,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email TEXT DEFAULT '',
   role TEXT DEFAULT 'customer',
   status TEXT DEFAULT 'active',
+  verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -172,6 +180,12 @@ CREATE TABLE IF NOT EXISTS public.products (
   images TEXT[] DEFAULT '{}', -- Array of image URLs
   location TEXT DEFAULT '',
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'sold', 'hidden', 'banned')),
+  view_count INTEGER NOT NULL DEFAULT 0,
+  comment_count INTEGER NOT NULL DEFAULT 0,
+  avg_rating NUMERIC(3,2) NOT NULL DEFAULT 0,
+  rating_count INTEGER NOT NULL DEFAULT 0,
+  is_negotiable BOOLEAN NOT NULL DEFAULT FALSE,
+  sold_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -183,6 +197,19 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can read active products"
   ON public.products FOR SELECT
   USING (status = 'active');
+
+-- Buyers can read sold products they purchased
+CREATE POLICY "Buyers can read sold products"
+  ON public.products FOR SELECT
+  USING (
+    status = 'sold'
+    AND EXISTS (
+      SELECT 1
+      FROM public.transactions t
+      WHERE t.product_id = id
+        AND t.buyer_id = auth.uid()
+    )
+  );
 
 -- Users can read their own products (including hidden/sold/banned)
 CREATE POLICY "Users can read own products"
@@ -215,6 +242,20 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);
 CREATE INDEX IF NOT EXISTS idx_products_status ON public.products(status);
 CREATE INDEX IF NOT EXISTS idx_products_created ON public.products(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_products_price ON public.products(price);
+CREATE INDEX IF NOT EXISTS idx_products_view_count ON public.products(view_count DESC);
+CREATE INDEX IF NOT EXISTS idx_products_comment_count ON public.products(comment_count DESC);
+CREATE INDEX IF NOT EXISTS idx_products_avg_rating ON public.products(avg_rating DESC);
+CREATE INDEX IF NOT EXISTS idx_products_negotiable ON public.products(is_negotiable);
+
+-- Increment view count safely from backend
+CREATE OR REPLACE FUNCTION public.increment_product_view_count(product_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.products
+  SET view_count = view_count + 1
+  WHERE id = product_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Keep schema aligned with business statuses when re-running migration
 UPDATE public.products
@@ -525,7 +566,108 @@ CREATE TRIGGER trg_reviews_refresh_profile_rating
 
 
 -- ============================================================
--- 8. WISHLIST
+-- 8. PRODUCT REVIEWS & VIEWS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.product_reviews (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
+  reviewer_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.product_reviews ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read product reviews"
+  ON public.product_reviews FOR SELECT
+  USING (true);
+
+CREATE POLICY "Users can insert product reviews"
+  ON public.product_reviews FOR INSERT
+  WITH CHECK (auth.uid() = reviewer_id);
+
+CREATE POLICY "Service role full access on product reviews"
+  ON public.product_reviews FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE INDEX IF NOT EXISTS idx_product_reviews_product
+  ON public.product_reviews(product_id, created_at DESC);
+
+CREATE OR REPLACE FUNCTION public.refresh_product_rating()
+RETURNS TRIGGER AS $$
+DECLARE
+  target_product UUID;
+BEGIN
+  target_product := COALESCE(NEW.product_id, OLD.product_id);
+
+  IF target_product IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  UPDATE public.products p
+  SET
+    avg_rating = COALESCE(summary.avg_rating, 0),
+    rating_count = COALESCE(summary.total_reviews, 0),
+    comment_count = COALESCE(summary.total_reviews, 0),
+    updated_at = NOW()
+  FROM (
+    SELECT
+      product_id,
+      ROUND(AVG(rating)::NUMERIC, 2) AS avg_rating,
+      COUNT(*)::INT AS total_reviews
+    FROM public.product_reviews
+    WHERE product_id = target_product
+    GROUP BY product_id
+  ) AS summary
+  WHERE p.id = target_product;
+
+  IF NOT FOUND THEN
+    UPDATE public.products
+    SET
+      avg_rating = 0,
+      rating_count = 0,
+      comment_count = 0,
+      updated_at = NOW()
+    WHERE id = target_product;
+  END IF;
+
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_reviews_refresh_product_rating ON public.product_reviews;
+
+CREATE TRIGGER trg_reviews_refresh_product_rating
+  AFTER INSERT OR UPDATE OR DELETE ON public.product_reviews
+  FOR EACH ROW
+  EXECUTE FUNCTION public.refresh_product_rating();
+
+CREATE TABLE IF NOT EXISTS public.product_views (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
+  viewer_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  ip_hash TEXT,
+  viewed_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.product_views ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can insert product views"
+  ON public.product_views FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Service role full access on product views"
+  ON public.product_views FOR ALL
+  USING (auth.role() = 'service_role');
+
+CREATE INDEX IF NOT EXISTS idx_product_views_product
+  ON public.product_views(product_id, viewed_at DESC);
+
+
+-- ============================================================
+-- 9. WISHLIST
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.wishlists (

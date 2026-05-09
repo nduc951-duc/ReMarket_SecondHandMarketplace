@@ -42,6 +42,25 @@ function isRelationMissing(error, relationName) {
   );
 }
 
+async function fetchProfilesMap(client, userIds) {
+  const uniqueIds = Array.from(new Set((userIds || []).filter(Boolean)));
+
+  if (uniqueIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await client
+    .from('profiles')
+    .select('id, full_name, avatar_url, verified')
+    .in('id', uniqueIds);
+
+  if (error) {
+    throw buildServiceError(`Khong the lay thong tin nguoi ban: ${error.message}`, 500);
+  }
+
+  return new Map((data || []).map((profile) => [profile.id, profile]));
+}
+
 async function getWishlistStatus(userId, productId) {
   const client = getAdminClient();
 
@@ -130,30 +149,7 @@ async function getWishlist(userId, options = {}) {
 
   const { data, error, count } = await client
     .from('wishlists')
-    .select(
-      `
-      product_id,
-      created_at,
-      products:product_id (
-        id,
-        seller_id,
-        title,
-        description,
-        price,
-        category,
-        condition,
-        images,
-        location,
-        status,
-        created_at,
-        profiles:seller_id (
-          full_name,
-          avatar_url
-        )
-      )
-    `,
-      { count: 'exact' },
-    )
+    .select('product_id, created_at', { count: 'exact' })
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -172,11 +168,46 @@ async function getWishlist(userId, options = {}) {
     throw buildServiceError(`Khong the lay wishlist: ${error.message}`, 500);
   }
 
+  const productIds = (data || []).map((entry) => entry.product_id).filter(Boolean);
+
+  if (productIds.length === 0) {
+    return {
+      items: [],
+      total: count || 0,
+      page,
+      limit,
+      totalPages: Math.ceil((count || 0) / limit),
+    };
+  }
+
+  const { data: products, error: productError } = await client
+    .from('products')
+    .select('id, seller_id, title, description, price, category, condition, images, location, status, created_at')
+    .in('id', productIds)
+    .not('status', 'in', '(hidden,banned)');
+
+  if (productError) {
+    throw buildServiceError(`Khong the lay san pham yeu thich: ${productError.message}`, 500);
+  }
+
+  const sellerIds = (products || []).map((product) => product.seller_id);
+  const profileMap = await fetchProfilesMap(client, sellerIds);
+
+  const productMap = new Map(
+    (products || []).map((product) => [
+      product.id,
+      {
+        ...product,
+        profiles: profileMap.get(product.seller_id) || null,
+      },
+    ]),
+  );
+
   return {
     items: (data || []).map((entry) => ({
       product_id: entry.product_id,
       created_at: entry.created_at,
-      product: entry.products || null,
+      product: productMap.get(entry.product_id) || null,
     })),
     total: count || 0,
     page,

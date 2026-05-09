@@ -13,14 +13,14 @@ const { attachUserIfPresent, requireAuth } = require('../middlewares/authMiddlew
 const router = express.Router();
 
 // Public routes — specific paths FIRST, then parameterized
-router.get('/', getProductsHandler);
-router.get('/seller/:sellerId', getProductsBySellerHandler);
+router.get('/', attachUserIfPresent, getProductsHandler);
+router.get('/seller/:sellerId', attachUserIfPresent, getProductsBySellerHandler);
+router.get('/user/my', requireAuth, getMyProductsHandler);
 router.get('/:id', attachUserIfPresent, getProductByIdHandler);
 
 // Protected routes (require authentication)
 router.use(requireAuth);
 router.post('/', createProductHandler);
-router.get('/user/my', getMyProductsHandler);
 
 router.patch('/:id', updateProductHandler);
 router.delete('/:id', deleteProductHandler);
