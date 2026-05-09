@@ -8,6 +8,7 @@ const {
   getPublicProductsBySeller,
   hasOpenTransactionsForProduct,
   incrementProductViewCount,
+  autocompleteProducts,
 } = require('../models/products/productModel');
 
 const ALLOWED_CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
@@ -152,6 +153,36 @@ async function getProductsHandler(req, res) {
 }
 
 /**
+ * GET /api/products/autocomplete
+ * Get product autocomplete suggestions
+ * Query params: q
+ */
+async function autocompleteProductsHandler(req, res) {
+  try {
+    const q = (req.query.q || '').trim();
+    if (q.length < 2) {
+      return res.status(200).json({
+        ok: true,
+        data: [],
+      });
+    }
+
+    const results = await autocompleteProducts(q);
+
+    return res.status(200).json({
+      ok: true,
+      data: results,
+    });
+  } catch (error) {
+    console.error('Autocomplete error:', error);
+    return res.status(500).json({
+      ok: false,
+      message: error.message || 'Không thể lấy gợi ý tìm kiếm.',
+    });
+  }
+}
+
+/**
  * GET /api/products/:id
  * Get product by ID
  */
@@ -159,8 +190,12 @@ async function getProductByIdHandler(req, res) {
   try {
     const { id } = req.params;
     const skipView = String(req.query.skip_view || '').toLowerCase() === 'true';
+    const authHeader = req.headers.authorization || '';
+    const accessToken = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : '';
 
-    const product = await getProductById(id);
+    const product = await getPublicProductById(id, accessToken);
 
     if (!product) {
       return res.status(404).json({
@@ -406,4 +441,5 @@ module.exports = {
   deleteProductHandler,
   getProductsBySellerHandler,
   getMyProductsHandler,
+  autocompleteProductsHandler,
 };

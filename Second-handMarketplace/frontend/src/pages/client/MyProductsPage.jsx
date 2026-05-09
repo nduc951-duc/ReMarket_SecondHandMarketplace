@@ -44,7 +44,7 @@ function MyProductsPage() {
   const handleStatusChange = async (productId, newStatus) => {
     try {
       await updateProduct(productId, { status: newStatus });
-      await loadProducts(); // Reload products
+      await loadProducts();
     } catch (err) {
       setError(err.message);
     }
@@ -85,7 +85,7 @@ function MyProductsPage() {
 
   if (!user) {
     return (
-      <main className="page-shell">
+      <main className="min-h-screen bg-slate-50/80">
         <section className="auth-required-card">
           <h2>
             Bạn cần đăng nhập
@@ -99,11 +99,16 @@ function MyProductsPage() {
   }
 
   return (
-    <main className="page-shell">
-      <div className="page-container page-container-wide my-products-page">
+    <main className="min-h-screen bg-slate-50/80">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-12">
         <header className="my-products-header">
           <div className="my-products-title-block">
-            <Link to="/app" className="back-link">← Quay lại</Link>
+            <Link
+              to="/app"
+              className="back-link inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:text-slate-900"
+            >
+              ← Quay lại
+            </Link>
             <div>
               <h1>Sản phẩm của tôi</h1>
               <p>Quản lý danh sách đăng bán, trạng thái hiển thị và lịch đăng.</p>

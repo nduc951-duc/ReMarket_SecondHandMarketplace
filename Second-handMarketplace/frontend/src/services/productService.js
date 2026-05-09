@@ -234,3 +234,26 @@ export async function uploadImages(files) {
 
   return data.data;
 }
+
+/**
+ * Get product autocomplete suggestions
+ * @param {string} query
+ */
+export async function autocompleteProducts(query) {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
+
+  const response = await fetch(`${backendUrl}/api/products/autocomplete?q=${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Không thể lấy gợi ý tìm kiếm.');
+  }
+
+  return data.data;
+}

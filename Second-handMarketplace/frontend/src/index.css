@@ -1,28 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 216 38% 98%;
+    --foreground: 222 26% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 26% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 173 80% 30%; /* #0D9488 modified for HSL */
+    --popover-foreground: 222 26% 12%;
+    --primary: 168 80% 45%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 214 34% 55%;
+    --secondary-foreground: 216 34% 16%;
+    --muted: 214 28% 94%;
+    --muted-foreground: 216 14% 44%;
+    --accent: 190 62% 92%;
+    --accent-foreground: 216 34% 16%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 173 80% 30%;
+    --border: 216 22% 90%;
+    --input: 216 22% 90%;
+    --ring: 168 80% 45%;
     --radius: 0.75rem;
+  }
+
+  body {
+    @apply text-foreground font-sans leading-relaxed;
+    background:
+      radial-gradient(1100px circle at 12% 8%, rgba(32, 231, 192, 0.12), transparent 45%),
+      radial-gradient(900px circle at 88% 14%, rgba(78, 132, 210, 0.16), transparent 48%),
+      linear-gradient(180deg, #f7f9fc 0%, #eef4f6 100%);
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
   }
 }

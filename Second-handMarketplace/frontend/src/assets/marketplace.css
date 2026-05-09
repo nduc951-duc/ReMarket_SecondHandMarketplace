@@ -1,4 +1,4 @@
-.nav-link-with-badge {
+﻿.nav-link-with-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -31,7 +31,7 @@
 
 .chat-header h1 {
   margin: 0 0 2px;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.7rem, 3vw, 2.1rem);
 }
 
@@ -62,7 +62,7 @@
 .chat-sidebar-head h3 {
   margin: 0;
   font-size: 0.95rem;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .chat-sidebar-head span {
@@ -103,7 +103,7 @@
 }
 
 .chat-conversation-item.active {
-  background: rgba(15, 118, 110, 0.08);
+  background: hsl(var(--primary) / 0.08);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
 }
 
@@ -127,8 +127,8 @@
   width: 42px;
   height: 42px;
   border-radius: 999px;
-  background: rgba(15, 118, 110, 0.12);
-  color: #0f766e;
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -183,8 +183,8 @@
 .chat-product-pill {
   margin: 0;
   font-size: 0.73rem;
-  color: #0c4a6e;
-  background: rgba(14, 165, 233, 0.12);
+  color: hsl(var(--secondary));
+  background: hsl(var(--secondary) / 0.16);
   padding: 2px 8px;
   border-radius: 999px;
   width: fit-content;
@@ -218,13 +218,13 @@
 .chat-main-head h2 {
   margin: 0;
   font-size: 0.95rem;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .chat-main-head h3 {
   margin: 0;
   font-size: 1rem;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .chat-subtitle {
@@ -293,7 +293,7 @@
 }
 
 .chat-bubble.mine {
-  background: linear-gradient(140deg, var(--teal), #0a5a53);
+  background: linear-gradient(140deg, var(--teal), var(--teal-strong));
   color: #fff;
   border-radius: 18px 18px 4px 18px;
 }
@@ -387,7 +387,7 @@
 
 .chat-product-meta span {
   font-weight: 700;
-  color: #0f766e;
+  color: hsl(var(--primary));
 }
 
 .chat-system-time {
@@ -458,13 +458,13 @@
 }
 
 .chat-input-shell:focus-within {
-  border-color: var(--teal);
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.12);
 }
 
 .chat-send-btn {
   border: none;
-  background: var(--teal);
+  background: hsl(var(--primary));
   color: #fff;
   font-weight: 700;
   height: 56px;
@@ -478,9 +478,9 @@
 }
 
 .chat-send-btn:hover:enabled {
-  background: #0d9488;
+  background: hsl(var(--primary) / 0.9);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.22);
 }
 
 .chat-send-btn:disabled {
@@ -582,7 +582,7 @@
 
 .chat-placeholder h2 {
   margin-top: 0;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .wishlist-header,
@@ -599,7 +599,7 @@
 .notifications-header h1,
 .admin-header h1 {
   margin: 8px 0 4px;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.45rem, 2.7vw, 1.85rem);
 }
 
@@ -619,8 +619,8 @@
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 700;
-  background: rgba(15, 118, 110, 0.1);
-  color: var(--teal-strong);
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
 }
 
 .wishlist-grid {
@@ -680,7 +680,7 @@
   margin: 0;
   font-size: 1.04rem;
   font-weight: 700;
-  color: var(--teal-strong);
+  color: hsl(var(--primary));
 }
 
 .wishlist-seller {
@@ -723,8 +723,8 @@
 }
 
 .notification-card.unread {
-  border-color: rgba(15, 118, 110, 0.35);
-  box-shadow: 0 4px 18px rgba(15, 118, 110, 0.1);
+  border-color: hsl(var(--primary) / 0.35);
+  box-shadow: 0 4px 18px hsl(var(--primary) / 0.12);
 }
 
 .notification-main h3 {
@@ -753,7 +753,7 @@
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  background: #0ea5e9;
+  background: hsl(var(--primary));
 }
 
 .admin-page {
@@ -778,7 +778,7 @@
 }
 
 .admin-tab.active {
-  background: linear-gradient(120deg, var(--teal), #0a5a53);
+  background: linear-gradient(120deg, hsl(var(--primary)), hsl(var(--secondary)));
   color: #fff;
   border-color: transparent;
 }
@@ -807,7 +807,7 @@
 
 .admin-stat-card strong {
   font-size: 1.45rem;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .admin-stat-card small {
@@ -815,7 +815,7 @@
 }
 
 .admin-revenue {
-  background: linear-gradient(140deg, rgba(15, 118, 110, 0.1), rgba(8, 145, 178, 0.08));
+  background: linear-gradient(140deg, hsl(var(--primary) / 0.12), hsl(var(--secondary) / 0.12));
 }
 
 .admin-table-wrap {
@@ -840,7 +840,7 @@
 }
 
 .admin-table th {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -865,7 +865,7 @@
 .admin-toolbar h2 {
   margin: 0;
   font-size: 1rem;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .admin-toolbar p {
@@ -909,15 +909,15 @@
   justify-content: center;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(15, 118, 110, 0.12);
-  color: var(--teal-strong);
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
   font-weight: 800;
   letter-spacing: 0.08em;
 }
 
 .error-page-card h1 {
   margin: 14px 0 8px;
-  font-family: 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .error-page-card p {
@@ -1052,3 +1052,4 @@
     grid-template-columns: 1fr;
   }
 }
+

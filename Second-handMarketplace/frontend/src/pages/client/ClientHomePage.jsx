@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
-import { getProducts } from '../../services/productService';
+import { getProducts, autocompleteProducts } from '../../services/productService';
+import { useDebounce } from '../../hooks/useDebounce';
 import { getWishlist, toggleWishlist } from '../../services/wishlistService';
 
 const CATEGORIES = [
@@ -18,6 +19,7 @@ const CONDITIONS = [
 ];
 
 const SORT_OPTIONS = [
+  { value: 'relevance', label: '🎯 Phù hợp nhất' },
   { value: 'newest', label: '🆕 Mới nhất' },
   { value: 'oldest', label: '🕰️ Cũ nhất' },
   { value: 'price_asc', label: '💰 Giá tăng dần' },
@@ -128,6 +130,25 @@ function ClientHomePage() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debouncedSearchInput = useDebounce(searchInput, 300);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!debouncedSearchInput || debouncedSearchInput.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const results = await autocompleteProducts(debouncedSearchInput);
+        setSuggestions(results);
+      } catch (err) {
+        console.error('Autocomplete error:', err);
+      }
+    };
+    fetchSuggestions();
+  }, [debouncedSearchInput]);
 
   useEffect(() => {
     const nextFilters = {
@@ -242,10 +263,26 @@ function ClientHomePage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    setShowSuggestions(false);
     const nextFilters = {
       ...filters,
       search: searchInput.trim(),
       page: 1,
+      sort: searchInput.trim() ? 'relevance' : filters.sort,
+    };
+    setFilters(nextFilters);
+    updateSearchParams(nextFilters);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchInput(suggestion.title);
+    setShowSuggestions(false);
+    
+    const nextFilters = {
+      ...filters,
+      search: suggestion.title,
+      page: 1,
+      sort: 'relevance',
     };
     setFilters(nextFilters);
     updateSearchParams(nextFilters);
@@ -427,27 +464,54 @@ function ClientHomePage() {
   }, [filters.limit, pagination.page, pagination.total]);
 
   return (
-    <main className="page-shell">
+    <main className="min-h-screen bg-slate-50/80">
       <Navbar />
-      <div className="page-container page-container-wide">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-12">
         {/* Hero Search */}
-        <section className="home-hero">
-          <h1>Khám phá sản phẩm</h1>
-          <p>Tìm kiếm đồ cũ chất lượng với giá tốt nhất</p>
-          <form className="search-bar" onSubmit={handleSearch}>
-            <input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="search-input"
-            />
-            <button type="submit" className="search-btn">🔍 Tìm</button>
-          </form>
+        <section className="home-hero rounded-2xl border border-slate-200/70 bg-white/80 px-6 py-8 shadow-sm">
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="text-3xl font-display tracking-tight text-slate-900 md:text-4xl">
+              Khám phá sản phẩm
+            </h1>
+            <p className="mt-3 text-base leading-relaxed text-slate-500">
+              Tìm kiếm đồ cũ chất lượng với giá tốt nhất
+            </p>
+            <form className="search-bar mt-6 relative" onSubmit={handleSearch}>
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="search-input"
+                style={{ width: '100%' }}
+              />
+              <button type="submit" className="search-btn">🔍 Tìm</button>
+
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50 text-left">
+                  {suggestions.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 flex justify-between items-center transition-colors"
+                      onClick={() => handleSuggestionClick(item)}
+                    >
+                      <span className="text-slate-700 font-medium truncate">{item.title}</span>
+                      {item.category && <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-md ml-2 flex-shrink-0">{item.category}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </form>
+          </div>
         </section>
 
         {/* Filter Bar */}
-        <section className="filter-bar">
+        <section className="filter-bar mt-6 rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-4 shadow-sm">
           <div className="filter-bar-top">
             <button
               type="button"
@@ -645,7 +709,7 @@ function ClientHomePage() {
         </section>
 
         {activeFilterTags.length > 0 && (
-          <section className="active-filters">
+          <section className="active-filters mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-500">
             <span>Dang loc:</span>
             <div className="active-filter-tags">
               {activeFilterTags.map((tag) => (
@@ -728,18 +792,19 @@ function ClientHomePage() {
 
         {/* Results Info */}
         {!isLoading && (
-          <div className="results-info">
-            <span>Tìm thấy {pagination.total} sản phẩm</span>
+          <div className="results-info mt-6 flex items-center gap-2 text-sm text-slate-500">
+            <span className="font-semibold text-slate-700">Tìm thấy {pagination.total} sản phẩm</span>
             {filters.search && <span className="results-query">cho &quot;{filters.search}&quot;</span>}
           </div>
         )}
 
         {!isLoading && pagination.total > 0 && (
-          <div className="results-toolbar">
+          <div className="results-toolbar mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
             <span>Hiển thị {shownCount} / {pagination.total} sản phẩm</span>
-            <div className="results-limit">
+            <div className="results-limit flex items-center gap-2">
               <span>Mỗi trang:</span>
               <select
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                 value={filters.limit}
                 onChange={(e) => handleLimitChange(Number(e.target.value))}
               >
@@ -756,13 +821,13 @@ function ClientHomePage() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="product-grid">
+          <div className="product-grid mt-6">
             {Array.from({ length: Math.min(filters.limit, 12) }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state mt-8">
             <span className="empty-icon">🔍</span>
             <h3>Không tìm thấy sản phẩm</h3>
             <p>
@@ -778,7 +843,7 @@ function ClientHomePage() {
           </div>
         ) : (
           <>
-            <div className="product-grid">
+            <div className="product-grid mt-6">
               {products.map((product) => {
                 const isWishlisted = wishlistIds.has(product.id);
                 const ratingValue = Number(product.avg_rating || 0).toFixed(1);
@@ -862,7 +927,7 @@ function ClientHomePage() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="pagination-bar">
+              <div className="pagination-bar mt-8">
                 <button
                   type="button"
                   className="page-arrow"
@@ -904,7 +969,7 @@ function ClientHomePage() {
           </>
         )}
 
-        <section className="home-footer">
+        <section className="home-footer mt-10">
           <div className="home-footer-grid">
             <div className="home-footer-col">
               <h3>Ho tro khach hang</h3>

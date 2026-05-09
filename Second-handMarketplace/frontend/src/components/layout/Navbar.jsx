@@ -36,13 +36,14 @@ const Navbar = () => {
   const isAdmin = isAdminUser(user);
 
   return (
-    <div className="w-full flex justify-center p-4">
-      <nav className="w-full max-w-6xl bg-white rounded-[12px] border border-gray-100 shadow-sm px-6 py-3 flex items-center justify-between">
+    <div className="w-full flex justify-center px-4 pt-4">
+      <nav className="w-full max-w-6xl rounded-2xl border border-slate-200/70 bg-slate-50/80 px-5 py-3.5 shadow-sm backdrop-blur">
+        <div className="flex items-center justify-between gap-4">
         {/* LEFT SIDE */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
           <Link to="/app" className="flex items-center gap-2 group">
             <span className="text-2xl">🏪</span>
-            <span className="font-bold text-xl tracking-tight text-[#0D9488]">ReMarket</span>
+            <span className="font-semibold text-lg tracking-tight text-slate-900">ReMarket</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -55,8 +56,8 @@ const Navbar = () => {
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
                     isActive 
-                      ? "bg-[#0D9488]/10 text-[#0D9488]" 
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
                   )}
                 >
                   {link.name}
@@ -75,8 +76,8 @@ const Navbar = () => {
                   className={cn(
                     'px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200',
                     isActive
-                      ? 'bg-[#0D9488]/10 text-[#0D9488]'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
                   )}
                 >
                   {link.name}
@@ -87,22 +88,22 @@ const Navbar = () => {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Chat Icon */}
-          <Link to="/chat" className="relative p-2 text-gray-500 hover:text-[#0D9488] transition-colors">
-            <MessageSquare size={24} />
+          <Link to="/chat" className="relative rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-white/80 hover:text-slate-900">
+            <MessageSquare size={22} />
             {chatUnread > 0 && (
-              <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+              <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white ring-2 ring-slate-50">
                 {chatUnread > 99 ? '99+' : chatUnread}
               </span>
             )}
           </Link>
 
           {/* Bell Icon */}
-          <Link to="/notifications" className="relative p-2 text-gray-500 hover:text-[#0D9488] transition-colors">
-            <Bell size={24} />
+          <Link to="/notifications" className="relative rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-white/80 hover:text-slate-900">
+            <Bell size={22} />
             {notificationUnread > 0 && (
-              <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+              <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white ring-2 ring-slate-50">
                 {notificationUnread > 99 ? '99+' : notificationUnread}
               </span>
             )}
@@ -110,40 +111,40 @@ const Navbar = () => {
 
           {/* User Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-3 p-1 rounded-full hover:bg-gray-50 transition-all focus:outline-none group">
-              <div className="h-8 w-8 rounded-full bg-[#0D9488]/10 flex items-center justify-center text-[#0D9488] font-bold text-sm border border-[#0D9488]/20">
+            <DropdownMenuTrigger className="flex items-center gap-3 rounded-full border border-slate-200/80 bg-white/70 p-1.5 pr-3 transition-all duration-200 focus:outline-none hover:shadow-sm">
+              <div className="h-8 w-8 rounded-full bg-slate-900/5 flex items-center justify-center text-slate-900 font-semibold text-sm">
                 {initials}
               </div>
-              <span className="hidden sm:block text-sm font-semibold text-gray-700">{displayName}</span>
-              <ChevronDown size={16} className="text-gray-400 group-data-[state=open]:rotate-180 transition-transform" />
+              <span className="hidden sm:block text-sm font-semibold text-slate-700">{displayName}</span>
+              <ChevronDown size={16} className="text-slate-400 transition-transform group-data-[state=open]:rotate-180" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 p-2 rounded-[12px] shadow-xl border-gray-100 mt-2">
+            <DropdownMenuContent align="end" className="w-56 rounded-xl border border-slate-200/70 bg-white/95 p-2 shadow-lg">
               <DropdownMenuItem 
-                className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
+                className="flex items-center gap-2 rounded-lg p-3 text-sm cursor-pointer"
                 onClick={() => navigate('/profile')}
               >
-                <User size={18} className="text-gray-500" />
+                <User size={18} className="text-slate-500" />
                 <span>Thông tin cá nhân</span>
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
+                className="flex items-center gap-2 rounded-lg p-3 text-sm cursor-pointer"
                 onClick={() => navigate('/change-password')}
               >
-                <Settings size={18} className="text-gray-500" />
+                <Settings size={18} className="text-slate-500" />
                 <span>Đổi mật khẩu</span>
               </DropdownMenuItem>
               {isAdmin && (
                 <DropdownMenuItem
-                  className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
+                  className="flex items-center gap-2 rounded-lg p-3 text-sm cursor-pointer"
                   onClick={() => navigate('/admin/dashboard')}
                 >
-                  <ClipboardList size={18} className="text-gray-500" />
+                  <ClipboardList size={18} className="text-slate-500" />
                   <span>Vào trang admin</span>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator className="my-2 bg-gray-100" />
+              <DropdownMenuSeparator className="my-2 bg-slate-100" />
               <DropdownMenuItem 
-                className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                className="flex items-center gap-2 rounded-lg p-3 text-sm cursor-pointer text-rose-600 focus:text-rose-600 focus:bg-rose-50"
                 onClick={handleLogout}
               >
                 <LogOut size={18} />
@@ -151,6 +152,7 @@ const Navbar = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
         </div>
       </nav>
     </div>

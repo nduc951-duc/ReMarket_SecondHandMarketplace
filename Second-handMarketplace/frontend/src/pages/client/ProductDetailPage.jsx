@@ -190,7 +190,7 @@ function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="page-shell">
+      <main className="min-h-screen bg-slate-50/80">
         <Helmet>
           <title>Dang tai san pham | ReMarket</title>
         </Helmet>
@@ -204,13 +204,13 @@ function ProductDetailPage() {
 
   if (error || !product) {
     return (
-      <main className="page-shell">
+      <main className="min-h-screen bg-slate-50/80">
         <Helmet>
           <title>Khong tim thay san pham | ReMarket</title>
           <meta name="description" content="San pham khong ton tai hoac da bi an." />
         </Helmet>
-        <div className="page-container">
-          <div className="empty-state">
+        <div className="mx-auto w-full max-w-5xl px-4 py-12">
+          <div className="empty-state rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm">
             <span className="empty-icon">😔</span>
             <h3>Không tìm thấy sản phẩm</h3>
             <p>{error || 'Sản phẩm không tồn tại hoặc đã bị ẩn.'}</p>
@@ -224,7 +224,7 @@ function ProductDetailPage() {
   }
 
   return (
-    <main className="page-shell">
+    <main className="min-h-screen bg-slate-50/80">
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
@@ -234,11 +234,13 @@ function ProductDetailPage() {
         <meta property="og:url" content={canonicalUrl} />
         {product.images?.[0] && <meta property="og:image" content={product.images[0]} />}
       </Helmet>
-      <div className="page-container page-container-wide">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-12">
         {/* Back */}
-        <div className="page-header">
+        <div className="page-header mb-6">
           <div className="page-header-left">
-            <Link to="/app" className="back-link">← Quay lại</Link>
+            <Link to="/app" className="back-link inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:text-slate-900">
+              ← Quay lại
+            </Link>
           </div>
         </div>
 
@@ -246,7 +248,7 @@ function ProductDetailPage() {
         <div className="detail-layout">
           {/* Image Gallery */}
           <div className="detail-gallery">
-            <div className="detail-main-image-wrap">
+            <div className="detail-main-image-wrap rounded-2xl border border-slate-200/70 bg-white shadow-sm">
               {product.images && product.images.length > 0 ? (
                 <img
                   src={product.images[selectedImage]}
@@ -327,7 +329,7 @@ function ProductDetailPage() {
                     >
                       🛒 Đặt mua ngay
                     </button>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
                       <Link
                         to={`/chat?receiver=${product.seller_id}&product=${product.id}`}
                         className="btn-outline"
@@ -420,7 +422,7 @@ function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <section className="related-section">
-            <h2>Sản phẩm liên quan</h2>
+            <h2 className="text-xl font-display tracking-tight text-slate-900">Sản phẩm liên quan</h2>
             <div className="product-grid product-grid-4">
               {relatedProducts.map((rp) => (
                 <Link to={`/products/${rp.id}`} key={rp.id} className="product-card">

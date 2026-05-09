@@ -7,12 +7,14 @@ const {
   deleteProductHandler,
   getProductsBySellerHandler,
   getMyProductsHandler,
+  autocompleteProductsHandler,
 } = require('../controllers/productController');
 const { attachUserIfPresent, requireAuth } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Public routes — specific paths FIRST, then parameterized
+router.get('/autocomplete', autocompleteProductsHandler);
 router.get('/', attachUserIfPresent, getProductsHandler);
 router.get('/seller/:sellerId', attachUserIfPresent, getProductsBySellerHandler);
 router.get('/user/my', requireAuth, getMyProductsHandler);

@@ -179,6 +179,11 @@ async function getProductsWithClient(client, options = {}) {
   const limit = Math.min(50, Math.max(1, Number(options.limit) || 10));
   const offset = (page - 1) * limit;
 
+  // Use Full-Text Search RPC if search query is provided
+  if (options.search) {
+    return searchProductsRPC(client, options, admin);
+  }
+
   const inStock = parseBoolean(options.in_stock, true);
   const categories = parseCsv(options.category);
   const conditions = parseCsv(options.condition);
@@ -337,6 +342,71 @@ async function getProductsWithClient(client, options = {}) {
       totalPages: Math.ceil(count / limit),
     },
   };
+}
+
+async function searchProductsRPC(client, options, admin) {
+  const page = Math.max(1, Number(options.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(options.limit) || 10));
+  const offset = (page - 1) * limit;
+
+  let postedWithin = null;
+  if (options.posted_within === 'today') postedWithin = 0;
+  else if (Number(options.posted_within) > 0) postedWithin = Number(options.posted_within);
+
+  const { data, error } = await client.rpc('search_products', {
+    search_query: options.search,
+    filter_categories: parseCsv(options.category).length ? parseCsv(options.category) : null,
+    filter_conditions: parseCsv(options.condition).length ? parseCsv(options.condition) : null,
+    filter_min_price: options.min_price !== undefined ? Number(options.min_price) : null,
+    filter_max_price: options.max_price !== undefined ? Number(options.max_price) : null,
+    filter_city: options.city || null,
+    filter_district: options.district || null,
+    filter_posted_within: postedWithin,
+    filter_has_images: parseBoolean(options.has_images, false),
+    filter_verified_seller: parseBoolean(options.verified_seller, false),
+    filter_in_stock: parseBoolean(options.in_stock, true),
+    filter_negotiable: parseBoolean(options.negotiable, false),
+    filter_seller_id: options.seller_id || null,
+    sort_by: options.sort || 'relevance',
+    page_offset: offset,
+    page_limit: limit,
+  });
+
+  if (error) {
+    throw new Error(`Search failed: ${error.message}`);
+  }
+
+  const profileMap = await fetchProfilesMap(
+    admin,
+    (data || []).map((item) => item.seller_id),
+  );
+
+  const products = (data || []).map((item) => ({
+    ...item,
+    profiles: profileMap.get(item.seller_id) || null,
+  }));
+
+  const totalCount = data?.[0]?.total_count || 0;
+  return {
+    products: products,
+    pagination: {
+      page,
+      limit,
+      total: Number(totalCount),
+      totalPages: Math.ceil(Number(totalCount) / limit),
+    },
+  };
+}
+
+async function autocompleteProducts(query) {
+  const client = getAdminClient();
+  const { data, error } = await client.rpc('autocomplete_products', {
+    query_text: query,
+    max_results: 6,
+  });
+
+  if (error) throw new Error(`Autocomplete failed: ${error.message}`);
+  return data || [];
 }
 
 async function getProducts(options = {}) {
@@ -502,4 +572,5 @@ module.exports = {
   getProductsBySeller,
   getPublicProductsBySeller,
   hasOpenTransactionsForProduct,
+  autocompleteProducts,
 };
