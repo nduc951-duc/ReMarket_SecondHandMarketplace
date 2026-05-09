@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getProductById, getProducts } from '../../services/productService';
@@ -30,6 +30,7 @@ function ProductDetailPage() {
   const [sellerReviews, setSellerReviews] = useState([]);
   const [reviewMeta, setReviewMeta] = useState({ total: 0 });
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const viewKeyRef = useRef('');
 
   // Order modal
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -42,7 +43,14 @@ function ProductDetailPage() {
     try {
       setIsLoading(true);
       setError('');
-      const data = await getProductById(id);
+      const viewKey = `viewed_product_${id}`;
+      const alreadyViewed = sessionStorage.getItem(viewKey) === '1';
+      if (!alreadyViewed) {
+        sessionStorage.setItem(viewKey, '1');
+      }
+
+      viewKeyRef.current = viewKey;
+      const data = await getProductById(id, { skipView: alreadyViewed });
       setProduct(data);
       setSelectedImage(0);
 

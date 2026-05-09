@@ -4,7 +4,7 @@ import { MessageSquare, Bell, User, LogOut, Settings, ChevronDown, ShoppingBag, 
 import { useAuthStore } from '@/store/authStore';
 import { useRealtimeBadges } from '@/hooks/useRealtimeBadges';
 import { cn } from '@/lib/utils';
-import { isAdminUser, isAgentUser } from '@/utils/adminAccess';
+import { isAdminUser } from '@/utils/adminAccess';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,6 @@ const Navbar = () => {
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Người dùng';
   const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   const isAdmin = isAdminUser(user);
-  const isAgent = isAgentUser(user);
 
   return (
     <div className="w-full flex justify-center p-4">
@@ -128,34 +127,18 @@ const Navbar = () => {
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
-                onClick={() => navigate('/profile?edit=true')}
+                onClick={() => navigate('/change-password')}
               >
                 <Settings size={18} className="text-gray-500" />
-                <span>Chỉnh sửa hồ sơ</span>
+                <span>Đổi mật khẩu</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
-                onClick={() => navigate('/support-chat')}
-              >
-                <MessageSquare size={18} className="text-gray-500" />
-                <span>Hỗ trợ khách hàng</span>
-              </DropdownMenuItem>
-              {isAgent && (
-                <DropdownMenuItem
-                  className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
-                  onClick={() => navigate('/agent/inbox')}
-                >
-                  <ClipboardList size={18} className="text-gray-500" />
-                  <span>Inbox CSKH</span>
-                </DropdownMenuItem>
-              )}
               {isAdmin && (
                 <DropdownMenuItem
                   className="flex items-center gap-2 p-3 rounded-[8px] cursor-pointer"
                   onClick={() => navigate('/admin/dashboard')}
                 >
-                  <Settings size={18} className="text-gray-500" />
-                  <span>Admin Dashboard</span>
+                  <ClipboardList size={18} className="text-gray-500" />
+                  <span>Vào trang admin</span>
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator className="my-2 bg-gray-100" />

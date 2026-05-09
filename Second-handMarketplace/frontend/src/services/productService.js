@@ -34,7 +34,7 @@ export async function getProducts(params = {}) {
  * Get product by ID
  * @param {string} productId
  */
-export async function getProductById(productId) {
+export async function getProductById(productId, options = {}) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
   const { supabase } = await import('../lib/supabaseClient');
   const { data: session } = await supabase.auth.getSession();
@@ -47,7 +47,12 @@ export async function getProductById(productId) {
     headers.Authorization = `Bearer ${session.session.access_token}`;
   }
 
-  const response = await fetch(`${backendUrl}/api/products/${productId}`, {
+  const query = new URLSearchParams();
+  if (options.skipView) {
+    query.set('skip_view', 'true');
+  }
+
+  const response = await fetch(`${backendUrl}/api/products/${productId}?${query.toString()}`, {
     method: 'GET',
     headers,
   });
