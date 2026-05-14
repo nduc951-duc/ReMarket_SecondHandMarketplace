@@ -80,7 +80,7 @@ async function getProductSnapshot(client, productId) {
 
   const { data, error } = await client
     .from('products')
-    .select('id, seller_id, title, price, images, status')
+    .select('id, seller_id, title, price, images, image_url, status')
     .eq('id', normalizedId)
     .maybeSingle();
 
@@ -97,7 +97,7 @@ async function getProductSnapshot(client, productId) {
     seller_id: data.seller_id,
     title: data.title,
     price: data.price,
-    image_url: Array.isArray(data.images) ? data.images[0] || '' : '',
+    image_url: data.image_url || (Array.isArray(data.images) ? data.images[0] || '' : ''),
     product_url: `/products/${data.id}`,
     status: data.status,
   };
@@ -115,6 +115,32 @@ function buildProductCardMetadata(productSnapshot) {
       url: productSnapshot.product_url,
     },
   };
+}
+
+async function hasProductCardMessage({
+  client,
+  conversationId,
+  productId,
+}) {
+  const normalizedProductId = String(productId || '').trim();
+  if (!normalizedProductId) {
+    return false;
+  }
+
+  const { data, error } = await client
+    .from('chat_messages')
+    .select('id, metadata')
+    .eq('conversation_id', conversationId)
+    .eq('is_system', true)
+    .eq('metadata->>type', 'product_card')
+    .eq('metadata->product->>id', normalizedProductId)
+    .limit(1);
+
+  if (error) {
+    throw buildServiceError(`Khong the kiem tra product card: ${error.message}`, 500);
+  }
+
+  return Array.isArray(data) && data.length > 0;
 }
 
 async function createProductCardMessage({
@@ -150,6 +176,10 @@ async function createProductCardMessage({
     .single();
 
   if (error) {
+    if (error.code === '23505') {
+      return null;
+    }
+
     throw buildServiceError(`Khong the tao product card: ${error.message}`, 500);
   }
 
@@ -437,17 +467,19 @@ async function getMessages(userId, conversationId, options = {}) {
     (messagesResponse.data || []).map((message) => message.sender_id),
   );
 
-  const now = new Date().toISOString();
-  await client
-    .from('conversation_participants')
-    .update({ last_read_at: now })
-    .eq('conversation_id', conversationId)
-    .eq('user_id', userId);
+  if (options.markRead !== false) {
+    const now = new Date().toISOString();
+    await client
+      .from('conversation_participants')
+      .update({ last_read_at: now })
+      .eq('conversation_id', conversationId)
+      .eq('user_id', userId);
 
-  try {
-    await markConversationNotificationsAsRead(userId, conversationId);
-  } catch (error) {
-    console.error('Mark conversation notifications read error:', error);
+    try {
+      await markConversationNotificationsAsRead(userId, conversationId);
+    } catch (error) {
+      console.error('Mark conversation notifications read error:', error);
+    }
   }
 
   return {
@@ -770,12 +802,20 @@ async function ensureConversation({ userId, receiverId, productId }) {
       throw buildServiceError('Ban khong co quyen tao product card trong conversation nay.', 403);
     }
 
-    await createProductCardMessage({
+    const productCardExists = await hasProductCardMessage({
       client,
       conversationId,
-      senderId: userId,
-      productSnapshot,
+      productId: productSnapshot.id,
     });
+
+    if (!productCardExists) {
+      await createProductCardMessage({
+        client,
+        conversationId,
+        senderId: userId,
+        productSnapshot,
+      });
+    }
   }
 
   return { conversation_id: conversationId };

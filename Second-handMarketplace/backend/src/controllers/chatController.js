@@ -51,6 +51,7 @@ async function getMessagesHandler(req, res) {
     const data = await getMessages(req.user.id, req.params.id, {
       page: req.query.page,
       limit: req.query.limit,
+      markRead: req.query.mark_read !== 'false',
     });
 
     return res.status(200).json({

@@ -12,6 +12,7 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/email', emailRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/reviews', reviewRoutes);

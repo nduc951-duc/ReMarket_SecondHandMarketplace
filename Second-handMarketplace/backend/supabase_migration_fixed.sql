@@ -467,6 +467,36 @@ CREATE INDEX IF NOT EXISTS idx_participants_user
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_created
   ON public.chat_messages(conversation_id, created_at DESC);
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_chat_messages_one_product_card_per_conversation
+  ON public.chat_messages (conversation_id, (metadata->'product'->>'id'))
+  WHERE is_system = TRUE
+    AND metadata->>'type' = 'product_card'
+    AND COALESCE(metadata->'product'->>'id', '') <> '';
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+  WHEN undefined_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.conversation_participants;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+  WHEN undefined_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+  WHEN undefined_object THEN NULL;
+END $$;
+
 
 -- ============================================================
 -- 7. REVIEW SYSTEM

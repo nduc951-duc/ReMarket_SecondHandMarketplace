@@ -253,7 +253,7 @@ async function getProductsWithClient(client, options = {}) {
   }
 
   if (hasImages) {
-    query = query.not('images', 'is', null).not('images', 'eq', '{}');
+    query = query.or('image_url.not.is.null,images.not.is.null');
   }
 
   if (negotiable) {

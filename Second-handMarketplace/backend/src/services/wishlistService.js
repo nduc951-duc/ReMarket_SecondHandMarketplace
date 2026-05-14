@@ -182,7 +182,7 @@ async function getWishlist(userId, options = {}) {
 
   const { data: products, error: productError } = await client
     .from('products')
-    .select('id, seller_id, title, description, price, category, condition, images, location, status, created_at')
+    .select('id, seller_id, title, description, price, category, condition, images, image_url, location, status, created_at')
     .in('id', productIds)
     .not('status', 'in', '(hidden,banned)');
 

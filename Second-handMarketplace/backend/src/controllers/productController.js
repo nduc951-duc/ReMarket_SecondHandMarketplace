@@ -27,6 +27,7 @@ async function createProductHandler(req, res) {
       category,
       condition,
       images,
+      image_url,
       location,
       is_negotiable,
     } = req.body;
@@ -35,6 +36,7 @@ async function createProductHandler(req, res) {
     const normalizedPrice = Number(price);
     const normalizedCategory = category ? String(category).trim() : '';
     const normalizedImages = Array.isArray(images) ? images : [];
+    const normalizedImageUrl = image_url ? String(image_url).trim() : '';
     const normalizedCondition = condition || 'good';
     const normalizedNegotiable = Boolean(is_negotiable);
 
@@ -67,10 +69,10 @@ async function createProductHandler(req, res) {
       });
     }
 
-    if (normalizedImages.length < 1 || normalizedImages.length > 5) {
+    if ((!normalizedImageUrl && normalizedImages.length < 1) || normalizedImages.length > 5) {
       return res.status(400).json({
         ok: false,
-        message: 'Sản phẩm phải có từ 1 đến 5 hình ảnh.',
+        message: 'Sản phẩm phải có image_url hoặc từ 1 đến 5 hình ảnh.',
       });
     }
 
@@ -89,6 +91,7 @@ async function createProductHandler(req, res) {
       category: normalizedCategory,
       condition: normalizedCondition,
       images: normalizedImages,
+      image_url: normalizedImageUrl,
       location: location ? location.trim() : '',
       is_negotiable: normalizedNegotiable,
     };
@@ -245,6 +248,7 @@ async function updateProductHandler(req, res) {
       category,
       condition,
       images,
+      image_url,
       location,
       status,
       is_negotiable,
@@ -293,10 +297,10 @@ async function updateProductHandler(req, res) {
       });
     }
 
-    if (images !== undefined && (!Array.isArray(images) || images.length < 1 || images.length > 5)) {
+    if (images !== undefined && (!Array.isArray(images) || images.length > 5)) {
       return res.status(400).json({
         ok: false,
-        message: 'Sản phẩm phải có từ 1 đến 5 hình ảnh.',
+        message: 'Danh sách hình ảnh không hợp lệ.',
       });
     }
 
@@ -321,6 +325,7 @@ async function updateProductHandler(req, res) {
     if (category !== undefined) updateData.category = category ? category.trim() : '';
     if (condition !== undefined) updateData.condition = condition;
     if (images !== undefined) updateData.images = images;
+    if (image_url !== undefined) updateData.image_url = image_url ? String(image_url).trim() : '';
     if (location !== undefined) updateData.location = location ? location.trim() : '';
     if (status !== undefined) updateData.status = status;
     if (is_negotiable !== undefined) updateData.is_negotiable = is_negotiable;
