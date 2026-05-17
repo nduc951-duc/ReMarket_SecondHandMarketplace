@@ -6,6 +6,8 @@ import { getReviewsByUser } from '../../services/reviewService';
 import { createTransaction } from '../../services/transactionService';
 import { getWishlistStatus, toggleWishlist } from '../../services/wishlistService';
 import { useAuthStore } from '../../store/authStore';
+import { cn } from '../../lib/utils';
+import { Heart, MessageSquare, ShoppingCart, ShieldCheck, CheckCircle, Truck, MapPin, X, ArrowLeft, Star } from 'lucide-react';
 
 const CONDITION_LABELS = {
   new: 'Mới',
@@ -14,6 +16,66 @@ const CONDITION_LABELS = {
   fair: 'Khá',
   poor: 'Cũ',
 };
+const PRODUCT_CACHE_TTL = 5 * 60 * 1000;
+
+function getProductImages(product) {
+  return [
+    product?.image_url,
+    ...(Array.isArray(product?.images) ? product.images : []),
+  ].filter(Boolean);
+}
+
+function readProductCache(productId) {
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(`remarket_product_${productId}`) || 'null');
+    if (!cached || Date.now() - cached.savedAt > PRODUCT_CACHE_TTL) {
+      return null;
+    }
+    return cached.product || null;
+  } catch {
+    return null;
+  }
+}
+
+function writeProductCache(productId, product) {
+  try {
+    sessionStorage.setItem(`remarket_product_${productId}`, JSON.stringify({
+      product,
+      savedAt: Date.now(),
+    }));
+  } catch {
+    // Cache is only a UX enhancement.
+  }
+}
+
+function ProductDetailSkeleton() {
+  return (
+    <main className="min-h-screen bg-transparent text-slate-200">
+      <Helmet><title>Đang tải sản phẩm | ReMarket</title></Helmet>
+      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6">
+        <div className="mb-6 h-10 w-32 animate-pulse rounded-full bg-white/10" />
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="w-full lg:w-[55%]">
+            <div className="aspect-[4/3] animate-pulse rounded-3xl border border-white/5 bg-white/10 sm:aspect-square" />
+          </div>
+          <div className="w-full space-y-5 lg:w-[45%]">
+            <div className="rounded-3xl border border-white/5 bg-[#111827] p-6 md:p-8">
+              <div className="mb-5 h-7 w-28 animate-pulse rounded-full bg-cyan-300/15" />
+              <div className="mb-4 h-9 w-4/5 animate-pulse rounded-full bg-white/10" />
+              <div className="mb-8 h-10 w-1/2 animate-pulse rounded-full bg-cyan-300/15" />
+              <div className="space-y-3">
+                <div className="h-12 animate-pulse rounded-2xl bg-white/10" />
+                <div className="h-12 animate-pulse rounded-2xl bg-white/10" />
+                <div className="h-14 animate-pulse rounded-2xl bg-cyan-300/15" />
+              </div>
+            </div>
+            <div className="h-28 animate-pulse rounded-3xl border border-white/5 bg-white/10" />
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 function ProductDetailPage() {
   const { id } = useParams();
@@ -40,8 +102,15 @@ function ProductDetailPage() {
   const [orderFeedback, setOrderFeedback] = useState({ type: '', message: '' });
 
   const loadProduct = useCallback(async () => {
+    const cachedProduct = readProductCache(id);
+    if (cachedProduct) {
+      setProduct(cachedProduct);
+      setSelectedImage(0);
+      setIsLoading(false);
+    }
+
     try {
-      setIsLoading(true);
+      if (!cachedProduct) setIsLoading(true);
       setError('');
       const viewKey = `viewed_product_${id}`;
       const alreadyViewed = sessionStorage.getItem(viewKey) === '1';
@@ -52,31 +121,36 @@ function ProductDetailPage() {
       viewKeyRef.current = viewKey;
       const data = await getProductById(id, { skipView: alreadyViewed });
       setProduct(data);
+      writeProductCache(id, data);
       setSelectedImage(0);
+      setIsLoading(false);
+
+      const sideLoads = [];
 
       if (user) {
-        try {
-          const status = await getWishlistStatus(id);
-          setWishlisted(status);
-        } catch {
-          setWishlisted(false);
-        }
+        sideLoads.push(
+          getWishlistStatus(id)
+            .then((status) => setWishlisted(status))
+            .catch(() => setWishlisted(false)),
+        );
       } else {
         setWishlisted(false);
       }
 
       if (data.seller_id) {
         setIsLoadingReviews(true);
-        try {
-          const reviewData = await getReviewsByUser(data.seller_id, { limit: 6 });
-          setSellerReviews(reviewData.reviews || []);
-          setReviewMeta({ total: reviewData.total || 0 });
-        } catch {
-          setSellerReviews([]);
-          setReviewMeta({ total: 0 });
-        } finally {
-          setIsLoadingReviews(false);
-        }
+        sideLoads.push(
+          getReviewsByUser(data.seller_id, { limit: 6 })
+            .then((reviewData) => {
+              setSellerReviews(reviewData.reviews || []);
+              setReviewMeta({ total: reviewData.total || 0 });
+            })
+            .catch(() => {
+              setSellerReviews([]);
+              setReviewMeta({ total: 0 });
+            })
+            .finally(() => setIsLoadingReviews(false)),
+        );
       } else {
         setSellerReviews([]);
         setReviewMeta({ total: 0 });
@@ -84,20 +158,27 @@ function ProductDetailPage() {
 
       // Load related products (same category)
       if (data.category) {
-        try {
-          const related = await getProducts({
+        sideLoads.push(
+          getProducts({
             category: data.category,
             limit: 4,
-          });
-          setRelatedProducts(
-            (related.products || []).filter((p) => p.id !== id).slice(0, 4)
-          );
-        } catch {
-          // Silently fail for related products
-        }
+          })
+            .then((related) => {
+              setRelatedProducts(
+                (related.products || []).filter((p) => p.id !== id).slice(0, 4),
+              );
+            })
+            .catch(() => {
+              // Silently fail for related products.
+            }),
+        );
       }
+
+      await Promise.allSettled(sideLoads);
     } catch (err) {
-      setError(err.message);
+      if (!cachedProduct) {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -182,6 +263,7 @@ function ProductDetailPage() {
   };
 
   const isOwner = user && product && product.seller_id === user.id;
+  const productImages = getProductImages(product);
   const pageTitle = product ? `${product.title} | ReMarket` : 'Chi tiet san pham | ReMarket';
   const pageDescription = product?.description
     ? product.description.slice(0, 160)
@@ -189,32 +271,22 @@ function ProductDetailPage() {
   const canonicalUrl = `${window.location.origin}/products/${id}`;
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-slate-50/80">
-        <Helmet>
-          <title>Dang tai san pham | ReMarket</title>
-        </Helmet>
-        <div className="page-loading">
-          <div className="loading-spinner" />
-          <p>Đang tải sản phẩm...</p>
-        </div>
-      </main>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (error || !product) {
     return (
-      <main className="min-h-screen bg-slate-50/80">
+      <main className="min-h-screen bg-transparent text-slate-200">
         <Helmet>
-          <title>Khong tim thay san pham | ReMarket</title>
-          <meta name="description" content="San pham khong ton tai hoac da bi an." />
+          <title>Không tìm thấy sản phẩm | ReMarket</title>
+          <meta name="description" content="Sản phẩm không tồn tại hoặc đã bị ẩn." />
         </Helmet>
-        <div className="mx-auto w-full max-w-5xl px-4 py-12">
-          <div className="empty-state rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm">
-            <span className="empty-icon">😔</span>
-            <h3>Không tìm thấy sản phẩm</h3>
-            <p>{error || 'Sản phẩm không tồn tại hoặc đã bị ẩn.'}</p>
-            <Link to="/app" className="btn-primary" style={{ marginTop: 16, display: 'inline-block', textDecoration: 'none' }}>
+        <div className="mx-auto w-full max-w-5xl px-4 py-12 flex justify-center">
+          <div className="flex flex-col items-center text-center p-12 bg-[#111827] rounded-3xl border border-white/5 shadow-2xl max-w-lg">
+            <span className="text-6xl mb-6">😔</span>
+            <h3 className="text-2xl font-bold text-white mb-3">Không tìm thấy sản phẩm</h3>
+            <p className="text-slate-400 mb-8">{error || 'Sản phẩm không tồn tại hoặc đã bị ẩn.'}</p>
+            <Link to="/app" className="bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 font-bold px-6 py-3 rounded-full hover:shadow-[0_0_20px_rgba(0,212,180,0.4)] transition-all">
               ← Về trang chủ
             </Link>
           </div>
@@ -224,7 +296,7 @@ function ProductDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50/80">
+    <main className="min-h-screen bg-transparent text-slate-200">
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
@@ -232,210 +304,222 @@ function ProductDetailPage() {
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="product" />
         <meta property="og:url" content={canonicalUrl} />
-        {product.images?.[0] && <meta property="og:image" content={product.images[0]} />}
+        {productImages[0] && <meta property="og:image" content={productImages[0]} />}
       </Helmet>
-      <div className="mx-auto w-full max-w-6xl px-4 pb-12">
+      
+      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6">
         {/* Back */}
-        <div className="page-header mb-6">
-          <div className="page-header-left">
-            <Link to="/app" className="back-link inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:text-slate-900">
-              ← Quay lại
-            </Link>
-          </div>
+        <div className="mb-6">
+          <Link to="/app" className="inline-flex items-center gap-2 text-slate-400 hover:text-teal-400 transition-colors font-medium">
+            <ArrowLeft size={18} />
+            Quay lại
+          </Link>
         </div>
 
-        {/* Product Detail */}
-        <div className="detail-layout">
-          {/* Image Gallery */}
-          <div className="detail-gallery">
-            <div className="detail-main-image-wrap rounded-2xl border border-slate-200/70 bg-white shadow-sm">
-              {product.images && product.images.length > 0 ? (
-                <img
-                  src={product.images[selectedImage]}
-                  alt={product.title}
-                  className="detail-main-image"
-                />
+        {/* Product Detail Layout */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
+          {/* LEFT: Image Gallery */}
+          <div className="w-full lg:w-[55%] flex flex-col gap-4">
+            <div className="aspect-[4/3] sm:aspect-square rounded-3xl bg-[#0d1117] border border-white/5 overflow-hidden relative flex items-center justify-center shadow-lg">
+              {productImages.length > 0 ? (
+                <img src={productImages[selectedImage] || productImages[0]} alt={product.title} className="w-full h-full object-contain" />
               ) : (
-                <div className="detail-no-image">📷 Không có ảnh</div>
+                <div className="text-6xl opacity-50">📷</div>
               )}
             </div>
-            {product.images && product.images.length > 1 && (
-              <div className="detail-thumbnails">
-                {product.images.map((img, idx) => (
+            {productImages.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                {productImages.map((img, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    className={`detail-thumb ${idx === selectedImage ? 'active' : ''}`}
                     onClick={() => setSelectedImage(idx)}
+                    className={cn(
+                      "w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all snap-center",
+                      idx === selectedImage ? "border-teal-400 opacity-100 shadow-[0_0_15px_rgba(0,212,180,0.3)]" : "border-transparent opacity-50 hover:opacity-100 bg-[#0d1117]"
+                    )}
                   >
-                    <img src={img} alt={`Ảnh ${idx + 1}`} />
+                    <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Product Info */}
-          <div className="detail-info">
-            <div className="detail-info-card">
+          {/* RIGHT: Info */}
+          <div className="w-full lg:w-[45%] flex flex-col gap-6">
+            <div className="bg-[#111827] rounded-3xl p-6 md:p-8 border border-white/5 shadow-xl relative overflow-hidden">
+              {/* Subtle background glow */}
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/10 rounded-full blur-[60px] pointer-events-none" />
+              
               {product.category && (
-                <span className="detail-category">{product.category}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400 bg-teal-400/10 px-3 py-1.5 rounded-full border border-teal-400/20 mb-4 inline-block">
+                  {product.category}
+                </span>
               )}
-              <h1 className="detail-title">{product.title}</h1>
-              <p className="detail-price">{formatCurrency(product.price)}</p>
+              <h1 className="text-2xl md:text-3xl font-display font-bold text-white leading-snug mb-3">
+                {product.title}
+              </h1>
+              <p className="text-3xl md:text-4xl font-bold text-teal-400 mb-6 drop-shadow-[0_0_15px_rgba(0,212,180,0.2)]">
+                {formatCurrency(product.price)}
+              </p>
 
-              <div className="detail-badges">
-                {product.condition && (
-                  <span className={`detail-badge condition-${product.condition}`}>
+              {/* Trust Badges */}
+              <div className="flex flex-wrap items-center gap-4 mb-6 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-1.5 text-sm text-slate-300 font-medium">
+                  <CheckCircle size={16} className="text-teal-400" />
+                  Đã kiểm duyệt
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-slate-300 font-medium">
+                  <ShieldCheck size={16} className="text-teal-400" />
+                  Giao dịch an toàn
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-slate-300 font-medium">
+                  <Truck size={16} className="text-teal-400" />
+                  Hỗ trợ ship COD
+                </div>
+              </div>
+
+              {/* Specs */}
+              <div className="flex flex-col gap-3 mb-8 bg-[#0d1117]/80 p-4.5 rounded-2xl border border-white/5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-400">Tình trạng</span>
+                  <span className="font-semibold text-slate-200">
                     {CONDITION_LABELS[product.condition] || product.condition}
                   </span>
-                )}
-                {product.location && (
-                  <span className="detail-badge detail-badge-location">
-                    📍 {product.location}
-                  </span>
-                )}
-                {product.status === 'sold' && (
-                  <span className="detail-badge detail-badge-sold">Đã bán</span>
-                )}
-              </div>
-
-              {product.description && (
-                <div className="detail-desc">
-                  <h3>Mô tả</h3>
-                  <p>{product.description}</p>
                 </div>
-              )}
-
-              <div className="detail-meta">
-                <span>Đăng ngày {formatDate(product.created_at)}</span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-400">Khu vực</span>
+                  <span className="font-semibold text-slate-200 flex items-center gap-1">
+                    <MapPin size={14} className="text-rose-400" /> {product.location || 'Toàn quốc'}
+                  </span>
+                </div>
+                {product.status === 'sold' && (
+                  <div className="flex items-center justify-between text-sm pt-3 mt-1 border-t border-white/5">
+                    <span className="text-slate-400">Trạng thái</span>
+                    <span className="font-bold text-rose-400 bg-rose-400/10 px-3 py-1 rounded-full uppercase tracking-wider text-[10px]">Đã bán</span>
+                  </div>
+                )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="detail-actions">
+              {/* Actions */}
+              <div className="flex flex-col gap-3">
                 {isOwner ? (
-                  <p className="detail-owner-notice">
+                  <p className="text-center p-4 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium">
                     Đây là sản phẩm của bạn.
                   </p>
                 ) : product.status === 'sold' ? (
-                  <button className="btn-primary" disabled>
+                  <button className="w-full py-4 rounded-xl font-bold bg-slate-800 text-slate-500 cursor-not-allowed">
                     Sản phẩm đã bán
                   </button>
                 ) : (
-                  <div className="detail-actions-row">
+                  <>
                     <button
-                      className="btn-primary detail-buy-btn"
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 shadow-[0_0_20px_rgba(0,212,180,0.2)] hover:shadow-[0_0_30px_rgba(0,212,180,0.4)] transition-all transform hover:-translate-y-0.5 text-lg"
                       onClick={() => setShowOrderModal(true)}
                     >
-                      🛒 Đặt mua ngay
+                      <ShoppingCart size={20} /> Đặt mua ngay
                     </button>
-                    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="flex items-center gap-3">
                       <Link
                         to={`/chat?receiver=${product.seller_id}&product=${product.id}`}
-                        className="btn-outline"
-                        style={{ flex: 1, textDecoration: 'none', textAlign: 'center' }}
+                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-all"
                       >
-                        💬 Nhắn người bán
+                        <MessageSquare size={18} /> Nhắn tin
                       </Link>
                       <button
                         type="button"
-                        className="btn-outline"
-                        style={{ flex: 1 }}
+                        className={cn(
+                          "flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold border transition-all",
+                          isWishlistLoading ? "opacity-50 cursor-not-allowed" : "",
+                          wishlisted 
+                            ? "bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20" 
+                            : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                        )}
                         onClick={handleWishlistToggle}
                         disabled={isWishlistLoading}
                       >
-                        {isWishlistLoading
-                          ? 'Đang xử lý...'
-                          : wishlisted
-                            ? '💖 Đã yêu thích'
-                            : '♡ Yêu thích'}
+                        <Heart size={18} className={wishlisted ? "fill-current animate-pulse" : ""} /> 
+                        {wishlisted ? 'Đã lưu' : 'Lưu lại'}
                       </button>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
 
             {/* Seller Info */}
             {product.profiles && (
-              <div className="detail-seller-card">
-                <h3>Người bán</h3>
-                <div className="detail-seller-info">
+              <div className="bg-[#111827] rounded-3xl p-6 border border-white/5 shadow-lg flex flex-col sm:flex-row items-center gap-5 relative overflow-hidden group hover:border-teal-500/30 transition-colors">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-[40px] pointer-events-none group-hover:bg-purple-500/10 transition-colors" />
+                <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-white/10 overflow-hidden flex-shrink-0 relative">
                   {product.profiles.avatar_url ? (
-                    <img
-                      src={product.profiles.avatar_url}
-                      alt=""
-                      className="detail-seller-avatar"
-                    />
+                    <img src={product.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="detail-seller-avatar-placeholder">
+                    <div className="w-full h-full flex items-center justify-center text-xl font-bold text-slate-400 bg-[#0d1117]">
                       {(product.profiles.full_name || '?')[0].toUpperCase()}
                     </div>
                   )}
-                  <div>
-                    <strong>{product.profiles.full_name || 'Người bán'}</strong>
-                    {product.profiles.phone && (
-                      <p className="detail-seller-phone">📱 {product.profiles.phone}</p>
-                    )}
+                  {product.profiles.verified && (
+                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-teal-500 rounded-full border-2 border-[#111827] flex items-center justify-center">
+                      <CheckCircle size={10} className="text-[#111827]" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 text-center sm:text-left z-10">
+                  <h3 className="font-bold text-lg text-slate-200">{product.profiles.full_name || 'Người bán'}</h3>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+                    <div className="flex items-center text-amber-400">
+                      <Star size={14} fill="currentColor" />
+                      <span className="ml-1 text-sm font-bold">{(Number(product.profiles.rating_avg) || 0).toFixed(1)}</span>
+                    </div>
+                    <span className="text-slate-500 text-sm">({product.profiles.rating_count || 0} đánh giá)</span>
                   </div>
                 </div>
-                <div className="review-summary">
-                  {renderStars(product.profiles.rating_avg || 0)}
-                  <span>
-                    {(Number(product.profiles.rating_avg) || 0).toFixed(1)}
-                    {' '}
-                    ({product.profiles.rating_count || 0} đánh giá)
-                  </span>
-                </div>
+                <Link to={`/chat?receiver=${product.seller_id}`} className="px-5 py-2.5 rounded-full bg-white/5 text-teal-400 font-bold text-sm hover:bg-white/10 transition-colors border border-white/5 z-10">
+                  Xem hồ sơ
+                </Link>
               </div>
             )}
 
-            <div className="detail-seller-card">
-              <h3>Đánh giá gần đây</h3>
-              {isLoadingReviews ? (
-                <p className="tx-note">Đang tải đánh giá...</p>
-              ) : sellerReviews.length === 0 ? (
-                <p className="tx-note">Người bán chưa có đánh giá nào.</p>
-              ) : (
-                <div className="review-list">
-                  {sellerReviews.map((review) => (
-                    <article key={review.id} className="review-item">
-                      <div className="review-summary">
-                        {renderStars(review.rating)}
-                        <strong>{review.reviewer_profile?.full_name || 'Người mua'}</strong>
-                      </div>
-                      {review.comment && <p>{review.comment}</p>}
-                      <small>
-                        {new Date(review.created_at).toLocaleDateString('vi-VN')}
-                      </small>
-                    </article>
-                  ))}
-                  {reviewMeta.total > sellerReviews.length && (
-                    <small className="tx-note">và còn {reviewMeta.total - sellerReviews.length} đánh giá khác.</small>
-                  )}
+            {/* Description */}
+            {product.description && (
+              <div className="bg-[#111827] rounded-3xl p-6 md:p-8 border border-white/5 shadow-lg">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-400"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                  Chi tiết sản phẩm
+                </h3>
+                <div className="text-slate-300 leading-relaxed whitespace-pre-wrap text-[15px]">
+                  {product.description}
                 </div>
-              )}
-            </div>
+                <div className="mt-6 pt-4 border-t border-white/5 text-sm text-slate-500 font-medium">
+                  Đăng ngày {formatDate(product.created_at)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <section className="related-section">
-            <h2 className="text-xl font-display tracking-tight text-slate-900">Sản phẩm liên quan</h2>
-            <div className="product-grid product-grid-4">
+          <section className="mt-20">
+            <h2 className="text-2xl font-display font-bold text-white mb-8 border-b border-white/5 pb-4">
+              Sản phẩm tương tự
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {relatedProducts.map((rp) => (
-                <Link to={`/products/${rp.id}`} key={rp.id} className="product-card">
-                  <div className="product-card-image-wrap">
-                    {rp.images && rp.images.length > 0 ? (
-                      <img src={rp.images[0]} alt={rp.title} className="product-card-image" loading="lazy" />
+                <Link to={`/products/${rp.id}`} key={rp.id} className="group flex flex-col rounded-2xl bg-[#111827] border border-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-teal-500/30 hover:shadow-[0_10px_30px_rgba(0,212,180,0.1)]">
+                  <div className="aspect-[4/3] bg-slate-900 overflow-hidden relative">
+                    {getProductImages(rp)[0] ? (
+                      <img src={getProductImages(rp)[0]} alt={rp.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                     ) : (
-                      <div className="product-card-placeholder">📷</div>
+                      <div className="w-full h-full flex items-center justify-center text-3xl bg-slate-800">📷</div>
                     )}
                   </div>
-                  <div className="product-card-body">
-                    <h3 className="product-card-title">{rp.title}</h3>
-                    <p className="product-card-price">{formatCurrency(rp.price)}</p>
+                  <div className="p-4 flex flex-col gap-1.5 flex-1">
+                    <h3 className="font-semibold text-slate-200 line-clamp-2 leading-snug group-hover:text-teal-400 transition-colors">{rp.title}</h3>
+                    <p className="font-bold text-teal-400 mt-auto pt-2">{formatCurrency(rp.price)}</p>
                   </div>
                 </Link>
               ))}
@@ -446,82 +530,80 @@ function ProductDetailPage() {
 
       {/* Order Modal */}
       {showOrderModal && (
-        <div className="modal-overlay" onClick={() => !isOrdering && setShowOrderModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Xác nhận đặt hàng</h3>
-              <button
-                type="button"
-                className="modal-close"
-                onClick={() => !isOrdering && setShowOrderModal(false)}
-              >
-                ×
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => !isOrdering && setShowOrderModal(false)}>
+          <div className="bg-[#111827] w-full max-w-md rounded-3xl border border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-white/5 bg-[#0a0f1e]/50">
+              <h3 className="font-bold text-lg text-white">Xác nhận đặt mua</h3>
+              <button onClick={() => !isOrdering && setShowOrderModal(false)} className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/5 transition-colors">
+                <X size={20} />
               </button>
             </div>
-            <div className="modal-body">
-              {/* Order Summary */}
-              <div className="order-summary">
-                <div className="order-summary-product">
-                  {product.images?.[0] && (
-                    <img src={product.images[0]} alt="" className="order-summary-img" />
-                  )}
-                  <div>
-                    <strong>{product.title}</strong>
-                    <p className="order-summary-price">{formatCurrency(product.price)}</p>
-                  </div>
+            
+            <div className="p-6">
+              {/* Summary */}
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#0d1117] border border-white/5 mb-6">
+                {productImages[0] ? (
+                  <img src={productImages[0]} alt="" className="w-16 h-16 rounded-xl object-cover bg-slate-900" />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center">📷</div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-slate-200 truncate">{product.title}</h4>
+                  <p className="font-bold text-teal-400 mt-1">{formatCurrency(product.price)}</p>
                 </div>
               </div>
 
-              {/* Payment method */}
-              <div className="form-field" style={{ marginTop: 16 }}>
-                <label htmlFor="payment-method">Phương thức thanh toán</label>
-                <select
-                  id="payment-method"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <option value="Tiền mặt">Tiền mặt khi nhận hàng</option>
-                  <option value="Chuyển khoản">Chuyển khoản ngân hàng</option>
-                  <option value="Ví điện tử">Ví điện tử</option>
-                </select>
+              <div className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Phương thức thanh toán</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full bg-[#0d1117] border border-white/10 rounded-xl px-4 py-3.5 text-slate-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 appearance-none"
+                  >
+                    <option value="Tiền mặt">Tiền mặt khi nhận hàng (COD)</option>
+                    <option value="Chuyển khoản">Chuyển khoản ngân hàng</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Lời nhắn (Tùy chọn)</label>
+                  <textarea
+                    value={orderNote}
+                    onChange={(e) => setOrderNote(e.target.value)}
+                    placeholder="VD: Gọi cho tôi vào buổi chiều..."
+                    rows={3}
+                    className="w-full bg-[#0d1117] border border-white/10 rounded-xl px-4 py-3 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 resize-none"
+                  />
+                </div>
               </div>
 
-              {/* Note */}
-              <div className="form-field" style={{ marginTop: 12 }}>
-                <label htmlFor="order-note">Ghi chú (tùy chọn)</label>
-                <textarea
-                  id="order-note"
-                  value={orderNote}
-                  onChange={(e) => setOrderNote(e.target.value)}
-                  placeholder="Ghi chú cho người bán..."
-                  rows={3}
-                />
-              </div>
-
-              {/* Feedback */}
               {orderFeedback.message && (
-                <p className={`form-feedback ${orderFeedback.type}`} style={{ marginTop: 12 }}>
+                <div className={cn(
+                  "p-3.5 rounded-xl mt-5 text-sm font-medium border flex items-center gap-2", 
+                  orderFeedback.type === 'success' ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                )}>
+                  {orderFeedback.type === 'success' ? <CheckCircle size={16} /> : <X size={16} />}
                   {orderFeedback.message}
-                </p>
+                </div>
               )}
 
-              {/* Actions */}
-              <div className="dialog-actions" style={{ marginTop: 20 }}>
+              <div className="flex items-center gap-3 mt-8">
                 <button
                   type="button"
-                  className="btn-outline"
+                  className="flex-1 py-3.5 rounded-xl font-bold bg-white/5 text-white border border-white/5 hover:bg-white/10 transition-colors"
                   onClick={() => setShowOrderModal(false)}
                   disabled={isOrdering}
                 >
-                  Hủy
+                  Hủy bỏ
                 </button>
                 <button
                   type="button"
-                  className="btn-primary"
+                  className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 shadow-[0_0_15px_rgba(0,212,180,0.2)] hover:shadow-[0_0_20px_rgba(0,212,180,0.4)] transition-all"
                   onClick={handleOrder}
                   disabled={isOrdering}
                 >
-                  {isOrdering ? 'Đang xử lý...' : '✅ Xác nhận đặt hàng'}
+                  {isOrdering ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
                 </button>
               </div>
             </div>

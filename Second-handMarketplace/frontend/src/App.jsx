@@ -21,6 +21,7 @@ import NotificationsPage from './pages/client/NotificationsPage';
 import ProductDetailPage from './pages/client/ProductDetailPage';
 import ProductFormPage from './pages/client/ProductFormPage';
 import ProfilePage from './pages/client/ProfilePage';
+import SearchResultsPage from './pages/client/SearchResultsPage';
 import SellerDashboard from './pages/client/SellerDashboard';
 import SupportChatPage from './pages/client/SupportChatPage';
 import TransactionHistoryPage from './pages/client/TransactionHistoryPage';
@@ -177,6 +178,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ClientHomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/search"
+        element={
+          <ProtectedRoute>
+            <SearchResultsPage />
           </ProtectedRoute>
         }
       />

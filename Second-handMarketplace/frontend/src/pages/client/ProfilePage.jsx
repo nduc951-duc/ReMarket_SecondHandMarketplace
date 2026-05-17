@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { getProfile, updateProfile, uploadAvatar } from '../../services/profileService';
 import { getReviewsByUser } from '../../services/reviewService';
+import { cn } from '../../lib/utils';
+import { Camera, Edit2, Save, X, Star, MapPin, Phone, Mail, Calendar } from 'lucide-react';
 
 const defaultFormErrors = {};
 
@@ -150,10 +152,10 @@ function ProfilePage() {
 
   if (isLoading) {
     return (
-      <main className="page-shell">
-        <div className="page-loading">
-          <div className="loading-spinner" />
-          <p>Đang tải hồ sơ...</p>
+      <main className="min-h-screen bg-transparent text-slate-200">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <div className="w-10 h-10 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
+          <p className="text-slate-400">Đang tải hồ sơ...</p>
         </div>
       </main>
     );
@@ -167,50 +169,38 @@ function ProfilePage() {
     .toUpperCase()
     .slice(0, 2);
 
-  const renderStars = (rating) => {
-    const normalized = Math.max(0, Math.min(5, Number(rating) || 0));
-    const rounded = Math.round(normalized);
-
-    return (
-      <span className="star-rating" aria-label={`${normalized.toFixed(1)} sao`}>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <span key={index} className={`star-btn ${index < rounded ? 'active' : ''}`}>
-            ★
-          </span>
-        ))}
-      </span>
-    );
-  };
-
   return (
-    <main className="page-shell">
-      <div className="page-container">
+    <main className="min-h-screen bg-transparent text-slate-200">
+      <div className="max-w-4xl mx-auto px-4 pb-16 pt-6">
         {/* Header */}
-        <div className="page-header">
-          <div className="page-header-left">
-            <Link to="/app" className="back-link">← Quay lại</Link>
-            <h1>Hồ sơ cá nhân</h1>
-          </div>
+        <div className="mb-8 flex items-center justify-between">
+          <Link to="/app" className="inline-flex items-center gap-2 text-slate-400 hover:text-teal-400 transition-colors font-medium">
+            ← Quay lại
+          </Link>
+          <h1 className="text-2xl font-display font-bold text-white">Hồ sơ cá nhân</h1>
         </div>
 
         {/* Profile Card */}
-        <section className="profile-card" aria-label="Hồ sơ cá nhân">
+        <section className="bg-[#111827] rounded-3xl p-6 md:p-8 border border-white/5 shadow-xl relative overflow-hidden" aria-label="Hồ sơ cá nhân">
+          {/* Subtle background glow */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/10 rounded-full blur-[60px] pointer-events-none" />
+
           {/* Avatar Section */}
-          <div className="profile-avatar-section">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 pb-8 border-b border-white/5 relative z-10">
             <button
               type="button"
-              className="avatar-wrapper"
+              className="relative w-28 h-28 rounded-full bg-slate-800 border-4 border-white/10 overflow-hidden flex-shrink-0 group focus:outline-none focus:ring-4 focus:ring-teal-500/30 transition-all hover:border-teal-500/50"
               onClick={handleAvatarClick}
               disabled={isUploading}
               title="Bấm để đổi avatar"
             >
               {avatarSrc ? (
-                <img src={avatarSrc} alt="Avatar" className="avatar-img" />
+                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <span className="avatar-initials">{initials}</span>
+                <span className="w-full h-full flex items-center justify-center text-3xl font-bold text-slate-400 bg-[#0d1117]">{initials}</span>
               )}
-              <span className="avatar-overlay">
-                {isUploading ? '⏳' : '📷'}
+              <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                {isUploading ? '⏳' : <Camera size={24} />}
               </span>
             </button>
             <input
@@ -218,173 +208,187 @@ function ProfilePage() {
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleAvatarChange}
-              className="hidden-input"
+              className="hidden"
             />
-            <div className="avatar-info">
-              <h2>{profile?.full_name || 'Chưa cập nhật'}</h2>
-              <p className="profile-email">{profile?.email || user?.email}</p>
+            <div className="text-center md:text-left flex-1 mt-2">
+              <h2 className="text-2xl font-bold text-white mb-1">{profile?.full_name || 'Chưa cập nhật'}</h2>
+              <p className="text-slate-400 font-medium mb-3 flex items-center justify-center md:justify-start gap-2">
+                <Mail size={16} /> {profile?.email || user?.email}
+              </p>
+              
+              {/* Rating Summary Snippet */}
+              <div className="inline-flex items-center gap-2 bg-[#0d1117] px-4 py-2 rounded-full border border-white/5">
+                <Star size={16} className="text-amber-400 fill-current" />
+                <span className="font-bold text-slate-200">{(Number(profile?.rating_avg) || 0).toFixed(1)}</span>
+                <span className="text-slate-500 text-sm">({profile?.rating_count || 0} đánh giá)</span>
+              </div>
             </div>
           </div>
 
           {/* Feedback */}
           {feedback.message && (
-            <p className={`form-feedback ${feedback.type}`}>{feedback.message}</p>
-          )}
-
-          {/* Profile Details */}
-          {isEditing ? (
-            <div className="profile-form">
-              <label className="form-field" htmlFor="full_name">
-                Họ và tên
-                <input
-                  id="full_name"
-                  name="full_name"
-                  type="text"
-                  value={editForm.full_name}
-                  onChange={handleEditChange}
-                  placeholder="Nguyễn Văn A"
-                  className={formErrors.full_name ? 'input-error' : ''}
-                />
-                {formErrors.full_name && <span className="field-error">{formErrors.full_name}</span>}
-              </label>
-
-              <label className="form-field" htmlFor="phone">
-                Số điện thoại
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={editForm.phone}
-                  onChange={handleEditChange}
-                  placeholder="0912 345 678"
-                  className={formErrors.phone ? 'input-error' : ''}
-                />
-                {formErrors.phone && <span className="field-error">{formErrors.phone}</span>}
-              </label>
-
-              <label className="form-field" htmlFor="address">
-                Địa chỉ
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  value={editForm.address}
-                  onChange={handleEditChange}
-                  placeholder="123 Đường ABC, Quận XYZ, TP.HCM"
-                  className={formErrors.address ? 'input-error' : ''}
-                />
-                {formErrors.address && <span className="field-error">{formErrors.address}</span>}
-              </label>
-
-              <label className="form-field" htmlFor="bio">
-                Giới thiệu bản thân
-                <textarea
-                  id="bio"
-                  name="bio"
-                  value={editForm.bio}
-                  onChange={handleEditChange}
-                  placeholder="Viết vài dòng về bạn..."
-                  rows="3"
-                  className={formErrors.bio ? 'input-error' : ''}
-                />
-                <span className="char-count">{editForm.bio.length}/500</span>
-                {formErrors.bio && <span className="field-error">{formErrors.bio}</span>}
-              </label>
-
-              <div className="profile-form-actions">
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Đang lưu...' : '💾 Lưu thay đổi'}
-                </button>
-                <button
-                  type="button"
-                  className="btn-outline"
-                  onClick={handleCancelEdit}
-                  disabled={isSaving}
-                >
-                  Hủy
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="profile-details">
-              <div className="detail-row">
-                <span className="detail-label">⭐ Đánh giá</span>
-                <span className="detail-value">
-                  <span className="review-summary">
-                    {renderStars(profile?.rating_avg || 0)}
-                    <span>
-                      {(Number(profile?.rating_avg) || 0).toFixed(1)}
-                      {' '}
-                      ({profile?.rating_count || 0} đánh giá)
-                    </span>
-                  </span>
-                </span>
-              </div>
-              <div className="detail-row">
-                <span className="detail-label">📧 Email</span>
-                <span className="detail-value">{profile?.email || user?.email || '—'}</span>
-              </div>
-              <div className="detail-row">
-                <span className="detail-label">📱 Số điện thoại</span>
-                <span className="detail-value">{profile?.phone || '—'}</span>
-              </div>
-              <div className="detail-row">
-                <span className="detail-label">📍 Địa chỉ</span>
-                <span className="detail-value">{profile?.address || '—'}</span>
-              </div>
-              <div className="detail-row">
-                <span className="detail-label">📝 Giới thiệu</span>
-                <span className="detail-value bio-text">{profile?.bio || '—'}</span>
-              </div>
-              <div className="detail-row">
-                <span className="detail-label">📅 Tham gia</span>
-                <span className="detail-value">
-                  {profile?.created_at
-                    ? new Date(profile.created_at).toLocaleDateString('vi-VN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : '—'}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => setIsEditing(true)}
-              >
-                ✏️ Chỉnh sửa hồ sơ
-              </button>
+            <div className={cn("p-4 rounded-xl mt-6 text-sm font-medium border flex items-center gap-2", 
+              feedback.type === 'success' ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20")}>
+              {feedback.message}
             </div>
           )}
 
-          <div>
-            <h3 style={{ margin: 0, marginBottom: 10 }}>Đánh giá gần đây</h3>
-            {isLoadingReviews ? (
-              <p className="tx-note">Đang tải đánh giá...</p>
-            ) : reviews.length === 0 ? (
-              <p className="tx-note">Chưa có đánh giá nào.</p>
+          {/* Form vs Details */}
+          <div className="mt-8 relative z-10">
+            {isEditing ? (
+              <div className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="full_name">Họ và tên</label>
+                  <input
+                    id="full_name"
+                    name="full_name"
+                    type="text"
+                    value={editForm.full_name}
+                    onChange={handleEditChange}
+                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all", formErrors.full_name ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                  />
+                  {formErrors.full_name && <span className="text-rose-400 text-xs mt-1 block">{formErrors.full_name}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="phone">Số điện thoại</label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={editForm.phone}
+                    onChange={handleEditChange}
+                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all", formErrors.phone ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                  />
+                  {formErrors.phone && <span className="text-rose-400 text-xs mt-1 block">{formErrors.phone}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="address">Địa chỉ</label>
+                  <input
+                    id="address"
+                    name="address"
+                    type="text"
+                    value={editForm.address}
+                    onChange={handleEditChange}
+                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all", formErrors.address ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                  />
+                  {formErrors.address && <span className="text-rose-400 text-xs mt-1 block">{formErrors.address}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="bio">Giới thiệu bản thân</label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    value={editForm.bio}
+                    onChange={handleEditChange}
+                    rows="4"
+                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all resize-none", formErrors.bio ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                  />
+                  <div className="flex justify-between items-center mt-1">
+                    {formErrors.bio ? <span className="text-rose-400 text-xs block">{formErrors.bio}</span> : <span />}
+                    <span className="text-slate-500 text-xs">{editForm.bio.length}/500</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-white/5">
+                  <button
+                    type="button"
+                    className="flex-1 py-3.5 rounded-xl font-bold bg-white/5 text-white hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                  >
+                    <X size={18} /> Hủy
+                  </button>
+                  <button
+                    type="button"
+                    className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 hover:shadow-[0_0_15px_rgba(0,212,180,0.4)] transition-all flex items-center justify-center gap-2"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Đang lưu...' : <><Save size={18} /> Lưu thay đổi</>}
+                  </button>
+                </div>
+              </div>
             ) : (
-              <div className="review-list">
-                {reviews.map((review) => (
-                  <article key={review.id} className="review-item">
-                    <div className="review-summary">
-                      {renderStars(review.rating)}
-                      <strong>{review.reviewer_profile?.full_name || 'Người dùng'}</strong>
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
+                    <div className="p-2.5 bg-teal-500/10 rounded-xl text-teal-400 shrink-0"><Phone size={20} /></div>
+                    <div>
+                      <span className="text-sm text-slate-400 block mb-1">Số điện thoại</span>
+                      <span className="font-medium text-slate-200">{profile?.phone || '—'}</span>
                     </div>
-                    {review.comment && <p>{review.comment}</p>}
-                    <small>{new Date(review.created_at).toLocaleDateString('vi-VN')}</small>
-                  </article>
-                ))}
+                  </div>
+                  
+                  <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
+                    <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 shrink-0"><MapPin size={20} /></div>
+                    <div>
+                      <span className="text-sm text-slate-400 block mb-1">Địa chỉ</span>
+                      <span className="font-medium text-slate-200">{profile?.address || '—'}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex gap-4 items-start md:col-span-2">
+                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 shrink-0"><Calendar size={20} /></div>
+                    <div>
+                      <span className="text-sm text-slate-400 block mb-1">Ngày tham gia</span>
+                      <span className="font-medium text-slate-200">
+                        {profile?.created_at
+                          ? new Date(profile.created_at).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })
+                          : '—'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex flex-col gap-2 mt-2">
+                  <span className="text-sm text-slate-400">Giới thiệu</span>
+                  <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">{profile?.bio || 'Chưa có thông tin giới thiệu.'}</p>
+                </div>
+
+                <button
+                  type="button"
+                  className="mt-4 w-full md:w-auto self-start px-6 py-3 rounded-xl font-bold bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit2 size={18} /> Chỉnh sửa hồ sơ
+                </button>
               </div>
             )}
           </div>
+        </section>
+
+        {/* Reviews Section */}
+        <section className="mt-12">
+          <h3 className="text-xl font-display font-bold text-white mb-6 flex items-center gap-2">
+            Đánh giá từ người mua
+          </h3>
+          {isLoadingReviews ? (
+            <p className="text-slate-400 bg-[#111827] p-6 rounded-2xl border border-white/5 text-center">Đang tải đánh giá...</p>
+          ) : reviews.length === 0 ? (
+            <p className="text-slate-400 bg-[#111827] p-6 rounded-2xl border border-white/5 text-center">Bạn chưa có đánh giá nào.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {reviews.map((review) => (
+                <article key={review.id} className="bg-[#111827] p-5 rounded-2xl border border-white/5 transition-all hover:border-teal-500/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <strong className="text-slate-200">{review.reviewer_profile?.full_name || 'Người dùng'}</strong>
+                    <div className="flex text-amber-400">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={14} className={i < review.rating ? "fill-current" : "text-slate-600"} />
+                      ))}
+                    </div>
+                  </div>
+                  {review.comment && <p className="text-slate-300 mb-3 text-sm">{review.comment}</p>}
+                  <small className="text-slate-500 text-xs">
+                    {new Date(review.created_at).toLocaleDateString('vi-VN')}
+                  </small>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>

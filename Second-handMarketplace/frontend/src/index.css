@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,34 +6,36 @@
 
 @layer base {
   :root {
-    --background: 216 38% 98%;
-    --foreground: 222 26% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 26% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 26% 12%;
-    --primary: 168 80% 45%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 214 34% 55%;
-    --secondary-foreground: 216 34% 16%;
-    --muted: 214 28% 94%;
-    --muted-foreground: 216 14% 44%;
-    --accent: 190 62% 92%;
-    --accent-foreground: 216 34% 16%;
-    --destructive: 0 72% 51%;
+    --background: 225 50% 8%;
+    --foreground: 210 40% 98%;
+    --card: 221 39% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 221 39% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 171 100% 41%;
+    --primary-foreground: 225 50% 8%;
+    --secondary: 262 83% 58%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 171 100% 41%;
+    --accent-foreground: 225 50% 8%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 216 22% 90%;
-    --input: 216 22% 90%;
-    --ring: 168 80% 45%;
-    --radius: 0.75rem;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 171 100% 41%;
+    --radius: 1rem;
   }
 
   body {
     @apply text-foreground font-sans leading-relaxed;
-    background:
-      radial-gradient(1100px circle at 12% 8%, rgba(32, 231, 192, 0.12), transparent 45%),
-      radial-gradient(900px circle at 88% 14%, rgba(78, 132, 210, 0.16), transparent 48%),
-      linear-gradient(180deg, #f7f9fc 0%, #eef4f6 100%);
+    background: #0a0f1e;
+    background-image: 
+      radial-gradient(1100px circle at 12% 8%, rgba(124, 58, 237, 0.12), transparent 45%),
+      radial-gradient(900px circle at 88% 14%, rgba(0, 212, 180, 0.1), transparent 48%);
+    background-color: #0a0f1e;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4 {

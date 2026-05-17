@@ -57,6 +57,7 @@ export async function getConversationMessages(conversationId, options = {}) {
   const query = new URLSearchParams();
   if (options.page) query.set('page', String(options.page));
   if (options.limit) query.set('limit', String(options.limit));
+  if (options.markRead === false) query.set('mark_read', 'false');
 
   const response = await fetch(
     `${getBackendUrl()}/api/chat/conversations/${conversationId}/messages?${query.toString()}`,
