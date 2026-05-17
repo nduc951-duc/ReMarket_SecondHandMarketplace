@@ -2,12 +2,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getProductById, getProducts } from '../../services/productService';
+import { createPayment } from '../../services/paymentService';
 import { getReviewsByUser } from '../../services/reviewService';
 import { createTransaction } from '../../services/transactionService';
 import { getWishlistStatus, toggleWishlist } from '../../services/wishlistService';
 import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../lib/utils';
 import { Heart, MessageSquare, ShoppingCart, ShieldCheck, CheckCircle, Truck, MapPin, X, ArrowLeft, Star } from 'lucide-react';
+
+const PAYMENT_METHODS = [
+  { value: 'cod', label: 'Tiền mặt khi nhận hàng (COD)' },
+  { value: 'momo', label: 'Ví MoMo' },
+  { value: 'vnpay', label: 'VNPAY' },
+];
 
 const CONDITION_LABELS = {
   new: 'Mới',
@@ -96,7 +103,7 @@ function ProductDetailPage() {
 
   // Order modal
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('Tiền mặt');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   const [orderNote, setOrderNote] = useState('');
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderFeedback, setOrderFeedback] = useState({ type: '', message: '' });
@@ -198,11 +205,28 @@ function ProductDetailPage() {
       setIsOrdering(true);
       setOrderFeedback({ type: '', message: '' });
 
-      await createTransaction({
+      const transaction = await createTransaction({
         product_id: id,
         payment_method: paymentMethod,
         note: orderNote,
       });
+
+      if (['momo', 'vnpay'].includes(paymentMethod)) {
+        const payment = await createPayment({
+          orderId: transaction.id,
+          amount: transaction.amount || product.price,
+          orderInfo: `Thanh toán đơn hàng ${transaction.id}`,
+          returnUrl: `${window.location.origin}/transactions`,
+          paymentMethod,
+        });
+
+        if (!payment.paymentUrl) {
+          throw new Error('Cổng thanh toán chưa trả về đường dẫn thanh toán.');
+        }
+
+        window.location.href = payment.paymentUrl;
+        return;
+      }
 
       setOrderFeedback({
         type: 'success',
@@ -561,8 +585,11 @@ function ProductDetailPage() {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full bg-[#0d1117] border border-white/10 rounded-xl px-4 py-3.5 text-slate-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 appearance-none"
                   >
-                    <option value="Tiền mặt">Tiền mặt khi nhận hàng (COD)</option>
-                    <option value="Chuyển khoản">Chuyển khoản ngân hàng</option>
+                    {PAYMENT_METHODS.map((method) => (
+                      <option key={method.value} value={method.value}>
+                        {method.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 

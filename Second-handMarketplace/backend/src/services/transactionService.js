@@ -5,8 +5,17 @@ const {
 } = require('../config/env');
 const { createNotification } = require('./notificationService');
 
-const OPEN_ORDER_STATUSES = ['pending', 'confirmed'];
-const ORDER_FLOW_STATUSES = ['pending', 'confirmed', 'shipped', 'completed', 'cancelled'];
+const ONLINE_PAYMENT_METHODS = ['momo', 'vnpay'];
+const ONLINE_PAYMENT_EXPIRE_MINUTES = 15;
+const OPEN_ORDER_STATUSES = ['awaiting_payment', 'pending', 'confirmed'];
+const ORDER_FLOW_STATUSES = [
+  'awaiting_payment',
+  'pending',
+  'confirmed',
+  'shipped',
+  'completed',
+  'cancelled',
+];
 
 let adminClient = null;
 
@@ -160,6 +169,62 @@ async function notifyTransactionStatusChange({
   });
 }
 
+function isOnlinePaymentMethod(paymentMethod) {
+  return ONLINE_PAYMENT_METHODS.includes(String(paymentMethod || '').trim().toLowerCase());
+}
+
+async function ensureProfileForUser(client, userId) {
+  if (!userId) {
+    return null;
+  }
+
+  const { data: existingProfile, error: profileError } = await client
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (profileError) {
+    throw buildServiceError(`Khong the kiem tra profile nguoi ban: ${profileError.message}`, 500);
+  }
+
+  if (existingProfile) {
+    return existingProfile;
+  }
+
+  const { data: authUserResult, error: authError } = await client.auth.admin.getUserById(userId);
+  if (authError || !authUserResult?.user) {
+    throw buildServiceError('Nguoi ban cua san pham khong ton tai trong auth.users.', 409);
+  }
+
+  const authUser = authUserResult.user;
+  const metadata = authUser.user_metadata || {};
+  const now = new Date().toISOString();
+  const { data: createdProfile, error: createError } = await client
+    .from('profiles')
+    .upsert(
+      {
+        id: userId,
+        email: authUser.email || '',
+        full_name: metadata.full_name || metadata.name || authUser.email || 'Nguoi ban',
+        avatar_url: metadata.avatar_url || '',
+        role: metadata.role || 'customer',
+        status: 'active',
+        created_at: authUser.created_at || now,
+        updated_at: now,
+      },
+      { onConflict: 'id' },
+    )
+    .select('id')
+    .single();
+
+  if (createError) {
+    throw buildServiceError(`Khong the tao profile toi thieu cho nguoi ban: ${createError.message}`, 500);
+  }
+
+  return createdProfile;
+}
+
 /**
  * Get transactions for a user (both as buyer and seller).
  * @param {string} userId
@@ -167,6 +232,10 @@ async function notifyTransactionStatusChange({
  */
 async function getTransactions(userId, options = {}) {
   const client = getAdminClient();
+
+  await expireUnpaidTransactions().catch((error) => {
+    console.error('Expire unpaid transactions before listing error:', error);
+  });
 
   const page = Math.max(1, Number(options.page) || 1);
   const limit = Math.min(50, Math.max(1, Number(options.limit) || 10));
@@ -337,6 +406,9 @@ async function getTransactionStats(userId) {
 async function createTransaction(transactionData) {
   const client = getAdminClient();
 
+  await ensureProfileForUser(client, transactionData.seller_id);
+  await ensureProfileForUser(client, transactionData.buyer_id);
+
   const { data: existingOpenOrders, error: existingError } = await client
     .from('transactions')
     .select('id')
@@ -353,9 +425,15 @@ async function createTransaction(transactionData) {
   }
 
   const now = new Date().toISOString();
+  const onlinePayment = isOnlinePaymentMethod(transactionData.payment_method);
+  const paymentExpiresAt = new Date(
+    Date.now() + ONLINE_PAYMENT_EXPIRE_MINUTES * 60 * 1000,
+  ).toISOString();
   const payload = {
     ...transactionData,
-    status: 'pending',
+    status: onlinePayment ? 'awaiting_payment' : 'pending',
+    payment_status: onlinePayment ? 'pending' : 'cod',
+    payment_expires_at: onlinePayment ? paymentExpiresAt : null,
     created_at: now,
     updated_at: now,
   };
@@ -373,7 +451,7 @@ async function createTransaction(transactionData) {
     throw buildServiceError(`Không thể tạo giao dịch: ${error.message}`, 500);
   }
 
-  if (data.seller_id && data.seller_id !== data.buyer_id) {
+  if (!onlinePayment && data.seller_id && data.seller_id !== data.buyer_id) {
     try {
       await createNotification({
         user_id: data.seller_id,
@@ -430,6 +508,10 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
   const currentStatus = transaction.status;
   if (currentStatus === newStatus) {
     return transaction;
+  }
+
+  if (currentStatus === 'awaiting_payment') {
+    throw buildServiceError('Don hang dang cho thanh toan, chua the xu ly.', 400);
   }
 
   if (newStatus === 'confirmed') {
@@ -558,6 +640,179 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
   return data;
 }
 
+async function markTransactionPaymentCreated({ transactionId, paymentMethod }) {
+  const client = getAdminClient();
+  const now = new Date().toISOString();
+  const expiresAt = new Date(
+    Date.now() + ONLINE_PAYMENT_EXPIRE_MINUTES * 60 * 1000,
+  ).toISOString();
+
+  const { data, error } = await client
+    .from('transactions')
+    .update({
+      payment_method: paymentMethod,
+      payment_status: 'pending',
+      payment_expires_at: expiresAt,
+      payment_gateway_transaction_id: '',
+      payment_response_code: '',
+      status: 'awaiting_payment',
+      rejection_reason: '',
+      updated_at: now,
+    })
+    .eq('id', transactionId)
+    .eq('status', 'awaiting_payment')
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw buildServiceError(`Khong the cap nhat trang thai tao thanh toan: ${error.message}`, 500);
+  }
+
+  return data;
+}
+
+async function markTransactionPaymentPaid({
+  transactionId,
+  paymentMethod,
+  gatewayTransactionId = '',
+  responseCode = '',
+}) {
+  const client = getAdminClient();
+  const now = new Date().toISOString();
+
+  const { data: transaction, error: fetchError } = await client
+    .from('transactions')
+    .select('*')
+    .eq('id', transactionId)
+    .maybeSingle();
+
+  if (fetchError) {
+    throw buildServiceError(`Khong the lay don hang de cap nhat thanh toan: ${fetchError.message}`, 500);
+  }
+
+  if (!transaction) {
+    throw buildServiceError('Khong tim thay don hang thanh toan.', 404);
+  }
+
+  if (transaction.payment_status === 'paid') {
+    return transaction;
+  }
+
+  if (transaction.status === 'cancelled') {
+    throw buildServiceError('Don hang da bi huy, khong the xac nhan thanh toan.', 409);
+  }
+
+  const { data, error } = await client
+    .from('transactions')
+    .update({
+      status: 'pending',
+      payment_status: 'paid',
+      paid_at: now,
+      payment_method: paymentMethod || transaction.payment_method,
+      payment_gateway_transaction_id: String(gatewayTransactionId || ''),
+      payment_response_code: String(responseCode || ''),
+      payment_failed_at: null,
+      rejection_reason: '',
+      updated_at: now,
+    })
+    .eq('id', transactionId)
+    .select()
+    .single();
+
+  if (error) {
+    throw buildServiceError(`Khong the cap nhat don hang da thanh toan: ${error.message}`, 500);
+  }
+
+  if (data.seller_id && data.seller_id !== data.buyer_id) {
+    try {
+      await createNotification({
+        user_id: data.seller_id,
+        type: 'new_order',
+        title: 'Ban co don hang moi',
+        message: `Don mua moi cho ${data.product_name || 'san pham'} da thanh toan va dang cho xu ly.`,
+        entity_type: 'transaction',
+        entity_id: data.id,
+        metadata: {
+          transaction_id: data.id,
+          product_id: data.product_id,
+          buyer_id: data.buyer_id,
+          payment_status: 'paid',
+        },
+      });
+    } catch (notificationError) {
+      console.error('Create paid transaction notification error:', notificationError);
+    }
+  }
+
+  return data;
+}
+
+async function markTransactionPaymentFailed({
+  transactionId,
+  paymentMethod,
+  gatewayTransactionId = '',
+  responseCode = '',
+  reason = 'Thanh toan that bai hoac da het han.',
+  paymentStatus = 'failed',
+}) {
+  const client = getAdminClient();
+  const now = new Date().toISOString();
+
+  const { data, error } = await client
+    .from('transactions')
+    .update({
+      status: 'cancelled',
+      payment_status: paymentStatus,
+      payment_method: paymentMethod,
+      payment_failed_at: now,
+      cancelled_at: now,
+      rejection_reason: reason,
+      payment_gateway_transaction_id: String(gatewayTransactionId || ''),
+      payment_response_code: String(responseCode || ''),
+      updated_at: now,
+    })
+    .eq('id', transactionId)
+    .eq('status', 'awaiting_payment')
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw buildServiceError(`Khong the cap nhat don hang thanh toan that bai: ${error.message}`, 500);
+  }
+
+  return data;
+}
+
+async function expireUnpaidTransactions() {
+  const client = getAdminClient();
+  const now = new Date().toISOString();
+
+  const { data, error } = await client
+    .from('transactions')
+    .update({
+      status: 'cancelled',
+      payment_status: 'expired',
+      payment_failed_at: now,
+      cancelled_at: now,
+      rejection_reason: 'Qua 15 phut chua thanh toan.',
+      updated_at: now,
+    })
+    .eq('status', 'awaiting_payment')
+    .eq('payment_status', 'pending')
+    .lt('payment_expires_at', now)
+    .select('id');
+
+  if (error) {
+    if (String(error.message || '').includes('payment_status')) {
+      return 0;
+    }
+
+    throw buildServiceError(`Khong the het han don chua thanh toan: ${error.message}`, 500);
+  }
+
+  return (data || []).length;
+}
+
 /**
  * Get transaction by ID with full details
  * @param {string} transactionId
@@ -594,8 +849,12 @@ async function getTransactionById(transactionId, userId) {
 
 module.exports = {
   createTransaction,
+  expireUnpaidTransactions,
   getTransactionById,
   getTransactions,
   getTransactionStats,
+  markTransactionPaymentCreated,
+  markTransactionPaymentFailed,
+  markTransactionPaymentPaid,
   updateTransactionStatus,
 };

@@ -134,8 +134,15 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   product_image TEXT DEFAULT '',
   amount DECIMAL(12,2) NOT NULL DEFAULT 0,
   status TEXT DEFAULT 'pending'
-    CHECK (status IN ('pending', 'confirmed', 'shipped', 'completed', 'cancelled')),
+    CHECK (status IN ('awaiting_payment', 'pending', 'confirmed', 'shipped', 'completed', 'cancelled')),
   payment_method TEXT DEFAULT '',
+  payment_status TEXT DEFAULT 'unpaid'
+    CHECK (payment_status IN ('unpaid', 'pending', 'paid', 'failed', 'expired', 'cod')),
+  payment_expires_at TIMESTAMPTZ,
+  paid_at TIMESTAMPTZ,
+  payment_failed_at TIMESTAMPTZ,
+  payment_gateway_transaction_id TEXT DEFAULT '',
+  payment_response_code TEXT DEFAULT '',
   note TEXT DEFAULT '',
   rejection_reason TEXT DEFAULT '',
   confirmed_at TIMESTAMPTZ,
@@ -287,7 +294,22 @@ ALTER TABLE public.transactions
 
 ALTER TABLE public.transactions
   ADD CONSTRAINT transactions_status_check
-  CHECK (status IN ('pending', 'confirmed', 'shipped', 'completed', 'cancelled'));
+  CHECK (status IN ('awaiting_payment', 'pending', 'confirmed', 'shipped', 'completed', 'cancelled'));
+
+ALTER TABLE public.transactions
+  ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'unpaid',
+  ADD COLUMN IF NOT EXISTS payment_expires_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS payment_failed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS payment_gateway_transaction_id TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS payment_response_code TEXT DEFAULT '';
+
+ALTER TABLE public.transactions
+  DROP CONSTRAINT IF EXISTS transactions_payment_status_check;
+
+ALTER TABLE public.transactions
+  ADD CONSTRAINT transactions_payment_status_check
+  CHECK (payment_status IN ('unpaid', 'pending', 'paid', 'failed', 'expired', 'cod'));
 
 ALTER TABLE public.products
   DROP CONSTRAINT IF EXISTS products_condition_check;

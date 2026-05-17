@@ -4,6 +4,7 @@ import { getTransactions, updateTransactionStatus } from '../../services/transac
 import { useAuthStore } from '../../store/authStore';
 
 const statusLabels = {
+  awaiting_payment: 'Chờ thanh toán',
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
   shipped: 'Đã giao hàng',
@@ -135,6 +136,7 @@ function SellerDashboard() {
           <div className="seller-filter-row">
             {[
               { value: 'all', label: 'Tất cả' },
+              { value: 'awaiting_payment', label: 'Chờ thanh toán' },
               { value: 'pending', label: 'Chờ xác nhận' },
               { value: 'confirmed', label: 'Đã xác nhận' },
               { value: 'shipped', label: 'Đã giao' },
