@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import AiSupportWidget from './components/ai/AiSupportWidget';
 import {
   AdminRoute,
   AgentRoute,
@@ -39,7 +40,8 @@ function App() {
   }, [initialize]);
 
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/" element={<RootRedirect />} />
       <Route
         path="/login"
@@ -189,8 +191,10 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+      <AiSupportWidget />
+    </>
   );
 }
 

@@ -206,6 +206,60 @@ body {
   border-color: #e11d48;
 }
 
+.password-input {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid #cfd7e3;
+  background: #fff;
+  padding: 0 8px 0 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.password-input:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.12);
+}
+
+.password-input.input-error {
+  border-color: #e11d48;
+}
+
+.password-input input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+  padding: 12px 0;
+}
+
+.password-input input:focus {
+  box-shadow: none;
+}
+
+.password-input button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.password-input button:hover {
+  background: #f1f5f9;
+  color: var(--teal);
+}
+
 .field-error {
   color: #be123c;
   font-size: 0.9rem;

@@ -14,6 +14,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const aiSupportRoutes = require('./routes/aiSupportRoutes');
 const { startPaymentExpiryWorker } = require('./services/paymentExpiryService');
 
 const app = express();
@@ -46,6 +47,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/ai-support', aiSupportRoutes);
 
 startPaymentExpiryWorker();
 

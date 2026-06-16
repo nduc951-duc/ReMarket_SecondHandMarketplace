@@ -85,8 +85,9 @@ const sellerProducts = [
 async function findUserByEmail(email) {
   let page = 1;
   const perPage = 100;
+  let hasMore = true;
 
-  while (true) {
+  while (hasMore) {
     const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage });
     if (error) {
       throw error;
@@ -98,11 +99,13 @@ async function findUserByEmail(email) {
     }
 
     if (!data?.users || data.users.length < perPage) {
-      return null;
+      hasMore = false;
+    } else {
+      page += 1;
     }
-
-    page += 1;
   }
+
+  return null;
 }
 
 async function upsertProfile({ id, email, full_name, role }) {

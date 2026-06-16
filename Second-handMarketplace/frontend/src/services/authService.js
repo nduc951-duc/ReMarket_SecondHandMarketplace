@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 const SUPABASE_NOT_CONFIGURED_MESSAGE =
   'Thiếu cấu hình Supabase. Hãy thêm VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY vào file .env.';
 const DEFAULT_BACKEND_URL = 'http://localhost:4000';
+const SESSION_CHECK_TIMEOUT_MS = 8000;
 
 const EMPTY_AUTH_SUBSCRIPTION = {
   data: {
@@ -24,6 +25,20 @@ function getSupabaseIfConfigured() {
   }
 
   return supabase;
+}
+
+function withTimeout(promise, timeoutMs, timeoutMessage) {
+  let timeoutId;
+
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new Error(timeoutMessage));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
 }
 
 /**
@@ -203,7 +218,11 @@ export async function getCurrentSession() {
     return null;
   }
 
-  const { data, error } = await client.auth.getSession();
+  const { data, error } = await withTimeout(
+    client.auth.getSession(),
+    SESSION_CHECK_TIMEOUT_MS,
+    'Kiem tra phien dang nhap qua lau. Vui long kiem tra ket noi Supabase hoac thu tai lai trang.',
+  );
   if (error) {
     throw new Error(error.message || 'Không thể lấy phiên đăng nhập hiện tại.');
   }

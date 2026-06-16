@@ -1,177 +1,354 @@
-# ♻️ ReMarket - Nền tảng Thương mại Điện tử Đồ cũ (Second-hand Marketplace)
+# ReMarket - Second-hand Marketplace
 
-ReMarket là một nền tảng thương mại điện tử chuyên biệt dành cho việc mua bán đồ cũ (Second-hand), được thiết kế với giao diện hiện đại (Glassmorphism), trực quan và dễ sử dụng. Dự án được chia thành hai phần Backend và Frontend rõ ràng, giao tiếp thông qua RESTful APIs và bảo mật nghiêm ngặt bằng JWT token kết hợp hệ thống Supabase mạnh mẽ.
+ReMarket is a fullstack second-hand marketplace where users can buy, sell, chat, manage transactions, receive notifications, review other users, and handle payment flows. The project was built as a personal portfolio project for Fullstack / Backend internship applications.
 
----
+## Highlights
 
-## 🚀 Công nghệ sử dụng
+- Email authentication with Supabase Auth
+- Role-based access for customer, agent, and admin users
+- Product listing, search, filtering, autocomplete, create, update, and delete
+- Seller dashboard and personal product management
+- Wishlist and product detail pages
+- Buyer-seller transaction flow
+- MoMo and VNPAY payment strategy structure
+- Realtime-style chat and notification modules
+- User profile, avatar upload, and review system
+- Admin dashboard for users, products, transactions, and moderation
+- Clean frontend route guards for protected pages
 
-### Frontend
-- **Framework:** React.js (với Vite để build tốc độ cao).
-- **Routing:** React Router DOM.
-- **State Management:** Zustand (quản lý state toàn cục nhẹ nhàng, tối ưu).
-- **Styling:** CSS thuần tuân thủ theo nguyên lý Glassmorphism & UI/UX hiện đại (không dùng UI library, tối đa hóa khả năng tùy biến).
-- **Real-time:** Supabase Realtime (WebSockets) cho hệ thống Chat và Notifications.
+## Tech Stack
 
-### Backend
-- **Core:** Node.js, Express.js.
-- **Architecture:** Mô hình MVC (Controller-Service-Route), code base cấu trúc rõ ràng, dễ bảo trì và mở rộng.
-- **Mailing:** Nodemailer (tích hợp Gmail SMTP để gửi mã xác thực, thông báo đặt lại mật khẩu an toàn).
+| Layer | Tools |
+| --- | --- |
+| Frontend | React, Vite, React Router, Zustand, Tailwind CSS, Radix UI, Lucide React |
+| Backend | Node.js, Express, Multer, Nodemailer |
+| Database/Auth/Storage | Supabase |
+| Payment | MoMo sandbox, VNPAY sandbox strategy modules |
+| Tooling | ESLint, Prettier |
 
-### Database & Cloud (Supabase)
-- **Database:** PostgreSQL mạnh mẽ.
-- **Authentication:** Supabase Auth (đăng nhập Email/Password, tích hợp Google OAuth).
-- **Storage:** Supabase Storage Bucket để lưu trữ hình ảnh (Avatars, thư viện ảnh Sản phẩm).
-- **Security:** RLS (Row Level Security) Policies bảo vệ dữ liệu ở cấp độ database, ngăn chặn truy cập trái phép.
+## Project Structure
 
----
+```text
+.
++-- Second-handMarketplace/
+|   +-- backend/
+|   |   +-- scripts/                  # Seed scripts
+|   |   +-- src/
+|   |   |   +-- controllers/           # HTTP request handlers
+|   |   |   +-- middlewares/           # Auth and admin guards
+|   |   |   +-- routes/                # Express routes
+|   |   |   +-- services/              # Business logic and Supabase access
+|   |   |   +-- strategies/            # Payment strategy implementations
+|   |   |   +-- app.js                 # Express app setup
+|   |   +-- supabase_migration_fixed.sql
+|   |   +-- supabase_seed_marketplace_products.sql
+|   +-- frontend/
+|   |   +-- src/
+|   |   |   +-- components/            # Shared UI components
+|   |   |   +-- hooks/                 # Custom React hooks
+|   |   |   +-- pages/                 # Auth, client, admin, agent, system pages
+|   |   |   +-- services/              # API/Supabase client calls
+|   |   |   +-- store/                 # Zustand auth store
+|   |   |   +-- utils/                 # Validation and access helpers
+|   |   +-- vite.config.js
++-- README.md
+```
 
-## ✨ Các tính năng nổi bật (Features)
+## Main Features
 
-ReMarket cung cấp một luồng (flow) hoàn chỉnh cho cả Người Mua và Người Bán, từ lúc đăng nhập, khám phá sản phẩm, trao đổi tin nhắn, cho đến khi hoàn tất giao dịch.
+### Authentication and Roles
 
-### 1. 🔐 Quản lý Tài khoản & Xác thực (Authentication)
-- **Đăng ký / Đăng nhập:** Hỗ trợ đăng nhập linh hoạt qua Email/Mật khẩu hoặc **Google OAuth**.
-- **Xác thực Email:** Tự động gửi email xác nhận khi đăng ký mới.
-- **Bảo mật:** Quên mật khẩu qua email link bảo mật, thay đổi mật khẩu ngay trong ứng dụng.
-- **Hồ sơ Cá nhân (Profile):** Cập nhật thông tin cá nhân, thay đổi ảnh đại diện (Avatar upload trực tiếp lên Supabase Storage).
+- Register with email verification
+- Login with Supabase Auth
+- Forgot password and reset password flow
+- Change password for authenticated users
+- Protected routes for logged-in users
+- Admin and agent route guards
 
-### 2. 🛍️ Khám phá & Tìm kiếm Sản phẩm (Discovery)
-- **Trang chủ động (Dynamic Home Page):** Hiển thị danh sách sản phẩm nổi bật với hiệu ứng **Skeleton Loading** mượt mà trong lúc tải dữ liệu. Hỗ trợ phân trang (Pagination).
-- **Tìm kiếm thông minh & Bộ lọc đa dạng:** Tìm kiếm theo từ khóa, lọc theo Danh mục, Tình trạng (Mới, Cũ, ...), Khoảng giá, và sắp xếp theo nhiều tiêu chí (mới nhất, giá tăng/giảm).
-- **Chi tiết Sản phẩm:** Xem thông tin kỹ thuật, thư viện ảnh (Image Gallery), thông tin uy tín của người bán, và các gợi ý sản phẩm liên quan.
+### Marketplace
 
-### 3. 💬 Tương tác & Real-time Chat
-- **Nhắn tin Trực tiếp (Real-time Messaging):** Người mua và Người bán có thể trao đổi trực tiếp với nhau về sản phẩm thông qua giao diện Chat hiện đại.
-- **Optimistic UI:** Tin nhắn hiển thị ngay lập tức (instant feedback) trước khi được xác nhận bởi server, mang lại trải nghiệm mượt mà không độ trễ.
-- **Đồng bộ Supabase Realtime:** Đảm bảo hệ thống tin nhắn được cập nhật tức thời trên nhiều thiết bị.
+- Browse products
+- Search and autocomplete
+- Filter by category, condition, price, and location
+- View product details
+- Create, edit, and delete personal product listings
+- Seller dashboard
+- Wishlist toggle and wishlist status
 
-### 4. 🔔 Thông báo & Danh sách yêu thích (Notifications & Wishlist)
-- **Thông báo Real-time (Push Notifications):** Cập nhật ngay lập tức các sự kiện quan trọng (có tin nhắn mới, đơn hàng thay đổi trạng thái, ...) thông qua Supabase Postgres Changes.
-- **Wishlist (Sản phẩm yêu thích):** Lưu trữ các sản phẩm bạn quan tâm để xem lại sau. Quản lý danh sách một cách tiện lợi.
+### Transactions and Payments
 
-### 5. 🛒 Giao dịch & Quản lý Đơn hàng (Transactions)
-- **Đặt hàng nhanh chóng:** Người mua dễ dàng thực hiện lệnh "Đặt mua" với thao tác đơn giản và minh bạch.
-- **Lịch sử Giao dịch (Timeline):** Người mua có thể theo dõi hành trình đơn hàng qua các trạng thái chuẩn xác: *Chờ xác nhận -> Đã giao -> Hoàn thành*. Hỗ trợ nút "Xác nhận nhận hàng".
-- **Dashboard Người Bán (Seller Dashboard):** Giao diện quản lý chuyên biệt với các thẻ thống kê KPI (số đơn chờ, doanh thu). Cho phép **Xác nhận giao hàng** hoặc **Từ chối đơn hàng** (yêu cầu kèm lý do từ chối để đảm bảo minh bạch).
+- Create transactions from product flows
+- Track transaction status
+- View transaction history and stats
+- Payment creation, return, IPN, query, and refund endpoints
+- Strategy-based payment structure for MoMo and VNPAY
 
-### 6. 📦 Quản lý Cửa hàng Của Tôi (Seller Features)
-- **Kho Sản phẩm (My Products):** Quản lý toàn bộ danh sách sản phẩm đang đăng bán. Lọc nhanh theo trạng thái.
-- **Tạo/Sửa Sản phẩm:** Đăng sản phẩm mới, upload nhiều ảnh cùng lúc với tính năng xem trước (preview) và xóa ảnh linh hoạt.
-- **Bật/Tắt Trạng thái:** Hỗ trợ tính năng "Ẩn nhanh" sản phẩm khỏi cửa hàng (ví dụ: khi hết hàng hoặc muốn ngưng bán tạm thời) và kích hoạt lại dễ dàng.
+### AI Support Chat
 
----
+- Floating AI support widget available across the frontend
+- Retrieval-Augmented Generation (RAG) flow over internal FAQ and policy content
+- Answers general marketplace, payment, refund, account, and safety questions
+- Does not read personal user data or private order history
+- Works in retrieval fallback mode without an API key
+- Uses OpenAI Responses API when `OPENAI_API_KEY` is configured on the backend
 
-## 🗺️ Sơ đồ Luồng ứng dụng (Client Routes)
+### Chat, Notifications, Reviews
 
-Base URL mặc định: `http://localhost:5173` (hoặc `5174` nếu port bị trùng).
+- Buyer-seller conversations
+- Send and fetch messages
+- Mark conversations as read
+- Notification list and unread count
+- User reviews by transaction
 
-| Path | Component/Page | Quyền truy cập | Mô tả |
-|---|---|---|---|
-| `/` | `RootRedirect` | Public | Tự động điều hướng đến `/app` (nếu đã login) hoặc `/login`. |
-| `/login` | `LoginPage` | Auth-only | Đăng nhập hệ thống. |
-| `/register` | `RegisterPage` | Auth-only | Đăng ký tài khoản mới. |
-| `/forgot-password` | `ForgotPasswordPage`| Auth-only | Yêu cầu khôi phục mật khẩu qua Email. |
-| `/reset-password` | `ResetPasswordPage` | Public | Form đặt lại mật khẩu (truy cập từ link email). |
-| `/app` | `ClientHomePage` | Protected | Trang chủ chính (Hiển thị Lưới sản phẩm). |
-| `/profile` | `ProfilePage` | Protected | Quản lý thông tin cá nhân & Avatar. |
-| `/change-password` | `ChangePasswordPage`| Protected | Đổi mật khẩu. |
-| `/transactions` | `TransactionHistory` | Protected | Lịch sử mua/bán & Timeline theo dõi đơn hàng. |
-| `/wishlist` | `WishlistPage` | Protected | Danh sách sản phẩm yêu thích (Wishlist). |
-| `/notifications` | `NotificationsPage` | Protected | Trung tâm thông báo (Real-time). |
-| `/chat` | `ChatPage` | Protected | Giao diện nhắn tin Real-time giữa Mua/Bán. |
-| `/products/:id` | `ProductDetailPage` | Public | Xem chi tiết sản phẩm. |
-| `/products/new` | `ProductFormPage` | Protected | Form đăng bán sản phẩm mới. |
-| `/products/:id/edit`| `ProductFormPage` | Protected | Form chỉnh sửa thông tin sản phẩm. |
-| `/seller/dashboard`| `SellerDashboard` | Protected | Quản lý đơn hàng (Dành cho Người Bán). |
-| `/my-products` | `MyProductsPage` | Protected | Quản lý kho hàng (Dành cho Người Bán). |
-| `*` | `Fallback` | Public | Redirect tự động về `/`. |
+### Admin and Agent
 
-*(**Lưu ý:** Các Route thuộc nhóm `Protected` yêu cầu phải có phiên đăng nhập (session) hợp lệ. Nếu chưa đăng nhập, hệ thống sẽ tự động chuyển hướng người dùng về trang `/login`.)*
+- Overview dashboard
+- Manage users
+- Manage products
+- View transactions
+- Agent inbox/support flow
 
----
+## Getting Started
 
-## 🛠 Cài đặt và Khởi chạy môi trường Development
+### Prerequisites
 
-### 1. Yêu cầu hệ thống
-- **Node.js**: Phiên bản 18+ (khuyên dùng LTS).
-- **Supabase**: Một project Supabase để lưu trữ Database & Auth.
-- **Gmail**: Một tài khoản Gmail dùng để cấu hình SMTP (cần bật tính năng App Password).
+- Node.js 18+
+- npm
+- A Supabase project
+- Gmail App Password if you want email verification/reset emails to work
+- MoMo/VNPAY sandbox credentials if you want to test payment gateways
 
-### 2. Cài đặt thư viện (Dependencies)
-Đảm bảo bạn cài đặt packages cho cả Frontend và Backend:
+### 1. Clone the repository
 
 ```bash
-# Cài đặt cho Backend
-cd Second-handMarketplace/backend
-npm install
+git clone <your-repository-url>
+cd <repository-folder>/Second-handMarketplace
+```
 
-# Cài đặt cho Frontend
+### 2. Configure Supabase
+
+Run the SQL migrations in your Supabase SQL editor:
+
+```text
+Second-handMarketplace/backend/supabase_migration_fixed.sql
+Second-handMarketplace/backend/supabase_add_product_image_url.sql
+Second-handMarketplace/backend/supabase_payment_lifecycle.sql
+Second-handMarketplace/backend/supabase_fts_migration.sql
+```
+
+Optional seed data:
+
+```text
+Second-handMarketplace/backend/supabase_seed_marketplace_products.sql
+```
+
+### 3. Configure backend environment
+
+Create `Second-handMarketplace/backend/.env` from `Second-handMarketplace/backend/.env.example`.
+
+Required values:
+
+```env
+PORT=4000
+FRONTEND_ORIGIN=http://localhost:5173
+
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-gmail-app-password
+
+PAYMENT_RETURN_URL=http://localhost:5173/payment/return
+PAYMENT_NOTIFY_URL=http://localhost:4000/api/payment/ipn/momo
+
+# Optional AI support chat
+AI_PROVIDER=
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5.4-nano
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.3-70b-versatile
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.1-flash-lite
+```
+
+### 4. Configure frontend environment
+
+Create `Second-handMarketplace/frontend/.env` from `Second-handMarketplace/frontend/.env.example`.
+
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_BACKEND_URL=http://localhost:4000
+```
+
+### 5. Install dependencies
+
+Backend:
+
+```bash
+cd backend
+npm install
+```
+
+Frontend:
+
+```bash
 cd ../frontend
 npm install
 ```
 
-### 3. Cấu hình Biến môi trường (.env)
+### 6. Run the app locally
 
-**A. Tại thư mục `backend`:**
-Tạo file `backend/.env` bằng cách copy từ file `backend/.env.example` và điều chỉnh:
-```env
-# Supabase Client
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-anon-key>
-
-# Server Config
-PORT=4000
-FRONTEND_ORIGIN=http://localhost:5173
-
-# Gmail SMTP 
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
-
-# Supabase Auth Admin Level (Lấy ở mục API settings của Supabase)
-SUPABASE_URL=https://<your-project>.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-
-# App Configs
-MAIL_FROM_NAME=ReMarket
-SIGNUP_CONFIRM_PATH=/login
-RESET_PASSWORD_PATH=/reset-password
-SIGNUP_COOLDOWN_SECONDS=90
-```
-
-**B. Tại thư mục `frontend`:**
-Tạo file `frontend/.env`:
-```env
-VITE_SUPABASE_URL=https://<your-project>.supabase.co
-VITE_SUPABASE_ANON_KEY=<your-anon-key>
-VITE_BACKEND_URL=http://localhost:4000
-```
-
-### 4. Thiết lập Database & Supabase
-
-1. Truy cập vào [Supabase Dashboard](https://supabase.com/dashboard) và tạo một Project.
-2. Mở công cụ **SQL Editor**.
-3. Copy toàn bộ mã SQL từ file `backend/supabase_migration.sql` (hoặc các file script mới nhất) và chạy (Run) để khởi tạo toàn bộ cấu trúc CSDL (Bảng) cùng các quy tắc bảo mật **RLS Policies**.
-4. Chuyển sang mục **Storage**:
-   - Tạo một bucket mới với tên là `avatar` và đặt ở chế độ **Public** (để lưu ảnh đại diện).
-   - Đảm bảo có thiết lập các bucket khác (ví dụ: `products` để upload ảnh sản phẩm) theo yêu cầu.
-5. *(Tùy chọn)* Chạy script **DB Seed** nếu có sẵn để chèn dữ liệu mẫu (categories, products, users) phục vụ cho quá trình dev.
-
-### 5. Khởi chạy dự án
-
-Mở 2 cửa sổ Terminal (hoặc tab) để chạy đồng thời cả Backend và Frontend:
+Start backend:
 
 ```bash
-# Terminal 1 - Backend Server (Chạy ở Port 4000)
-cd Second-handMarketplace/backend
-npm run dev
-
-# Terminal 2 - Frontend Development Server (Chạy ở Port 5173)
-cd Second-handMarketplace/frontend
+cd backend
 npm run dev
 ```
 
-Sau khi Terminal báo thành công, mở trình duyệt và truy cập: [http://localhost:5173](http://localhost:5173). 🚀
+Start frontend in another terminal:
 
----
-*Built with ❤️ for a sustainable second-hand economy.*
+```bash
+cd frontend
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+Backend health check:
+
+```text
+http://localhost:4000/api/health
+```
+
+## Seed Test Accounts
+
+After configuring `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, seed demo users:
+
+```bash
+cd backend
+npm run seed:users
+```
+
+Default seeded accounts:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | admin@test.com | Admin@123 |
+| Agent | agent@test.com | Agent@123 |
+| Seller | seller@test.com | Seller@123 |
+| Buyer | buyer@test.com | Buyer@123 |
+| Buyer + Seller | both@test.com | Both@123 |
+
+## API Overview
+
+Protected endpoints require:
+
+```http
+Authorization: Bearer <supabase_access_token>
+```
+
+### Auth
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Request signup verification |
+| POST | `/api/auth/forgot-password` | Request password reset |
+| POST | `/api/auth/resend-verification` | Resend verification email |
+| POST | `/api/auth/change-password` | Change current user's password |
+
+### Products
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/products` | List/search products |
+| GET | `/api/products/autocomplete` | Product autocomplete |
+| GET | `/api/products/:id` | Product detail |
+| GET | `/api/products/seller/:sellerId` | Products by seller |
+| GET | `/api/products/user/my` | Current user's products |
+| POST | `/api/products` | Create product |
+| PATCH | `/api/products/:id` | Update product |
+| DELETE | `/api/products/:id` | Delete product |
+
+### Profile, Transactions, Chat
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/profile` | Get current profile |
+| PUT | `/api/profile` | Update profile |
+| POST | `/api/profile/avatar` | Upload avatar |
+| GET | `/api/transactions` | List transactions |
+| POST | `/api/transactions` | Create transaction |
+| PATCH | `/api/transactions/:id/status` | Update transaction status |
+| GET | `/api/chat/conversations` | List conversations |
+| POST | `/api/chat/messages` | Send message |
+
+### Admin, Notifications, Wishlist, Reviews, Payments
+
+| Area | Base Endpoint |
+| --- | --- |
+| Admin | `/api/admin` |
+| Notifications | `/api/notifications` |
+| Wishlist | `/api/wishlist` |
+| Reviews | `/api/reviews` |
+| Upload | `/api/upload` |
+| Payment | `/api/payment` |
+| Categories | `/api/categories` |
+| AI Support | `/api/ai-support` |
+
+## Available Scripts
+
+Backend:
+
+```bash
+npm run dev
+npm start
+npm test
+npm run seed:users
+npm run lint
+npm run format
+```
+
+Frontend:
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm test
+npm run lint
+npm run format
+```
+
+## Portfolio Notes
+
+This project is suitable for showing:
+
+- Backend API design with Express route/controller/service layers
+- Supabase Auth integration and role-based authorization
+- Real product, transaction, chat, notification, review, and payment flows
+- React protected routing and client-side state management
+- Practical fullstack environment setup
+
+Recommended next improvements:
+
+- Add automated tests for backend services and API routes
+- Add Swagger/OpenAPI documentation
+- Add CI workflow for lint/build
+- Deploy frontend and backend, then add live demo links here
+- Add screenshots or a short demo video to this README
+
+## Security Notes
+
+- Do not commit real `.env` files.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` only on the backend.
+- Use Gmail App Passwords instead of your normal Gmail password.
+- Use sandbox credentials for payment testing.
+
+## Author
+
+Built by Loann Nguyen as a personal fullstack marketplace project.

@@ -675,10 +675,12 @@ async function sendMessage({
       throw buildServiceError('Ban khong co quyen gui tin nhan vao conversation nay.', 403);
     }
   } else {
-    resolvedConversationId = await getOrCreateConversation({
+    const ensured = await ensureConversation({
       userId,
       receiverId,
+      productId,
     });
+    resolvedConversationId = ensured.conversation_id;
   }
 
   const now = new Date().toISOString();

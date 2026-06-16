@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
+import PasswordInput from '../../components/auth/PasswordInput';
 import { loginWithEmail, loginWithGoogle, resendVerificationEmail } from '../../services/authService';
+import { useAuthStore } from '../../store/authStore';
 import { hasValidationErrors, validateLoginForm } from '../../utils/authValidation';
 
 const defaultForm = {
@@ -16,6 +18,7 @@ function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const authErrorMessage = useAuthStore((state) => state.errorMessage);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -133,15 +136,14 @@ function LoginPage() {
 
         <label className="form-field" htmlFor="password">
           Mật khẩu
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="current-password"
             value={form.password}
             onChange={handleChange}
             placeholder="Tối thiểu 8 ký tự"
-            className={errors.password ? 'input-error' : ''}
+            hasError={Boolean(errors.password)}
           />
           {errors.password && <span className="field-error">{errors.password}</span>}
         </label>
@@ -166,6 +168,10 @@ function LoginPage() {
         </button>
 
         {feedback.message && <p className={`form-feedback ${feedback.type}`}>{feedback.message}</p>}
+
+        {!feedback.message && authErrorMessage && (
+          <p className="form-feedback error">{authErrorMessage}</p>
+        )}
 
         {unconfirmedEmail && (
           <button

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AuthLayout from '../../components/auth/AuthLayout';
+import PasswordInput from '../../components/auth/PasswordInput';
 import { loginWithGoogle, registerWithEmail } from '../../services/authService';
 import { hasValidationErrors, validateRegisterForm } from '../../utils/authValidation';
 
@@ -119,30 +120,28 @@ function RegisterPage() {
 
         <label className="form-field" htmlFor="password">
           Mật khẩu
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="new-password"
             value={form.password}
             onChange={handleChange}
             placeholder="Tối thiểu 8 ký tự"
-            className={errors.password ? 'input-error' : ''}
+            hasError={Boolean(errors.password)}
           />
           {errors.password && <span className="field-error">{errors.password}</span>}
         </label>
 
         <label className="form-field" htmlFor="confirmPassword">
           Nhập lại mật khẩu
-          <input
+          <PasswordInput
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
             autoComplete="new-password"
             value={form.confirmPassword}
             onChange={handleChange}
             placeholder="Nhập lại mật khẩu"
-            className={errors.confirmPassword ? 'input-error' : ''}
+            hasError={Boolean(errors.confirmPassword)}
           />
           {errors.confirmPassword && <span className="field-error">{errors.confirmPassword}</span>}
         </label>

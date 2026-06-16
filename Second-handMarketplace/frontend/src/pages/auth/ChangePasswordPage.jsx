@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
+import PasswordInput from '../../components/auth/PasswordInput';
 import { changePassword } from '../../services/authService';
 import { hasValidationErrors, validateChangePasswordForm } from '../../utils/authValidation';
 
@@ -78,45 +79,42 @@ function ChangePasswordPage() {
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <label className="form-field" htmlFor="currentPassword">
           Mật khẩu hiện tại
-          <input
+          <PasswordInput
             id="currentPassword"
             name="currentPassword"
-            type="password"
             autoComplete="current-password"
             value={form.currentPassword}
             onChange={handleChange}
             placeholder="Nhập mật khẩu hiện tại"
-            className={errors.currentPassword ? 'input-error' : ''}
+            hasError={Boolean(errors.currentPassword)}
           />
           {errors.currentPassword && <span className="field-error">{errors.currentPassword}</span>}
         </label>
 
         <label className="form-field" htmlFor="newPassword">
           Mật khẩu mới
-          <input
+          <PasswordInput
             id="newPassword"
             name="newPassword"
-            type="password"
             autoComplete="new-password"
             value={form.newPassword}
             onChange={handleChange}
             placeholder="Tối thiểu 8 ký tự"
-            className={errors.newPassword ? 'input-error' : ''}
+            hasError={Boolean(errors.newPassword)}
           />
           {errors.newPassword && <span className="field-error">{errors.newPassword}</span>}
         </label>
 
         <label className="form-field" htmlFor="confirmNewPassword">
           Nhập lại mật khẩu mới
-          <input
+          <PasswordInput
             id="confirmNewPassword"
             name="confirmNewPassword"
-            type="password"
             autoComplete="new-password"
             value={form.confirmNewPassword}
             onChange={handleChange}
             placeholder="Nhập lại mật khẩu mới"
-            className={errors.confirmNewPassword ? 'input-error' : ''}
+            hasError={Boolean(errors.confirmNewPassword)}
           />
           {errors.confirmNewPassword && <span className="field-error">{errors.confirmNewPassword}</span>}
         </label>

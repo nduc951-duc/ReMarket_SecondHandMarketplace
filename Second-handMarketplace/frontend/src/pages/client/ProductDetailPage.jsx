@@ -507,6 +507,44 @@ function ProductDetailPage() {
               </div>
             )}
 
+            {product.seller_id && (
+              <div className="bg-[#111827] rounded-3xl p-6 border border-white/5 shadow-lg">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h3 className="text-lg font-bold text-white">Danh gia nguoi ban</h3>
+                  <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-300">
+                    {reviewMeta.total || 0} danh gia
+                  </span>
+                </div>
+
+                {isLoadingReviews ? (
+                  <p className="text-sm text-slate-400">Dang tai danh gia...</p>
+                ) : sellerReviews.length > 0 ? (
+                  <div className="space-y-3">
+                    {sellerReviews.map((review) => (
+                      <article
+                        key={review.id}
+                        className="rounded-2xl border border-white/5 bg-[#0d1117] p-4"
+                      >
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          {renderStars(review.rating)}
+                          <span className="text-xs text-slate-500">
+                            {formatDate(review.created_at)}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-slate-300">
+                          {review.comment || 'Nguoi mua khong de lai binh luan.'}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400">
+                    Nguoi ban nay chua co danh gia nao.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Description */}
             {product.description && (
               <div className="bg-[#111827] rounded-3xl p-6 md:p-8 border border-white/5 shadow-lg">

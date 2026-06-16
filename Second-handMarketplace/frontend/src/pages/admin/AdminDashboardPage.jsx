@@ -3,17 +3,15 @@ import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
   BarChart3,
-  BellRing,
   Boxes,
-  CheckCircle2,
   ClipboardList,
-  FolderTree,
+  Eye,
+  EyeOff,
   Loader2,
   PackageSearch,
   RefreshCcw,
   Search,
   Shield,
-  Star,
   Store,
   UserPlus,
   Users,
@@ -52,12 +50,9 @@ const TRANSACTION_STATUS_LABELS = {
 
 const TABS = [
   { value: 'overview', label: 'Tổng quan', icon: BarChart3 },
-  { value: 'users', label: 'Users', icon: Users },
+  { value: 'users', label: 'Khách hàng', icon: Users },
   { value: 'products', label: 'Sản phẩm', icon: Store },
   { value: 'transactions', label: 'Đơn hàng', icon: ClipboardList },
-  { value: 'broadcast', label: 'Broadcast', icon: BellRing },
-  { value: 'categories', label: 'Danh mục', icon: FolderTree },
-  { value: 'reviews', label: 'Reviews', icon: Star },
 ];
 
 function formatCurrency(amount) {
@@ -137,30 +132,6 @@ function EmptyPanel({ icon: Icon = Boxes, title, description }) {
   );
 }
 
-function ComingSoonPanel({ icon: Icon, title, description, items }) {
-  return (
-    <SectionShell title={title} description={description}>
-      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-        <div className="rounded-2xl border border-teal-300/20 bg-teal-300/10 p-5">
-          <Icon className="text-teal-200" size={32} />
-          <h3 className="mt-4 text-xl font-black text-white">Đã chốt scope</h3>
-          <p className="mt-2 text-sm leading-6 text-teal-50/80">
-            Giao diện đã dành chỗ cho module này. Bước tiếp theo là thêm API admin tương ứng.
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {items.map((item) => (
-            <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-slate-300">
-              <CheckCircle2 className="mb-3 text-teal-300" size={18} />
-              {item}
-            </div>
-          ))}
-        </div>
-      </div>
-    </SectionShell>
-  );
-}
-
 function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [overview, setOverview] = useState(null);
@@ -175,6 +146,7 @@ function AdminDashboardPage() {
   const [isSavingUserId, setIsSavingUserId] = useState('');
   const [isSavingProductId, setIsSavingProductId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [formValues, setFormValues] = useState({
     email: '',
@@ -327,9 +299,9 @@ function AdminDashboardPage() {
                   <Shield size={24} />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-black text-white">Admin Dashboard</h1>
+                  <h1 className="text-3xl font-black text-white">Bảng điều hành cửa hàng</h1>
                   <p className="mt-1 text-sm text-slate-400">
-                    Quản lý users, sản phẩm, đơn hàng, thông báo hệ thống, danh mục, reviews và báo cáo.
+                    Theo dõi khách hàng, kiểm duyệt sản phẩm và xử lý đơn hàng trong một màn hình gọn cho chủ cửa hàng.
                   </p>
                 </div>
               </div>
@@ -479,14 +451,24 @@ function AdminDashboardPage() {
                     onChange={(event) => setFormValues((prev) => ({ ...prev, full_name: event.target.value }))}
                     className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2.5 text-sm font-semibold text-white outline-none placeholder:text-slate-600 focus:border-teal-300/60"
                   />
-                  <input
-                    type="password"
-                    placeholder="Mật khẩu"
-                    value={formValues.password}
-                    onChange={(event) => setFormValues((prev) => ({ ...prev, password: event.target.value }))}
-                    className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2.5 text-sm font-semibold text-white outline-none placeholder:text-slate-600 focus:border-teal-300/60"
-                    required
-                  />
+                  <div className="flex min-w-0 items-center rounded-2xl border border-white/10 bg-slate-950/70 px-3 focus-within:border-teal-300/60">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Mật khẩu"
+                      value={formValues.password}
+                      onChange={(event) => setFormValues((prev) => ({ ...prev, password: event.target.value }))}
+                      className="min-w-0 flex-1 bg-transparent py-2.5 text-sm font-semibold text-white outline-none placeholder:text-slate-600"
+                      required
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      className="ml-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/10 hover:text-teal-100"
+                      onClick={() => setShowPassword((value) => !value)}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                   <select
                     value={formValues.role}
                     onChange={(event) => setFormValues((prev) => ({ ...prev, role: event.target.value }))}
@@ -677,48 +659,6 @@ function AdminDashboardPage() {
                   </div>
                 )}
               </SectionShell>
-            )}
-
-            {activeTab === 'broadcast' && (
-              <ComingSoonPanel
-                icon={BellRing}
-                title="Thông báo hệ thống / Broadcast"
-                description="Gửi thông báo đến toàn bộ users hoặc nhóm theo role/trạng thái."
-                items={[
-                  'Form tạo broadcast: tiêu đề, nội dung, target segment',
-                  'Preview trước khi gửi để tránh spam nhầm',
-                  'API cần thêm: POST /api/admin/notifications/broadcast',
-                  'Log lịch sử gửi và số người nhận',
-                ]}
-              />
-            )}
-
-            {activeTab === 'categories' && (
-              <ComingSoonPanel
-                icon={FolderTree}
-                title="Danh mục"
-                description="Thêm, sửa, xóa và sắp xếp danh mục hiển thị trên marketplace."
-                items={[
-                  'CRUD category name, slug, icon, trạng thái hiển thị',
-                  'Chặn xóa danh mục đang có sản phẩm',
-                  'API cần thêm: admin category create/update/delete',
-                  'Tự đồng bộ lại sidebar/category filter phía client',
-                ]}
-              />
-            )}
-
-            {activeTab === 'reviews' && (
-              <ComingSoonPanel
-                icon={Star}
-                title="Đánh giá / Reviews"
-                description="Kiểm duyệt review, ẩn review vi phạm và xem rating theo người bán."
-                items={[
-                  'Danh sách reviews có filter rating và keyword',
-                  'Ẩn/khôi phục review vi phạm',
-                  'API cần thêm: GET/PATCH /api/admin/reviews',
-                  'Báo cáo người bán có tỷ lệ review thấp',
-                ]}
-              />
             )}
           </div>
         )}
