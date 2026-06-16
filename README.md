@@ -351,4 +351,4 @@ Recommended next improvements:
 
 ## Author
 
-Built by Loann Nguyen as a personal fullstack marketplace project.
+Built by nduc951-duc as a personal fullstack marketplace project.
