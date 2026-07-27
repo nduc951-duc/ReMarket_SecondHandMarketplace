@@ -1,8 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 
 let adminClient = null;
 
@@ -12,9 +9,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -34,11 +29,7 @@ function getAdminClient() {
 async function getProfile(userId) {
   const client = getAdminClient();
 
-  const { data, error } = await client
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  const { data, error } = await client.from('profiles').select('*').eq('id', userId).single();
 
   if (error && error.code === 'PGRST116') {
     // Profile not found – create one from auth metadata
@@ -107,7 +98,8 @@ async function updateProfile(userId, updates) {
 
   for (const field of allowedFields) {
     if (updates[field] !== undefined) {
-      cleanUpdates[field] = typeof updates[field] === 'string' ? updates[field].trim() : updates[field];
+      cleanUpdates[field] =
+        typeof updates[field] === 'string' ? updates[field].trim() : updates[field];
     }
   }
 
@@ -153,12 +145,10 @@ async function uploadAvatar(userId, fileBuffer, mimeType, originalName) {
   const filePath = `avatars/${userId}/avatar_${Date.now()}.${extension}`;
 
   // Upload to storage
-  const { error: uploadError } = await client.storage
-    .from('avatar')
-    .upload(filePath, fileBuffer, {
-      contentType: mimeType,
-      upsert: true,
-    });
+  const { error: uploadError } = await client.storage.from('avatar').upload(filePath, fileBuffer, {
+    contentType: mimeType,
+    upsert: true,
+  });
 
   if (uploadError) {
     // If bucket doesn't exist, provide helpful error
@@ -171,9 +161,7 @@ async function uploadAvatar(userId, fileBuffer, mimeType, originalName) {
   }
 
   // Get public URL
-  const { data: publicUrlData } = client.storage
-    .from('avatar')
-    .getPublicUrl(filePath);
+  const { data: publicUrlData } = client.storage.from('avatar').getPublicUrl(filePath);
 
   const avatarUrl = publicUrlData.publicUrl;
 

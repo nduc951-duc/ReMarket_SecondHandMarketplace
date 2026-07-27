@@ -1,8 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 const {
   createNotification,
   markConversationNotificationsAsRead,
@@ -22,9 +19,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thieu SUPABASE_URL hoac SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thieu SUPABASE_URL hoac SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -40,9 +35,9 @@ function getAdminClient() {
 function isRelationMissing(error, relationName) {
   const message = String(error?.message || '').toLowerCase();
   return (
-    message.includes('relation')
-    && message.includes('does not exist')
-    && message.includes(relationName)
+    message.includes('relation') &&
+    message.includes('does not exist') &&
+    message.includes(relationName)
   );
 }
 
@@ -117,11 +112,7 @@ function buildProductCardMetadata(productSnapshot) {
   };
 }
 
-async function hasProductCardMessage({
-  client,
-  conversationId,
-  productId,
-}) {
+async function hasProductCardMessage({ client, conversationId, productId }) {
   const normalizedProductId = String(productId || '').trim();
   if (!normalizedProductId) {
     return false;
@@ -143,12 +134,7 @@ async function hasProductCardMessage({
   return Array.isArray(data) && data.length > 0;
 }
 
-async function createProductCardMessage({
-  client,
-  conversationId,
-  senderId,
-  productSnapshot,
-}) {
+async function createProductCardMessage({ client, conversationId, senderId, productSnapshot }) {
   const metadata = buildProductCardMetadata(productSnapshot);
   const now = new Date().toISOString();
 
@@ -184,10 +170,7 @@ async function createProductCardMessage({
   }
 
   await Promise.all([
-    client
-      .from('conversations')
-      .update({ updated_at: now })
-      .eq('id', conversationId),
+    client.from('conversations').update({ updated_at: now }).eq('id', conversationId),
     client
       .from('conversation_participants')
       .update({ last_read_at: now })
@@ -255,6 +238,28 @@ async function getConversationParticipant(userId, conversationId) {
   return data || null;
 }
 
+async function getMessageByClientId(client, userId, conversationId, clientMessageId) {
+  if (!clientMessageId) {
+    return null;
+  }
+
+  const { data, error } = await client
+    .from('chat_messages')
+    .select(
+      'id, conversation_id, sender_id, content, is_system, metadata, client_message_id, created_at',
+    )
+    .eq('client_message_id', clientMessageId)
+    .eq('sender_id', userId)
+    .eq('conversation_id', conversationId)
+    .maybeSingle();
+
+  if (error) {
+    throw buildServiceError(`Khong the kiem tra tin nhan trung lap: ${error.message}`, 500);
+  }
+
+  return data || null;
+}
+
 async function getConversations(userId) {
   const client = getAdminClient();
 
@@ -268,7 +273,10 @@ async function getConversations(userId) {
       return [];
     }
 
-    throw buildServiceError(`Khong the lay danh sach conversation: ${participantError.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay danh sach conversation: ${participantError.message}`,
+      500,
+    );
   }
 
   if (!myParticipantRows || myParticipantRows.length === 0) {
@@ -311,7 +319,9 @@ async function getConversations(userId) {
       .in('conversation_id', conversationIds),
     client
       .from('chat_messages')
-      .select('id, conversation_id, sender_id, content, is_system, metadata, created_at')
+      .select(
+        'id, conversation_id, sender_id, content, is_system, metadata, client_message_id, created_at',
+      )
       .in('conversation_id', conversationIds)
       .order('created_at', { ascending: false }),
   ]);
@@ -320,15 +330,24 @@ async function getConversations(userId) {
     if (isRelationMissing(conversationsResponse.error, 'conversations')) {
       return [];
     }
-    throw buildServiceError(`Khong the lay conversations: ${conversationsResponse.error.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay conversations: ${conversationsResponse.error.message}`,
+      500,
+    );
   }
 
   if (participantsResponse.error) {
-    throw buildServiceError(`Khong the lay participants: ${participantsResponse.error.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay participants: ${participantsResponse.error.message}`,
+      500,
+    );
   }
 
   if (messagesResponse.error) {
-    throw buildServiceError(`Khong the lay tin nhan moi nhat: ${messagesResponse.error.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay tin nhan moi nhat: ${messagesResponse.error.message}`,
+      500,
+    );
   }
 
   const participantsByConversation = new Map();
@@ -415,6 +434,7 @@ async function getMessages(userId, conversationId, options = {}) {
         content,
         is_system,
         metadata,
+        client_message_id,
         created_at
       `,
         { count: 'exact' },
@@ -449,11 +469,17 @@ async function getMessages(userId, conversationId, options = {}) {
   ]);
 
   if (messagesResponse.error) {
-    throw buildServiceError(`Khong the lay danh sach tin nhan: ${messagesResponse.error.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay danh sach tin nhan: ${messagesResponse.error.message}`,
+      500,
+    );
   }
 
   if (conversationResponse.error) {
-    throw buildServiceError(`Khong the lay thong tin conversation: ${conversationResponse.error.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay thong tin conversation: ${conversationResponse.error.message}`,
+      500,
+    );
   }
 
   const participants = conversationResponse.data?.participants || [];
@@ -485,12 +511,12 @@ async function getMessages(userId, conversationId, options = {}) {
   return {
     conversation: conversationResponse.data
       ? {
-        ...conversationResponse.data,
-        participants: participants.map((participant) => ({
-          ...participant,
-          profile: participantProfiles.get(participant.user_id) || null,
-        })),
-      }
+          ...conversationResponse.data,
+          participants: participants.map((participant) => ({
+            ...participant,
+            profile: participantProfiles.get(participant.user_id) || null,
+          })),
+        }
       : null,
     messages: (messagesResponse.data || []).reverse().map((message) => ({
       ...message,
@@ -527,7 +553,10 @@ async function findSharedConversationId({ userId, receiverId }) {
     .in('conversation_id', candidateIds);
 
   if (receiverError) {
-    throw buildServiceError(`Khong the kiem tra conversation voi nguoi nhan: ${receiverError.message}`, 500);
+    throw buildServiceError(
+      `Khong the kiem tra conversation voi nguoi nhan: ${receiverError.message}`,
+      500,
+    );
   }
 
   const sharedIds = (receiverRows || []).map((item) => item.conversation_id);
@@ -587,30 +616,31 @@ async function getOrCreateConversation({ userId, receiverId }) {
     throw buildServiceError(`Khong the tao conversation moi: ${conversationError.message}`, 500);
   }
 
-  const { error: participantsError } = await client
-    .from('conversation_participants')
-    .upsert(
-      [
-        {
-          conversation_id: conversation.id,
-          user_id: userId,
-          joined_at: now,
-          last_read_at: now,
-        },
-        {
-          conversation_id: conversation.id,
-          user_id: receiverId,
-          joined_at: now,
-          last_read_at: now,
-        },
-      ],
+  const { error: participantsError } = await client.from('conversation_participants').upsert(
+    [
       {
-        onConflict: 'conversation_id,user_id',
+        conversation_id: conversation.id,
+        user_id: userId,
+        joined_at: now,
+        last_read_at: now,
       },
-    );
+      {
+        conversation_id: conversation.id,
+        user_id: receiverId,
+        joined_at: now,
+        last_read_at: now,
+      },
+    ],
+    {
+      onConflict: 'conversation_id,user_id',
+    },
+  );
 
   if (participantsError) {
-    throw buildServiceError(`Khong the them participant vao conversation: ${participantsError.message}`, 500);
+    throw buildServiceError(
+      `Khong the them participant vao conversation: ${participantsError.message}`,
+      500,
+    );
   }
 
   return conversation.id;
@@ -643,15 +673,22 @@ async function sendMessage({
     try {
       const { data: existing, error: idempotencyError } = await client
         .from('chat_messages')
-        .select('id, conversation_id, sender_id, content, is_system, metadata, created_at')
+        .select(
+          'id, conversation_id, sender_id, content, is_system, metadata, client_message_id, created_at',
+        )
         .eq('client_message_id', normalizedClientMessageId)
         .eq('sender_id', userId)
+        .eq('conversation_id', String(conversationId || '').trim())
         .maybeSingle();
 
       if (idempotencyError) {
         // Column likely doesn't exist — skip idempotency silently
         const msg = String(idempotencyError.message || '').toLowerCase();
-        if (msg.includes('client_message_id') || msg.includes('schema cache') || msg.includes('column')) {
+        if (
+          msg.includes('client_message_id') ||
+          msg.includes('schema cache') ||
+          msg.includes('column')
+        ) {
           idempotencyColumnExists = false;
         }
       } else if (existing) {
@@ -683,6 +720,20 @@ async function sendMessage({
     resolvedConversationId = ensured.conversation_id;
   }
 
+  const existingMessage = await getMessageByClientId(
+    client,
+    userId,
+    resolvedConversationId,
+    normalizedClientMessageId,
+  );
+  if (existingMessage) {
+    const senderProfileMap = await fetchProfilesMap(client, [userId]);
+    return {
+      ...existingMessage,
+      sender_profile: senderProfileMap.get(userId) || null,
+    };
+  }
+
   const now = new Date().toISOString();
 
   const insertPayload = {
@@ -709,12 +760,29 @@ async function sendMessage({
       content,
       is_system,
       metadata,
+      client_message_id,
       created_at
     `,
     )
     .single();
 
   if (error) {
+    if (error.code === '23505' && normalizedClientMessageId) {
+      const duplicate = await getMessageByClientId(
+        client,
+        userId,
+        resolvedConversationId,
+        normalizedClientMessageId,
+      );
+      if (duplicate) {
+        const senderProfileMap = await fetchProfilesMap(client, [userId]);
+        return {
+          ...duplicate,
+          sender_profile: senderProfileMap.get(userId) || null,
+        };
+      }
+    }
+
     throw buildServiceError(`Khong the gui tin nhan: ${error.message}`, 500);
   }
 
@@ -725,10 +793,7 @@ async function sendMessage({
   };
 
   await Promise.all([
-    client
-      .from('conversations')
-      .update({ updated_at: now })
-      .eq('id', resolvedConversationId),
+    client.from('conversations').update({ updated_at: now }).eq('id', resolvedConversationId),
     client
       .from('conversation_participants')
       .update({ last_read_at: now })
@@ -748,9 +813,8 @@ async function sendMessage({
 
     if (receiverIds.length > 0) {
       const senderName = messageWithProfile?.sender_profile?.full_name || 'Nguoi ban';
-      const preview = normalizedContent.length > 80
-        ? `${normalizedContent.slice(0, 77)}...`
-        : normalizedContent;
+      const preview =
+        normalizedContent.length > 80 ? `${normalizedContent.slice(0, 77)}...` : normalizedContent;
 
       await Promise.all(
         receiverIds.map((targetUserId) =>

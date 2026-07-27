@@ -11,10 +11,16 @@ function SearchFilterSidebar({ filters, onChange, onClear, categories = [], clas
   };
 
   return (
-    <div className={`space-y-6 rounded-[28px] border border-white/10 bg-slate-950/75 p-5 shadow-xl shadow-slate-950/25 backdrop-blur-xl ${className}`}>
+    <div
+      className={`space-y-6 rounded-[28px] border border-white/10 bg-slate-950/75 p-5 shadow-xl shadow-slate-950/25 backdrop-blur-xl ${className}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-black text-white">Bộ lọc</h2>
-        <button type="button" onClick={onClear} className="text-sm font-bold text-cyan-300 hover:text-cyan-100">
+        <button
+          type="button"
+          onClick={onClear}
+          className="text-sm font-bold text-cyan-300 hover:text-cyan-100"
+        >
           Xóa lọc
         </button>
       </div>
@@ -48,7 +54,9 @@ function SearchFilterSidebar({ filters, onChange, onClear, categories = [], clas
         >
           <option value="">Tất cả danh mục</option>
           {categories.map((category) => (
-            <option key={category.name} value={category.name}>{category.name}</option>
+            <option key={category.name} value={category.name}>
+              {category.name}
+            </option>
           ))}
         </select>
       </div>
@@ -57,7 +65,10 @@ function SearchFilterSidebar({ filters, onChange, onClear, categories = [], clas
         <label className="text-sm font-bold text-slate-300">Tình trạng sản phẩm</label>
         <div className="space-y-2">
           {conditions.map((condition) => (
-            <label key={condition.value} className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-slate-300 transition hover:border-cyan-300/30 hover:bg-cyan-300/10">
+            <label
+              key={condition.value}
+              className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-slate-300 transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
+            >
               <input
                 type="checkbox"
                 checked={filters.conditions.includes(condition.value)}
@@ -79,7 +90,9 @@ function SearchFilterSidebar({ filters, onChange, onClear, categories = [], clas
         >
           <option value="">Tất cả khu vực</option>
           {locations.map((location) => (
-            <option key={location} value={location}>{location}</option>
+            <option key={location} value={location}>
+              {location}
+            </option>
           ))}
         </select>
       </div>
@@ -92,7 +105,9 @@ function SearchFilterSidebar({ filters, onChange, onClear, categories = [], clas
           className="h-11 w-full rounded-2xl border border-white/10 bg-slate-900 px-3 text-sm text-white outline-none focus:border-cyan-300/60"
         >
           {sortOptions.map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
           ))}
         </select>
       </div>

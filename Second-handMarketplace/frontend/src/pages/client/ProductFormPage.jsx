@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createProduct, getProductById, updateProduct, uploadImages } from '../../services/productService';
+import {
+  createProduct,
+  getProductById,
+  updateProduct,
+  uploadImages,
+} from '../../services/productService';
 import { useAuthStore } from '../../store/authStore';
 
 const defaultForm = {
@@ -33,7 +38,7 @@ function ProductFormPage() {
   const [existingImages, setExistingImages] = useState([]);
   const [newImageFiles, setNewImageFiles] = useState([]);
   const [newImagePreviews, setNewImagePreviews] = useState([]);
-  
+
   const [errors, setErrors] = useState({});
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -218,7 +223,12 @@ function ProductFormPage() {
       <div className="page-container">
         <div className="page-header">
           <div className="page-header-left">
-            <button type="button" onClick={() => navigate(-1)} className="back-link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="back-link"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
               ← Quay lại
             </button>
             <h1>{isEditMode ? 'Sửa sản phẩm' : 'Đăng sản phẩm mới'}</h1>
@@ -281,7 +291,9 @@ function ProductFormPage() {
                 >
                   <option value="">Chọn danh mục</option>
                   {categories.map((category) => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
                   ))}
                 </select>
                 {errors.category && <span className="field-error">{errors.category}</span>}
@@ -320,11 +332,8 @@ function ProductFormPage() {
 
             <div className="form-field">
               <span>Hình ảnh sản phẩm * (tối đa 5 ảnh)</span>
-              
-              <div
-                className="image-upload-zone"
-                onClick={() => fileInputRef.current?.click()}
-              >
+
+              <div className="image-upload-zone" onClick={() => fileInputRef.current?.click()}>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -344,13 +353,25 @@ function ProductFormPage() {
                   {existingImages.map((imgUrl, index) => (
                     <div key={`existing-${index}`} className="image-preview-item">
                       <img src={imgUrl} alt={`Existing ${index + 1}`} />
-                      <button type="button" onClick={() => removeExistingImage(index)} className="image-remove-btn">×</button>
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(index)}
+                        className="image-remove-btn"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                   {newImagePreviews.map((preview, index) => (
                     <div key={`new-${index}`} className="image-preview-item">
                       <img src={preview} alt={`New ${index + 1}`} />
-                      <button type="button" onClick={() => removeNewImage(index)} className="image-remove-btn">×</button>
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(index)}
+                        className="image-remove-btn"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -371,12 +392,12 @@ function ProductFormPage() {
               >
                 Hủy
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-primary"
-              >
-                {isSubmitting ? 'Đang xử lý...' : isEditMode ? '💾 Lưu thay đổi' : '📦 Đăng sản phẩm'}
+              <button type="submit" disabled={isSubmitting} className="btn-primary">
+                {isSubmitting
+                  ? 'Đang xử lý...'
+                  : isEditMode
+                    ? '💾 Lưu thay đổi'
+                    : '📦 Đăng sản phẩm'}
               </button>
             </div>
           </form>

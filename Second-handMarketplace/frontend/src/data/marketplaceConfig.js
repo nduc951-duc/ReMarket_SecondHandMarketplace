@@ -27,7 +27,9 @@ export const sortOptions = [
 export const locations = ['TP.HCM', 'Hà Nội', 'Đà Nẵng', 'Cần Thơ', 'Bình Dương'];
 
 export function getConditionLabel(value) {
-  return conditions.find((condition) => condition.value === value)?.label || value || 'Đã qua sử dụng';
+  return (
+    conditions.find((condition) => condition.value === value)?.label || value || 'Đã qua sử dụng'
+  );
 }
 
 export function formatCurrency(amount) {

@@ -22,6 +22,7 @@ import {
   sendMessage,
 } from '../../services/chatService';
 import { useAuthStore } from '../../store/authStore';
+import { mergeRealtimeMessages } from '../../utils/realtime';
 
 const MESSAGE_LIMIT = 80;
 
@@ -102,7 +103,11 @@ function ProductMessage({ message }) {
       >
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-slate-950">
           {product.image_url ? (
-            <img src={product.image_url} alt={product.title || 'San pham'} className="h-full w-full object-cover" />
+            <img
+              src={product.image_url}
+              alt={product.title || 'San pham'}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <Package size={22} className="text-slate-500" />
           )}
@@ -131,7 +136,11 @@ function EmptyState({ title, description }) {
   );
 }
 
-function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLabel = 'Tin nhan' }) {
+function ChatPage({
+  defaultReceiverId = '',
+  disableProductCard = false,
+  headerLabel = 'Tin nhan',
+}) {
   const user = useAuthStore((state) => state.user);
   const [searchParams] = useSearchParams();
   const queryReceiverId = String(searchParams.get('receiver') || '').trim();
@@ -168,7 +177,9 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
       const peerName = getPeerName(conversation, user?.id).toLowerCase();
       const productTitle = String(conversation?.product?.title || '').toLowerCase();
       const preview = getPreview(conversation.latest_message).toLowerCase();
-      return peerName.includes(keyword) || productTitle.includes(keyword) || preview.includes(keyword);
+      return (
+        peerName.includes(keyword) || productTitle.includes(keyword) || preview.includes(keyword)
+      );
     });
   }, [conversations, filterText, user?.id]);
 
@@ -193,10 +204,10 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
       }
 
       if (
-        keepSelection
-        && activeConversationIdRef.current
-        && !nextConversations.some((item) => item.id === activeConversationIdRef.current)
-        && nextConversations[0]
+        keepSelection &&
+        activeConversationIdRef.current &&
+        !nextConversations.some((item) => item.id === activeConversationIdRef.current) &&
+        nextConversations[0]
       ) {
         setActiveConversationId(nextConversations[0].id);
       }
@@ -207,31 +218,36 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
     }
   }, []);
 
-  const loadMessages = useCallback(async (conversationId, { silent = false, markRead = true } = {}) => {
-    if (!conversationId) return;
+  const loadMessages = useCallback(
+    async (conversationId, { silent = false, markRead = true } = {}) => {
+      if (!conversationId) return;
 
-    try {
-      if (!silent) setIsLoadingMessages(true);
-      setError('');
-      const data = await getConversationMessages(conversationId, {
-        limit: MESSAGE_LIMIT,
-        markRead,
-      });
-      const nextMessages = data?.messages || [];
-      setConversationDetail(data?.conversation || null);
-      setMessages(nextMessages);
+      try {
+        if (!silent) setIsLoadingMessages(true);
+        setError('');
+        const data = await getConversationMessages(conversationId, {
+          limit: MESSAGE_LIMIT,
+          markRead,
+        });
+        if (conversationId !== activeConversationIdRef.current) return;
 
-      const latestMessage = nextMessages[nextMessages.length - 1];
-      if (markRead && latestMessage?.id && lastReadMessageIdRef.current !== latestMessage.id) {
-        lastReadMessageIdRef.current = latestMessage.id;
-        await markConversationRead(conversationId).catch(() => {});
+        const nextMessages = data?.messages || [];
+        setConversationDetail(data?.conversation || null);
+        setMessages((current) => mergeRealtimeMessages(current, nextMessages));
+
+        const latestMessage = nextMessages[nextMessages.length - 1];
+        if (markRead && latestMessage?.id && lastReadMessageIdRef.current !== latestMessage.id) {
+          lastReadMessageIdRef.current = latestMessage.id;
+          await markConversationRead(conversationId).catch(() => {});
+        }
+      } catch (err) {
+        setError(err.message || 'Khong the tai tin nhan.');
+      } finally {
+        setIsLoadingMessages(false);
       }
-    } catch (err) {
-      setError(err.message || 'Khong the tai tin nhan.');
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     loadConversations({ keepSelection: true });
@@ -272,10 +288,13 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
         if (nextConversationId) {
           if (ensureCacheKey) {
             try {
-              sessionStorage.setItem(ensureCacheKey, JSON.stringify({
-                conversationId: nextConversationId,
-                savedAt: Date.now(),
-              }));
+              sessionStorage.setItem(
+                ensureCacheKey,
+                JSON.stringify({
+                  conversationId: nextConversationId,
+                  savedAt: Date.now(),
+                }),
+              );
             } catch {
               // Cache is optional.
             }
@@ -309,6 +328,8 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
       return;
     }
 
+    setMessages([]);
+    lastReadMessageIdRef.current = '';
     loadMessages(activeConversationId);
   }, [activeConversationId, loadMessages]);
 
@@ -323,7 +344,7 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
     }
 
     const channel = supabase
-      .channel(`chat-page-${user.id}-${Date.now()}`)
+      .channel(`chat-feed-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -331,21 +352,28 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
           schema: 'public',
           table: 'chat_messages',
         },
-        (payload) => {
-          const conversationId = payload.new?.conversation_id;
+        () => {
           loadConversations({ keepSelection: true });
-
-          if (conversationId && conversationId === activeConversationIdRef.current) {
-            loadMessages(conversationId, { silent: true, markRead: true });
-          }
         },
       )
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'conversations',
+        },
+        () => {
+          loadConversations({ keepSelection: true });
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversation_participants',
+          filter: `user_id=eq.${user.id}`,
         },
         () => {
           loadConversations({ keepSelection: true });
@@ -355,6 +383,11 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
     channel.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         setConnectionStatus('online');
+        loadConversations({ keepSelection: true });
+        const conversationId = activeConversationIdRef.current;
+        if (conversationId) {
+          loadMessages(conversationId, { silent: true, markRead: false });
+        }
       } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
         setConnectionStatus('offline');
       } else {
@@ -368,24 +401,55 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
   }, [loadConversations, loadMessages, user]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !supabase || !activeConversationId) {
       return () => {};
     }
 
-    const intervalId = window.setInterval(() => {
-      if (document.visibilityState === 'hidden') {
-        return;
-      }
+    const channel = supabase
+      .channel(`chat-conversation-${user.id}-${activeConversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `conversation_id=eq.${activeConversationId}`,
+        },
+        (payload) => {
+          const message = payload.new;
+          if (!message?.id) return;
 
-      loadConversations({ keepSelection: true });
-      const currentConversationId = activeConversationIdRef.current;
-      if (currentConversationId) {
-        loadMessages(currentConversationId, { silent: true, markRead: false });
-      }
-    }, 5000);
+          setMessages((current) => mergeRealtimeMessages(current, [message]));
+          if (message.sender_id !== user.id) {
+            lastReadMessageIdRef.current = message.id;
+            markConversationRead(activeConversationId).catch(() => {});
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      window.clearInterval(intervalId);
+      supabase.removeChannel(channel);
+    };
+  }, [activeConversationId, user]);
+
+  useEffect(() => {
+    if (!user) return () => {};
+
+    const recoverVisibleState = () => {
+      if (document.visibilityState !== 'visible') return;
+      loadConversations({ keepSelection: true });
+      const conversationId = activeConversationIdRef.current;
+      if (conversationId) {
+        loadMessages(conversationId, { silent: true, markRead: false });
+      }
+    };
+
+    window.addEventListener('focus', recoverVisibleState);
+    document.addEventListener('visibilitychange', recoverVisibleState);
+    return () => {
+      window.removeEventListener('focus', recoverVisibleState);
+      document.removeEventListener('visibilitychange', recoverVisibleState);
     };
   }, [loadConversations, loadMessages, user]);
 
@@ -400,6 +464,7 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
       conversation_id: activeConversationId,
       sender_id: user?.id,
       content,
+      client_message_id: clientMessageId,
       is_system: false,
       created_at: new Date().toISOString(),
       sender_profile: null,
@@ -422,7 +487,9 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
 
       setActiveConversationId(sentMessage.conversation_id);
       setMessages((current) => [
-        ...current.filter((message) => message.id !== optimisticMessage.id && message.id !== sentMessage.id),
+        ...current.filter(
+          (message) => message.id !== optimisticMessage.id && message.id !== sentMessage.id,
+        ),
         sentMessage,
       ]);
       await loadConversations({ keepSelection: true });
@@ -430,9 +497,7 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
       setError(err.message || 'Khong the gui tin nhan.');
       setMessages((current) =>
         current.map((message) =>
-          message.id === optimisticMessage.id
-            ? { ...message, status: 'failed' }
-            : message,
+          message.id === optimisticMessage.id ? { ...message, status: 'failed' } : message,
         ),
       );
       setDraft(content);
@@ -454,7 +519,10 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
       <div className="mx-auto flex h-screen max-h-screen w-full max-w-7xl flex-col px-3 py-4 sm:px-5 sm:py-6">
         <header className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <Link to="/app" className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition hover:text-teal-300">
+            <Link
+              to="/app"
+              className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition hover:text-teal-300"
+            >
               <ArrowLeft size={17} />
               Quay lai
             </Link>
@@ -466,7 +534,11 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
             ) : (
               <WifiOff size={15} className="text-rose-300" />
             )}
-            {connectionStatus === 'online' ? 'Realtime' : connectionStatus === 'connecting' ? 'Dang ket noi' : 'Offline'}
+            {connectionStatus === 'online'
+              ? 'Realtime'
+              : connectionStatus === 'connecting'
+                ? 'Dang ket noi'
+                : 'Offline'}
           </div>
         </header>
 
@@ -491,7 +563,9 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
           <aside className="flex min-h-0 flex-col border-b border-white/10 bg-[#0a0f1e]/90 lg:border-b-0 lg:border-r">
             <div className="shrink-0 border-b border-white/10 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">Hoi thoai</h2>
+                <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Hoi thoai
+                </h2>
                 <span className="rounded-full bg-teal-400/10 px-2.5 py-1 text-xs font-bold text-teal-300">
                   {conversations.length}
                 </span>
@@ -539,14 +613,20 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
                         <div className="flex gap-3">
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-800 text-sm font-bold text-teal-200">
                             {itemPeer?.profile?.avatar_url ? (
-                              <img src={itemPeer.profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                              <img
+                                src={itemPeer.profile.avatar_url}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
                             ) : (
                               getInitials(itemPeerName)
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-2">
-                              <p className="truncate text-sm font-bold text-white">{itemPeerName}</p>
+                              <p className="truncate text-sm font-bold text-white">
+                                {itemPeerName}
+                              </p>
                               <span className="shrink-0 text-[11px] font-medium text-slate-500">
                                 {formatConversationTime(conversation.updated_at)}
                               </span>
@@ -588,7 +668,11 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-800 text-sm font-bold text-teal-200">
                       {peer?.profile?.avatar_url ? (
-                        <img src={peer.profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                        <img
+                          src={peer.profile.avatar_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         getInitials(peerName)
                       )}
@@ -636,24 +720,37 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
                         }
 
                         return (
-                          <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-lg ${
-                              isMine
-                                ? 'rounded-br-md bg-gradient-to-br from-teal-400 to-cyan-400 text-slate-950 shadow-teal-950/20'
-                                : 'rounded-bl-md border border-white/10 bg-white/5 text-slate-100 shadow-slate-950/20'
-                            }`}
+                          <div
+                            key={message.id}
+                            className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-lg ${
+                                isMine
+                                  ? 'rounded-br-md bg-gradient-to-br from-teal-400 to-cyan-400 text-slate-950 shadow-teal-950/20'
+                                  : 'rounded-bl-md border border-white/10 bg-white/5 text-slate-100 shadow-slate-950/20'
+                              }`}
                             >
                               {!isMine && (
                                 <p className="mb-1 text-xs font-semibold text-slate-400">
                                   {message.sender_profile?.full_name || peerName}
                                 </p>
                               )}
-                              <p className="whitespace-pre-wrap break-words text-sm leading-6">{message.content}</p>
-                              <div className={`mt-1 flex items-center justify-end gap-1.5 text-[11px] ${
-                                isMine ? 'text-slate-800/70' : 'text-slate-500'
-                              }`}
+                              <p className="whitespace-pre-wrap break-words text-sm leading-6">
+                                {message.content}
+                              </p>
+                              <div
+                                className={`mt-1 flex items-center justify-end gap-1.5 text-[11px] ${
+                                  isMine ? 'text-slate-800/70' : 'text-slate-500'
+                                }`}
                               >
-                                <span>{message.status === 'sending' ? 'Dang gui' : message.status === 'failed' ? 'Loi' : formatTime(message.created_at)}</span>
+                                <span>
+                                  {message.status === 'sending'
+                                    ? 'Dang gui'
+                                    : message.status === 'failed'
+                                      ? 'Loi'
+                                      : formatTime(message.created_at)}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -664,7 +761,10 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
                   )}
                 </div>
 
-                <form onSubmit={handleSend} className="shrink-0 border-t border-white/10 bg-[#0d1324] p-3 sm:p-4">
+                <form
+                  onSubmit={handleSend}
+                  className="shrink-0 border-t border-white/10 bg-[#0d1324] p-3 sm:p-4"
+                >
                   <div className="flex items-end gap-2">
                     <button
                       type="button"
@@ -693,7 +793,11 @@ function ChatPage({ defaultReceiverId = '', disableProductCard = false, headerLa
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-400 text-slate-950 transition hover:bg-teal-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-500"
                       title="Gui tin nhan"
                     >
-                      {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                      {isSending ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : (
+                        <Send size={18} />
+                      )}
                     </button>
                   </div>
                 </form>

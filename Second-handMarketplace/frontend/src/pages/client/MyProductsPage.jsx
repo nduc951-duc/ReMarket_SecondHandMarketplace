@@ -6,7 +6,10 @@ import { getMyProducts, updateProduct, deleteProduct } from '../../services/prod
 import { useAuthStore } from '../../store/authStore';
 
 const statusLabels = {
-  active: { label: 'Đang bán', className: 'border-emerald-300/25 bg-emerald-400/10 text-emerald-200' },
+  active: {
+    label: 'Đang bán',
+    className: 'border-emerald-300/25 bg-emerald-400/10 text-emerald-200',
+  },
   sold: { label: 'Đã bán', className: 'border-sky-300/25 bg-sky-400/10 text-sky-200' },
   hidden: { label: 'Đang ẩn', className: 'border-amber-300/25 bg-amber-400/10 text-amber-200' },
   banned: { label: 'Bị khóa', className: 'border-rose-300/25 bg-rose-400/10 text-rose-200' },
@@ -35,10 +38,13 @@ function readCache(key) {
 
 function writeCache(key, payload) {
   try {
-    sessionStorage.setItem(key, JSON.stringify({
-      ...payload,
-      savedAt: Date.now(),
-    }));
+    sessionStorage.setItem(
+      key,
+      JSON.stringify({
+        ...payload,
+        savedAt: Date.now(),
+      }),
+    );
   } catch {
     // Cache is only a UX enhancement.
   }
@@ -59,7 +65,10 @@ function MyProductSkeletonGrid() {
   return (
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: 6 }).map((_, index) => (
-        <article key={index} className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70">
+        <article
+          key={index}
+          className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70"
+        >
           <div className="aspect-[4/3] animate-pulse bg-white/10" />
           <div className="space-y-3 p-4">
             <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
@@ -174,7 +183,10 @@ function MyProductsPage() {
       <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-6">
         <header className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-xl shadow-slate-950/30 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <Link to="/app" className="text-sm font-semibold text-slate-400 transition hover:text-cyan-200">
+            <Link
+              to="/app"
+              className="text-sm font-semibold text-slate-400 transition hover:text-cyan-200"
+            >
               Quay lại trang chủ
             </Link>
             <h1 className="mt-3 text-3xl font-black text-white">Sản phẩm của tôi</h1>
@@ -256,9 +268,16 @@ function MyProductsPage() {
                     key={product.id}
                     className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70 shadow-lg shadow-slate-950/25 transition hover:-translate-y-1 hover:border-cyan-300/35"
                   >
-                    <Link to={`/products/${product.id}`} className="block aspect-[4/3] overflow-hidden bg-slate-900">
+                    <Link
+                      to={`/products/${product.id}`}
+                      className="block aspect-[4/3] overflow-hidden bg-slate-900"
+                    >
                       {image ? (
-                        <img src={image} alt={product.title} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
+                        <img
+                          src={image}
+                          alt={product.title}
+                          className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                        />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-sm font-bold text-slate-500">
                           Chưa có ảnh
@@ -273,12 +292,16 @@ function MyProductsPage() {
                             {product.title}
                           </h3>
                         </Link>
-                        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold ${status.className}`}>
+                        <span
+                          className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold ${status.className}`}
+                        >
                           {status.label}
                         </span>
                       </div>
 
-                      <p className="text-xl font-black text-cyan-300">{formatCurrency(product.price)}</p>
+                      <p className="text-xl font-black text-cyan-300">
+                        {formatCurrency(product.price)}
+                      </p>
                       <div className="flex items-center justify-between gap-3 text-xs text-slate-400">
                         <span>{product.category || 'Chưa phân loại'}</span>
                         <span>{formatDate(product.created_at)}</span>
@@ -371,16 +394,25 @@ function MyProductsPage() {
               </div>
             )}
 
-            <p className="mt-5 text-center text-sm text-slate-500">Tổng: {pagination.total} sản phẩm</p>
+            <p className="mt-5 text-center text-sm text-slate-500">
+              Tổng: {pagination.total} sản phẩm
+            </p>
           </>
         )}
 
         {showDeleteModal && productToDelete && (
-          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)}>
-            <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl"
+              onClick={(event) => event.stopPropagation()}
+            >
               <h3 className="text-xl font-black text-white">Ẩn sản phẩm?</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Sản phẩm <span className="font-bold text-slate-200">{productToDelete.title}</span> sẽ không còn hiển thị công khai.
+                Sản phẩm <span className="font-bold text-slate-200">{productToDelete.title}</span>{' '}
+                sẽ không còn hiển thị công khai.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button

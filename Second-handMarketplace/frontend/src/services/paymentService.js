@@ -5,10 +5,18 @@ function getBackendUrl() {
 }
 
 export async function createPayment(payload) {
+  const { supabase } = await import('../lib/supabaseClient');
+  const { data: session } = await supabase.auth.getSession();
+
+  if (!session?.session?.access_token) {
+    throw new Error('Bạn cần đăng nhập để tạo thanh toán.');
+  }
+
   const response = await fetch(`${getBackendUrl()}/api/payment/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.session.access_token}`,
     },
     body: JSON.stringify({
       ...payload,

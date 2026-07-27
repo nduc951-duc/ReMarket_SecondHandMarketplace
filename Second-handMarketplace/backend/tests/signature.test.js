@@ -51,10 +51,7 @@ test('buildVnpayHashData and buildVnpayQuery encode values consistently', () => 
     'vnp_Amount=25000000&vnp_OrderInfo=Thanh+toan+don+hang',
   );
 
-  assert.equal(
-    buildVnpayQuery(payload),
-    'vnp_Amount=25000000&vnp_OrderInfo=Thanh+toan+don+hang',
-  );
+  assert.equal(buildVnpayQuery(payload), 'vnp_Amount=25000000&vnp_OrderInfo=Thanh+toan+don+hang');
 });
 
 test('createHmacSignature and verifyHmacSignature validate payment signatures', () => {

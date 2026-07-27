@@ -1,8 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 const { createNotification } = require('./notificationService');
 
 let adminClient = null;
@@ -19,9 +16,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thieu SUPABASE_URL hoac SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thieu SUPABASE_URL hoac SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -37,9 +32,9 @@ function getAdminClient() {
 function isRelationMissing(error, relationName) {
   const message = String(error?.message || '').toLowerCase();
   return (
-    message.includes('relation')
-    && message.includes('does not exist')
-    && message.includes(relationName)
+    message.includes('relation') &&
+    message.includes('does not exist') &&
+    message.includes(relationName)
   );
 }
 
@@ -124,6 +119,10 @@ async function createReview({ reviewerId, transactionId, rating, comment }) {
   if (error) {
     if (isRelationMissing(error, 'reviews')) {
       throw buildServiceError('Bang reviews chua duoc tao. Hay chay migration SQL.', 500);
+    }
+
+    if (error.code === '23505') {
+      throw buildServiceError('Ban da danh gia giao dich nay roi.', 409);
     }
 
     throw buildServiceError(`Khong the tao danh gia: ${error.message}`, 500);

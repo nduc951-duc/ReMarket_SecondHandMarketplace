@@ -1,8 +1,15 @@
-🧪 Tài Khoản Test Mẫu
-Tạo sẵn các tài khoản seed để tiện kiểm thử từng luồng:
-RoleEmailPasswordGhi chú
-Admin admin@test.com Admin@123 Toàn quyền hệ thống
-Agent agent@test.com Agent@123CSKH chức năng inbox chưa làm
-Người bán seller@test.com Seller@123 Có sẵn 3–5 tin đăng mẫu
-Người mua buyer@test.com Buyer@123 Tài khoản mua hàng thông thường
-Vừa mua vừa bán both@test.com Both@123Test luồng dual-role
+# Tài khoản demo
+
+Các email seed mặc định:
+
+| Vai trò | Email | Ghi chú |
+| --- | --- | --- |
+| Admin | admin@test.com | Chỉ đọc khi `DEMO_READ_ONLY_ADMIN=true` |
+| Agent | agent@test.com | Hỗ trợ khách hàng |
+| Người bán | seller@test.com | Có tin đăng mẫu |
+| Người mua | buyer@test.com | Kiểm thử luồng mua |
+| Mua và bán | both@test.com | Kiểm thử dual-role |
+
+Password không nằm trong source. Cấu hình `DEMO_ADMIN_PASSWORD`,
+`DEMO_AGENT_PASSWORD` và `DEMO_CUSTOMER_PASSWORD` bằng deployment secret trước
+khi chạy `npm run seed:users`.

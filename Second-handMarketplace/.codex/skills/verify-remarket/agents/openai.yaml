@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify ReMarket"
+  short_description: "Run proportional tests, lint, build, and graph checks"
+  default_prompt: "Use $verify-remarket to validate the current ReMarket changes."

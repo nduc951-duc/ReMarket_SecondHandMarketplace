@@ -1,9 +1,6 @@
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -30,9 +27,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -60,21 +55,17 @@ async function uploadImage(fileBuffer, fileName, mimeType, userId) {
   const extension = fileName.split('.').pop();
   const uniqueFileName = `${userId}/${timestamp}_${Math.random().toString(36).substring(2)}.${extension}`;
 
-  const { data, error } = await client.storage
-    .from('products')
-    .upload(uniqueFileName, fileBuffer, {
-      contentType: mimeType,
-      upsert: false,
-    });
+  const { data, error } = await client.storage.from('products').upload(uniqueFileName, fileBuffer, {
+    contentType: mimeType,
+    upsert: false,
+  });
 
   if (error) {
     throw new Error(`Không thể upload hình ảnh: ${error.message}`);
   }
 
   // Get public URL
-  const { data: urlData } = client.storage
-    .from('products')
-    .getPublicUrl(data.path);
+  const { data: urlData } = client.storage.from('products').getPublicUrl(data.path);
 
   return {
     url: urlData.publicUrl,
@@ -89,9 +80,7 @@ async function uploadImage(fileBuffer, fileName, mimeType, userId) {
 async function deleteImage(imagePath) {
   const client = getAdminClient();
 
-  const { error } = await client.storage
-    .from('products')
-    .remove([imagePath]);
+  const { error } = await client.storage.from('products').remove([imagePath]);
 
   if (error) {
     console.error('Error deleting image:', error);

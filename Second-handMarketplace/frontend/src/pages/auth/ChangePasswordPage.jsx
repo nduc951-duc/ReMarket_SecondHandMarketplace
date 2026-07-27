@@ -116,7 +116,9 @@ function ChangePasswordPage() {
             placeholder="Nhập lại mật khẩu mới"
             hasError={Boolean(errors.confirmNewPassword)}
           />
-          {errors.confirmNewPassword && <span className="field-error">{errors.confirmNewPassword}</span>}
+          {errors.confirmNewPassword && (
+            <span className="field-error">{errors.confirmNewPassword}</span>
+          )}
         </label>
 
         <button type="submit" className="btn-primary" disabled={isSubmitting}>

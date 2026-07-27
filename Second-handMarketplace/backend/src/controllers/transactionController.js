@@ -60,11 +60,7 @@ async function getTransactionStatsHandler(req, res) {
  */
 async function createTransactionHandler(req, res) {
   try {
-    const {
-      product_id,
-      payment_method,
-      note,
-    } = req.body;
+    const { product_id, payment_method, note } = req.body;
 
     // Validation
     if (!product_id) {
@@ -103,7 +99,8 @@ async function createTransactionHandler(req, res) {
       seller_id: product.seller_id,
       product_id,
       product_name: product.title,
-        product_image: product.image_url || (product.images && product.images.length > 0 ? product.images[0] : ''),
+      product_image:
+        product.image_url || (product.images && product.images.length > 0 ? product.images[0] : ''),
       amount: Number(product.price),
       payment_method: payment_method || '',
       note: note || '',

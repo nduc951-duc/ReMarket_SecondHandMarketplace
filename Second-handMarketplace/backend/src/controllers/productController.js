@@ -120,27 +120,28 @@ async function createProductHandler(req, res) {
 async function getProductsHandler(req, res) {
   try {
     const authHeader = req.headers.authorization || '';
-    const accessToken = authHeader.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : '';
+    const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
 
-    const result = await getPublicProducts({
-      page: req.query.page,
-      limit: req.query.limit,
-      category: req.query.category,
-      condition: req.query.condition,
-      search: req.query.search,
-      min_price: req.query.min_price,
-      max_price: req.query.max_price,
-      sort: req.query.sort,
-      city: req.query.city,
-      district: req.query.district,
-      posted_within: req.query.posted_within,
-      has_images: req.query.has_images,
-      verified_seller: req.query.verified_seller,
-      in_stock: req.query.in_stock,
-      negotiable: req.query.negotiable,
-    }, accessToken);
+    const result = await getPublicProducts(
+      {
+        page: req.query.page,
+        limit: req.query.limit,
+        category: req.query.category,
+        condition: req.query.condition,
+        search: req.query.search,
+        min_price: req.query.min_price,
+        max_price: req.query.max_price,
+        sort: req.query.sort,
+        city: req.query.city,
+        district: req.query.district,
+        posted_within: req.query.posted_within,
+        has_images: req.query.has_images,
+        verified_seller: req.query.verified_seller,
+        in_stock: req.query.in_stock,
+        negotiable: req.query.negotiable,
+      },
+      accessToken,
+    );
 
     return res.status(200).json({
       ok: true,
@@ -194,9 +195,7 @@ async function getProductByIdHandler(req, res) {
     const { id } = req.params;
     const skipView = String(req.query.skip_view || '').toLowerCase() === 'true';
     const authHeader = req.headers.authorization || '';
-    const accessToken = authHeader.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : '';
+    const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
 
     const product = await getPublicProductById(id, accessToken);
 
@@ -387,16 +386,18 @@ async function getProductsBySellerHandler(req, res) {
     const { sellerId } = req.params;
     const publicStatus = req.query.status === 'active' ? 'active' : null;
     const authHeader = req.headers.authorization || '';
-    const accessToken = authHeader.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : '';
+    const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
 
-    const result = await getPublicProductsBySeller(sellerId, {
-      page: req.query.page,
-      limit: req.query.limit,
-      status: publicStatus,
-      includeAllStatuses: false,
-    }, accessToken);
+    const result = await getPublicProductsBySeller(
+      sellerId,
+      {
+        page: req.query.page,
+        limit: req.query.limit,
+        status: publicStatus,
+        includeAllStatuses: false,
+      },
+      accessToken,
+    );
 
     return res.status(200).json({
       ok: true,

@@ -1,8 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 
 let adminClient = null;
 
@@ -28,16 +25,14 @@ function getAdminClient() {
 async function getCategories() {
   const client = getAdminClient();
 
-  const [{ data: categories, error: categoryError }, { data: products, error: productError }] = await Promise.all([
-    client
-      .from('categories')
-      .select('id, name, slug, image_url, created_at')
-      .order('id', { ascending: true }),
-    client
-      .from('products')
-      .select('category')
-      .eq('status', 'active'),
-  ]);
+  const [{ data: categories, error: categoryError }, { data: products, error: productError }] =
+    await Promise.all([
+      client
+        .from('categories')
+        .select('id, name, slug, image_url, created_at')
+        .order('id', { ascending: true }),
+      client.from('products').select('category').eq('status', 'active'),
+    ]);
 
   if (categoryError) {
     throw new Error(`Khong the lay danh muc: ${categoryError.message}`);

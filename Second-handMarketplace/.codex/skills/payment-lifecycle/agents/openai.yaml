@@ -1,0 +1,4 @@
+interface:
+  display_name: "Payment Lifecycle"
+  short_description: "Protect transaction and gateway state transitions"
+  default_prompt: "Use $payment-lifecycle to safely change or review this payment flow."

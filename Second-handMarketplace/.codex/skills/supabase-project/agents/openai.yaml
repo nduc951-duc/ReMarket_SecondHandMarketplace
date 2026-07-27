@@ -1,0 +1,4 @@
+interface:
+  display_name: "Supabase Project"
+  short_description: "Maintain project Supabase integration"
+  default_prompt: "Use $supabase-project to safely update this project's Supabase integration."

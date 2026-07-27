@@ -14,7 +14,7 @@ test('validateLoginForm accepts valid credentials', () => {
   assert.deepEqual(
     validateLoginForm({
       email: 'buyer@test.com',
-      password: 'Buyer@123',
+      password: 'ValidPass@123',
     }),
     {},
   );
@@ -35,7 +35,7 @@ test('validateRegisterForm checks required name and matching password confirmati
   const errors = validateRegisterForm({
     fullName: '',
     email: 'seller@test.com',
-    password: 'Seller@123',
+    password: 'ValidPass@123',
     confirmPassword: 'Different@123',
   });
 

@@ -56,13 +56,9 @@ async function getAdminOverview() {
     client.from('transactions').select('id', { count: 'exact', head: true }),
   ]);
 
-  const { data: productStatuses } = await client
-    .from('products')
-    .select('status');
+  const { data: productStatuses } = await client.from('products').select('status');
 
-  const { data: transactionStatuses } = await client
-    .from('transactions')
-    .select('status, amount');
+  const { data: transactionStatuses } = await client.from('transactions').select('status, amount');
 
   const productsByStatus = (productStatuses || []).reduce((acc, item) => {
     const key = item.status || 'unknown';
@@ -208,13 +204,10 @@ async function getAdminTransactions(options = {}) {
     throw buildServiceError(`Loi khi lay danh sach giao dich: ${error.message}`, 500);
   }
 
-  const profileMap = await fetchProfilesMap(
-    client,
-    [
-      ...(data || []).map((item) => item.buyer_id),
-      ...(data || []).map((item) => item.seller_id),
-    ],
-  );
+  const profileMap = await fetchProfilesMap(client, [
+    ...(data || []).map((item) => item.buyer_id),
+    ...(data || []).map((item) => item.seller_id),
+  ]);
 
   const transactions = (data || []).map((item) => ({
     ...item,
@@ -233,7 +226,9 @@ async function getAdminTransactions(options = {}) {
 
 async function updateUserRole(userId, role) {
   const client = getAdminClient();
-  const normalizedRole = String(role || '').trim().toLowerCase();
+  const normalizedRole = String(role || '')
+    .trim()
+    .toLowerCase();
 
   if (!['admin', 'agent', 'customer'].includes(normalizedRole)) {
     throw buildServiceError('Role khong hop le.', 400);
@@ -249,7 +244,10 @@ async function updateUserRole(userId, role) {
 
   const { data, error } = await client
     .from('profiles')
-    .upsert({ id: userId, role: normalizedRole, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    .upsert(
+      { id: userId, role: normalizedRole, updated_at: new Date().toISOString() },
+      { onConflict: 'id' },
+    )
     .select()
     .single();
 
@@ -262,7 +260,9 @@ async function updateUserRole(userId, role) {
 
 async function updateUserStatus(userId, status) {
   const client = getAdminClient();
-  const normalizedStatus = String(status || '').trim().toLowerCase();
+  const normalizedStatus = String(status || '')
+    .trim()
+    .toLowerCase();
 
   if (!['active', 'blocked'].includes(normalizedStatus)) {
     throw buildServiceError('Trang thai khong hop le.', 400);
@@ -270,7 +270,10 @@ async function updateUserStatus(userId, status) {
 
   const { data, error } = await client
     .from('profiles')
-    .upsert({ id: userId, status: normalizedStatus, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    .upsert(
+      { id: userId, status: normalizedStatus, updated_at: new Date().toISOString() },
+      { onConflict: 'id' },
+    )
     .select()
     .single();
 
@@ -283,8 +286,12 @@ async function updateUserStatus(userId, status) {
 
 async function createUser({ email, password, fullName, role }) {
   const client = getAdminClient();
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-  const normalizedRole = String(role || 'customer').trim().toLowerCase();
+  const normalizedEmail = String(email || '')
+    .trim()
+    .toLowerCase();
+  const normalizedRole = String(role || 'customer')
+    .trim()
+    .toLowerCase();
 
   if (!normalizedEmail || !password) {
     throw buildServiceError('Email va password la bat buoc.', 400);
@@ -305,20 +312,18 @@ async function createUser({ email, password, fullName, role }) {
   }
 
   const now = new Date().toISOString();
-  await client
-    .from('profiles')
-    .upsert(
-      {
-        id: data.user.id,
-        full_name: fullName || '',
-        email: normalizedEmail,
-        role: normalizedRole,
-        status: 'active',
-        created_at: now,
-        updated_at: now,
-      },
-      { onConflict: 'id' },
-    );
+  await client.from('profiles').upsert(
+    {
+      id: data.user.id,
+      full_name: fullName || '',
+      email: normalizedEmail,
+      role: normalizedRole,
+      status: 'active',
+      created_at: now,
+      updated_at: now,
+    },
+    { onConflict: 'id' },
+  );
 
   return { id: data.user.id, email: normalizedEmail, role: normalizedRole };
 }

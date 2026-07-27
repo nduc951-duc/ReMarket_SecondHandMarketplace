@@ -4,50 +4,55 @@ require('dotenv').config();
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-  process.exit(1);
+let adminClient;
+
+function buildSeedUsers(env = process.env) {
+  return [
+    {
+      email: env.DEMO_ADMIN_EMAIL || 'admin@test.com',
+      password: env.DEMO_ADMIN_PASSWORD || '',
+      role: 'admin',
+      full_name: 'Admin System',
+    },
+    {
+      email: env.DEMO_AGENT_EMAIL || 'agent@test.com',
+      password: env.DEMO_AGENT_PASSWORD || '',
+      role: 'agent',
+      full_name: 'Agent Support',
+    },
+    {
+      email: env.DEMO_SELLER_EMAIL || 'seller@test.com',
+      password: env.DEMO_CUSTOMER_PASSWORD || '',
+      role: 'customer',
+      full_name: 'Seller One',
+      seedProducts: true,
+    },
+    {
+      email: env.DEMO_BUYER_EMAIL || 'buyer@test.com',
+      password: env.DEMO_CUSTOMER_PASSWORD || '',
+      role: 'customer',
+      full_name: 'Buyer One',
+    },
+    {
+      email: env.DEMO_BOTH_EMAIL || 'both@test.com',
+      password: env.DEMO_CUSTOMER_PASSWORD || '',
+      role: 'customer',
+      full_name: 'Both User',
+    },
+  ];
 }
 
-const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-});
+function validateSeedConfiguration(users, env = process.env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.');
+  }
 
-const seedUsers = [
-  {
-    email: 'admin@test.com',
-    password: 'Admin@123',
-    role: 'admin',
-    full_name: 'Admin System',
-  },
-  {
-    email: 'agent@test.com',
-    password: 'Agent@123',
-    role: 'agent',
-    full_name: 'Agent Support',
-  },
-  {
-    email: 'seller@test.com',
-    password: 'Seller@123',
-    role: 'customer',
-    full_name: 'Seller One',
-  },
-  {
-    email: 'buyer@test.com',
-    password: 'Buyer@123',
-    role: 'customer',
-    full_name: 'Buyer One',
-  },
-  {
-    email: 'both@test.com',
-    password: 'Both@123',
-    role: 'customer',
-    full_name: 'Both User',
-  },
-];
+  for (const user of users) {
+    if (!user.password || user.password.length < 12) {
+      throw new Error(`Demo password for ${user.email} must contain at least 12 characters.`);
+    }
+  }
+}
 
 const sellerProducts = [
   {
@@ -56,7 +61,9 @@ const sellerProducts = [
     price: 350000,
     category: 'Dien tu',
     condition: 'like_new',
-    images: ['https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/f/r/frame_392.png'],
+    images: [
+      'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/f/r/frame_392.png',
+    ],
     location: 'TP Ho Chi Minh',
     status: 'active',
   },
@@ -66,7 +73,9 @@ const sellerProducts = [
     price: 220000,
     category: 'Thoi trang',
     condition: 'good',
-    images: ['https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/b/a/balo_laptop_chong_soc_15_inch_1.jpg'],
+    images: [
+      'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/b/a/balo_laptop_chong_soc_15_inch_1.jpg',
+    ],
     location: 'Ha Noi',
     status: 'active',
   },
@@ -110,19 +119,17 @@ async function findUserByEmail(email) {
 
 async function upsertProfile({ id, email, full_name, role }) {
   const now = new Date().toISOString();
-  await adminClient
-    .from('profiles')
-    .upsert(
-      {
-        id,
-        email,
-        full_name,
-        role,
-        status: 'active',
-        updated_at: now,
-      },
-      { onConflict: 'id' },
-    );
+  await adminClient.from('profiles').upsert(
+    {
+      id,
+      email,
+      full_name,
+      role,
+      status: 'active',
+      updated_at: now,
+    },
+    { onConflict: 'id' },
+  );
 }
 
 async function ensureUser({ email, password, role, full_name }) {
@@ -198,9 +205,18 @@ async function seedSellerProducts(sellerId) {
 }
 
 async function run() {
+  const seedUsers = buildSeedUsers();
+  validateSeedConfiguration(seedUsers);
+  adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
   for (const userSeed of seedUsers) {
     const user = await ensureUser(userSeed);
-    if (userSeed.email === 'seller@test.com') {
+    if (userSeed.seedProducts) {
       await seedSellerProducts(user.id);
     }
   }
@@ -208,7 +224,15 @@ async function run() {
   console.log('Seed users completed.');
 }
 
-run().catch((error) => {
-  console.error('Seed users failed:', error);
-  process.exit(1);
-});
+if (require.main === module) {
+  run().catch((error) => {
+    console.error('Seed users failed:', error);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  buildSeedUsers,
+  run,
+  validateSeedConfiguration,
+};

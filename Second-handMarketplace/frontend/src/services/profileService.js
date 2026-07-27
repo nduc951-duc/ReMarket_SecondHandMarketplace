@@ -104,14 +104,11 @@ export async function getTransactions(options = {}) {
   if (options.limit) params.set('limit', String(options.limit));
   if (options.status) params.set('status', options.status);
 
-  const response = await fetch(
-    `${getBackendUrl()}/api/transactions?${params.toString()}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const response = await fetch(`${getBackendUrl()}/api/transactions?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {

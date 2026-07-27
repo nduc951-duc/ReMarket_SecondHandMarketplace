@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import PasswordInput from '../../components/auth/PasswordInput';
-import { loginWithEmail, loginWithGoogle, resendVerificationEmail } from '../../services/authService';
+import {
+  loginWithEmail,
+  loginWithGoogle,
+  resendVerificationEmail,
+} from '../../services/authService';
 import { useAuthStore } from '../../store/authStore';
 import { hasValidationErrors, validateLoginForm } from '../../utils/authValidation';
 

@@ -1,8 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 
 let adminClient = null;
 
@@ -18,9 +15,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thieu SUPABASE_URL hoac SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thieu SUPABASE_URL hoac SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -36,9 +31,9 @@ function getAdminClient() {
 function isRelationMissing(error, relationName) {
   const message = String(error?.message || '').toLowerCase();
   return (
-    message.includes('relation')
-    && message.includes('does not exist')
-    && message.includes(relationName)
+    message.includes('relation') &&
+    message.includes('does not exist') &&
+    message.includes(relationName)
   );
 }
 
@@ -122,15 +117,20 @@ async function toggleWishlist(userId, productId) {
     };
   }
 
-  const { error } = await client
-    .from('wishlists')
-    .insert({
-      user_id: userId,
-      product_id: productId,
-      created_at: new Date().toISOString(),
-    });
+  const { error } = await client.from('wishlists').insert({
+    user_id: userId,
+    product_id: productId,
+    created_at: new Date().toISOString(),
+  });
 
   if (error) {
+    if (error.code === '23505') {
+      return {
+        wishlisted: true,
+        product,
+      };
+    }
+
     throw buildServiceError(`Khong the them wishlist: ${error.message}`, 500);
   }
 
@@ -182,7 +182,9 @@ async function getWishlist(userId, options = {}) {
 
   const { data: products, error: productError } = await client
     .from('products')
-    .select('id, seller_id, title, description, price, category, condition, images, image_url, location, status, created_at')
+    .select(
+      'id, seller_id, title, description, price, category, condition, images, image_url, location, status, created_at',
+    )
     .in('id', productIds)
     .not('status', 'in', '(hidden,banned)');
 

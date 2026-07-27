@@ -1,4 +1,5 @@
 const { sendMail } = require('../services/gmailService');
+const { MAIL_API_KEY, NODE_ENV } = require('../config/env');
 
 function normalizeEmailValue(value) {
   if (typeof value !== 'string') {
@@ -41,12 +42,11 @@ function validatePayload(body) {
 }
 
 function isAuthorized(req) {
-  const apiKey = process.env.MAIL_API_KEY;
-  if (!apiKey) {
-    return true;
+  if (!MAIL_API_KEY) {
+    return NODE_ENV !== 'production';
   }
 
-  return req.headers['x-api-key'] === apiKey;
+  return req.headers['x-api-key'] === MAIL_API_KEY;
 }
 
 async function sendEmailHandler(req, res) {
@@ -82,5 +82,6 @@ async function sendEmailHandler(req, res) {
 }
 
 module.exports = {
+  isAuthorized,
   sendEmailHandler,
 };

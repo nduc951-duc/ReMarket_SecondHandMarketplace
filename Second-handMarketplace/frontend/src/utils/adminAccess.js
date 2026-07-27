@@ -17,9 +17,7 @@ export function getUserRole(user) {
     return 'guest';
   }
 
-  const role = String(
-    user.user_metadata?.role || user.app_metadata?.role || '',
-  ).toLowerCase();
+  const role = String(user.user_metadata?.role || user.app_metadata?.role || '').toLowerCase();
 
   if (role) {
     return role;

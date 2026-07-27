@@ -31,10 +31,13 @@ function readHomeCache() {
 
 function writeHomeCache(payload) {
   try {
-    sessionStorage.setItem(HOME_CACHE_KEY, JSON.stringify({
-      ...payload,
-      savedAt: Date.now(),
-    }));
+    sessionStorage.setItem(
+      HOME_CACHE_KEY,
+      JSON.stringify({
+        ...payload,
+        savedAt: Date.now(),
+      }),
+    );
   } catch {
     // Cache is only a UX enhancement.
   }
@@ -43,7 +46,9 @@ function writeHomeCache(payload) {
 function buildSections(products) {
   const list = products || [];
   return {
-    hot: [...list].sort((a, b) => Number(b.view_count || 0) - Number(a.view_count || 0)).slice(0, 6),
+    hot: [...list]
+      .sort((a, b) => Number(b.view_count || 0) - Number(a.view_count || 0))
+      .slice(0, 6),
     newest: [...list].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6),
     fresh: list.filter((product) => ['new', 'like_new'].includes(product.condition)).slice(0, 6),
     all: list,
@@ -56,7 +61,10 @@ function ProductSectionSkeleton() {
       <div className="h-8 w-64 animate-pulse rounded-full bg-white/10" />
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/70">
+          <div
+            key={index}
+            className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/70"
+          >
             <div className="aspect-[4/3] animate-pulse bg-white/10" />
             <div className="space-y-3 p-4">
               <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
@@ -175,7 +183,9 @@ function ClientHomePage() {
           <section className="space-y-5">
             <div>
               <h2 className="text-2xl font-black text-white md:text-3xl">Danh mục nổi bật</h2>
-              <p className="mt-1 text-sm text-slate-400">Các nhóm hàng đang có tin rao trên hệ thống.</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Các nhóm hàng đang có tin rao trên hệ thống.
+              </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
               {categories.map((category) => (

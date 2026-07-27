@@ -1,0 +1,78 @@
+services:
+  - type: web
+    name: remarket-api
+    runtime: node
+    region: singapore
+    rootDir: Second-handMarketplace/backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: MAIL_API_KEY
+        generateValue: true
+      - key: DEMO_READ_ONLY_ADMIN
+        value: "true"
+      - key: AUTH_EMAIL_RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: AUTH_EMAIL_RATE_LIMIT_MAX
+        value: "10"
+      - key: API_RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: API_RATE_LIMIT_MAX
+        value: "300"
+      - key: READINESS_TIMEOUT_MS
+        value: "3000"
+      - key: PAYMENT_RETURN_URL
+        sync: false
+      - key: PAYMENT_NOTIFY_URL
+        sync: false
+      - key: MOMO_PARTNER_CODE
+        sync: false
+      - key: MOMO_ACCESS_KEY
+        sync: false
+      - key: MOMO_SECRET_KEY
+        sync: false
+      - key: VNPAY_TMN_CODE
+        sync: false
+      - key: VNPAY_HASH_SECRET
+        sync: false
+
+  - type: cron
+    name: remarket-payment-expiry
+    runtime: node
+    region: singapore
+    rootDir: Second-handMarketplace/backend
+    schedule: "*/10 * * * *"
+    buildCommand: npm ci
+    startCommand: npm run worker:payment-expiry:once
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

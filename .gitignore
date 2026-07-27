@@ -69,9 +69,31 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
+# Environment files and local credentials
 .env
-.env.test
+.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+
+# Deployment provider local state
+.vercel/
+.render/
+.railway/
+.supabase/
+
+# Tool and bundler state
+.vite/
+.turbo/
+
+# Keep the shared Graphify outputs, ignore local caches and backups
+Second-handMarketplace/graphify-out/cache/
+Second-handMarketplace/graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+Second-handMarketplace/graphify-out/.*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

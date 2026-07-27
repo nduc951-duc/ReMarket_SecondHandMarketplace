@@ -6,6 +6,8 @@ const {
   getMyReviewsHandler,
 } = require('../controllers/reviewController');
 const { requireAuth } = require('../middlewares/authMiddleware');
+const validateRequest = require('../middlewares/validateRequest');
+const { createReview } = require('../validation/requestSchemas');
 
 const router = express.Router();
 
@@ -13,7 +15,7 @@ router.get('/user/:userId', getReviewsByUserHandler);
 
 router.use(requireAuth);
 
-router.post('/', createReviewHandler);
+router.post('/', validateRequest(createReview), createReviewHandler);
 router.get('/me', getMyReviewsHandler);
 router.get('/transaction/:transactionId/me', getReviewForTransactionHandler);
 
