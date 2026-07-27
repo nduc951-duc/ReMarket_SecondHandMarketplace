@@ -202,8 +202,7 @@ async function requestSignupVerificationHandler(req, res) {
     if (isRateLimitError(error)) {
       return res.status(429).json({
         ok: false,
-        message:
-          'Email rate limit exceeded. Vui long doi it phut hoac giam tan suat gui yeu cau.',
+        message: 'Email rate limit exceeded. Vui long doi it phut hoac giam tan suat gui yeu cau.',
       });
     }
 
@@ -262,8 +261,7 @@ async function requestForgotPasswordHandler(req, res) {
     if (isRateLimitError(error)) {
       return res.status(429).json({
         ok: false,
-        message:
-          'Email rate limit exceeded. Vui long doi it phut hoac giam tan suat gui yeu cau.',
+        message: 'Email rate limit exceeded. Vui long doi it phut hoac giam tan suat gui yeu cau.',
       });
     }
 
@@ -289,11 +287,7 @@ async function resendVerificationHandler(req, res) {
     });
   }
 
-  const cooldownResult = canRequestNow(
-    resendCooldownMap,
-    email,
-    SIGNUP_COOLDOWN_SECONDS,
-  );
+  const cooldownResult = canRequestNow(resendCooldownMap, email, SIGNUP_COOLDOWN_SECONDS);
   if (!cooldownResult.allowed) {
     return res.status(429).json({
       ok: false,
@@ -328,8 +322,7 @@ async function resendVerificationHandler(req, res) {
     if (isRateLimitError(error)) {
       return res.status(429).json({
         ok: false,
-        message:
-          'Email rate limit exceeded. Vui long doi it phut hoac giam tan suat gui yeu cau.',
+        message: 'Email rate limit exceeded. Vui long doi it phut hoac giam tan suat gui yeu cau.',
       });
     }
 

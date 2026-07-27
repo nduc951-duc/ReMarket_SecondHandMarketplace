@@ -50,7 +50,10 @@ class MomoStrategy extends PaymentStrategy {
     ];
 
     return fields
-      .map((field) => `${field}=${field === 'accessKey' ? this.config.accessKey : payload[field] ?? ''}`)
+      .map(
+        (field) =>
+          `${field}=${field === 'accessKey' ? this.config.accessKey : (payload[field] ?? '')}`,
+      )
       .join('&');
   }
 
@@ -113,12 +116,19 @@ class MomoStrategy extends PaymentStrategy {
   verifyReturn(payload = {}) {
     requireConfig(this.config);
     const rawSignature = this.buildResultSignaturePayload(payload);
-    const isValid = verifyHmacSignature(rawSignature, payload.signature || '', this.config.secretKey, 'sha256');
+    const isValid = verifyHmacSignature(
+      rawSignature,
+      payload.signature || '',
+      this.config.secretKey,
+      'sha256',
+    );
 
     return {
       isValid,
       status: Number(payload.resultCode) === 0 ? 'success' : 'failed',
       orderId: payload.orderId,
+      amount: Number(payload.amount),
+      currency: String(payload.currency || 'VND').toUpperCase(),
       gatewayTransactionId: payload.transId,
       responseCode: payload.resultCode,
       raw: payload,

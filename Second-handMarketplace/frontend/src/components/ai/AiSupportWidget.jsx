@@ -122,7 +122,11 @@ function AiSupportWidget() {
         onClick={() => setIsOpen((previous) => !previous)}
         aria-label={isOpen ? 'Dong tro ly AI' : 'Mo tro ly AI'}
       >
-        {isOpen ? <X size={24} aria-hidden="true" /> : <MessageCircle size={24} aria-hidden="true" />}
+        {isOpen ? (
+          <X size={24} aria-hidden="true" />
+        ) : (
+          <MessageCircle size={24} aria-hidden="true" />
+        )}
       </button>
     </div>
   );

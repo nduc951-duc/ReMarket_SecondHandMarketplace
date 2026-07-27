@@ -1,0 +1,4 @@
+interface:
+  display_name: "Realtime Chat"
+  short_description: "Maintain chat, notifications, realtime, and unread state"
+  default_prompt: "Use $realtime-chat to safely update this chat or realtime behavior."

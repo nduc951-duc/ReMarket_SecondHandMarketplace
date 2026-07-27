@@ -31,14 +31,17 @@
   body {
     @apply text-foreground font-sans leading-relaxed;
     background: #0a0f1e;
-    background-image: 
+    background-image:
       radial-gradient(1100px circle at 12% 8%, rgba(124, 58, 237, 0.12), transparent 45%),
       radial-gradient(900px circle at 88% 14%, rgba(0, 212, 180, 0.1), transparent 48%);
     background-color: #0a0f1e;
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     @apply font-display tracking-tight;
   }
 }

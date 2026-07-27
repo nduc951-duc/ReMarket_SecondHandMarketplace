@@ -100,7 +100,11 @@ export function validateChangePasswordForm(values) {
     errors.newPassword = 'Mật khẩu mới phải có ít nhất 8 ký tự.';
   }
 
-  if (values.currentPassword && values.newPassword && values.currentPassword === values.newPassword) {
+  if (
+    values.currentPassword &&
+    values.newPassword &&
+    values.currentPassword === values.newPassword
+  ) {
     errors.newPassword = 'Mật khẩu mới phải khác mật khẩu hiện tại.';
   }
 

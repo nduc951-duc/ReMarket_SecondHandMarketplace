@@ -29,9 +29,7 @@ async function requireAuth(req, res, next) {
   try {
     // Create a temporary Supabase client with the user's token
     const anonKey =
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-      process.env.SUPABASE_ANON_KEY ||
-      '';
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
     const supabase = createClient(SUPABASE_URL, anonKey, {
       global: {
@@ -97,9 +95,7 @@ async function attachUserIfPresent(req, res, next) {
 
   try {
     const anonKey =
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-      process.env.SUPABASE_ANON_KEY ||
-      '';
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
     const supabase = createClient(SUPABASE_URL, anonKey, {
       global: {

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { FRONTEND_ORIGIN } = require('./config/env');
+const helmet = require('helmet');
+const { FRONTEND_ORIGIN, NODE_ENV } = require('./config/env');
 const authRoutes = require('./routes/authRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const profileRoutes = require('./routes/profileRoutes');
@@ -15,25 +16,37 @@ const adminRoutes = require('./routes/adminRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const aiSupportRoutes = require('./routes/aiSupportRoutes');
-const { startPaymentExpiryWorker } = require('./services/paymentExpiryService');
+const docsRoutes = require('./routes/docsRoutes');
+const healthRoutes = require('./routes/healthRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const requestContextMiddleware = require('./middlewares/requestContextMiddleware');
+const { observabilityMiddleware } = require('./middlewares/observabilityMiddleware');
+const { apiRateLimiter } = require('./middlewares/rateLimitMiddleware');
+const { errorResponseMiddleware } = require('./middlewares/errorResponseMiddleware');
+const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware');
 
 const app = express();
 
+if (NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+app.use(requestContextMiddleware);
+app.use(observabilityMiddleware);
+app.use(errorResponseMiddleware);
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(
   cors({
     origin: FRONTEND_ORIGIN,
     credentials: true,
+    exposedHeaders: ['X-Request-Id'],
   }),
 );
 app.use(express.json({ limit: '10mb' }));
 
-app.get('/api/health', (_, res) => {
-  res.status(200).json({
-    ok: true,
-    message: 'Backend is running.',
-  });
-});
-
+app.use('/api', healthRoutes);
+app.use('/api', apiRateLimiter);
+app.use('/api/docs', docsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/profile', profileRoutes);
@@ -43,12 +56,14 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/ai-support', aiSupportRoutes);
 
-startPaymentExpiryWorker();
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

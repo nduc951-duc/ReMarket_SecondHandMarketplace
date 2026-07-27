@@ -96,7 +96,9 @@ export async function loginWithEmail({ email, password }) {
   if (error) {
     const message = String(error.message || '');
     if (message.toLowerCase().includes('email not confirmed')) {
-      const err = new Error('Email chưa xác nhận. Vui lòng kiểm tra email và bấm link xác nhận trước.');
+      const err = new Error(
+        'Email chưa xác nhận. Vui lòng kiểm tra email và bấm link xác nhận trước.',
+      );
       err.code = 'EMAIL_NOT_CONFIRMED';
       err.email = email;
       throw err;

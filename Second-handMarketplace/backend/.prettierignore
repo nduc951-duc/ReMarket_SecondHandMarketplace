@@ -1,4 +1,1 @@
-node_modules
-tmp
-coverage
-package-lock.json
+node_modules/

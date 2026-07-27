@@ -85,7 +85,7 @@ export async function createProduct(productData) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
     body: JSON.stringify(productData),
   });
@@ -118,7 +118,7 @@ export async function updateProduct(productId, updateData) {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
     body: JSON.stringify(updateData),
   });
@@ -149,7 +149,7 @@ export async function deleteProduct(productId) {
   const response = await fetch(`${backendUrl}/api/products/${productId}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
   });
 
@@ -186,7 +186,7 @@ export async function getMyProducts(params = {}) {
   const response = await fetch(`${backendUrl}/api/products/user/my?${queryParams}`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
   });
 
@@ -221,7 +221,7 @@ export async function uploadImages(files) {
   const response = await fetch(`${backendUrl}/api/upload/images`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
     body: formData,
   });
@@ -242,12 +242,15 @@ export async function uploadImages(files) {
 export async function autocompleteProducts(query) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
 
-  const response = await fetch(`${backendUrl}/api/products/autocomplete?q=${encodeURIComponent(query)}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    `${backendUrl}/api/products/autocomplete?q=${encodeURIComponent(query)}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     },
-  });
+  );
 
   const data = await response.json();
 

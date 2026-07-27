@@ -30,7 +30,15 @@ import {
 const ROLE_OPTIONS = ['admin', 'agent', 'customer'];
 const USER_STATUS_OPTIONS = ['active', 'blocked'];
 const PRODUCT_STATUS_OPTIONS = ['active', 'sold', 'hidden', 'banned'];
-const TRANSACTION_STATUS_OPTIONS = ['all', 'awaiting_payment', 'pending', 'confirmed', 'shipped', 'completed', 'cancelled'];
+const TRANSACTION_STATUS_OPTIONS = [
+  'all',
+  'awaiting_payment',
+  'pending',
+  'confirmed',
+  'shipped',
+  'completed',
+  'cancelled',
+];
 
 const PRODUCT_STATUS_LABELS = {
   active: 'Đang bán',
@@ -87,7 +95,9 @@ function StatusPill({ children, tone = 'slate' }) {
   };
 
   return (
-    <span className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-xs font-bold ${tones[tone] || tones.slate}`}>
+    <span
+      className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-xs font-bold ${tones[tone] || tones.slate}`}
+    >
       {children}
     </span>
   );
@@ -290,7 +300,10 @@ function AdminDashboardPage() {
         <header className="mb-6 rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-xl shadow-slate-950/30">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <Link to="/app" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-teal-200">
+              <Link
+                to="/app"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-teal-200"
+              >
                 <ArrowLeft size={17} />
                 Quay lại
               </Link>
@@ -301,7 +314,8 @@ function AdminDashboardPage() {
                 <div>
                   <h1 className="text-3xl font-black text-white">Bảng điều hành cửa hàng</h1>
                   <p className="mt-1 text-sm text-slate-400">
-                    Theo dõi khách hàng, kiểm duyệt sản phẩm và xử lý đơn hàng trong một màn hình gọn cho chủ cửa hàng.
+                    Theo dõi khách hàng, kiểm duyệt sản phẩm và xử lý đơn hàng trong một màn hình
+                    gọn cho chủ cửa hàng.
                   </p>
                 </div>
               </div>
@@ -360,12 +374,19 @@ function AdminDashboardPage() {
                     const Icon = stat.icon;
 
                     return (
-                      <article key={stat.label} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-slate-950/25">
+                      <article
+                        key={stat.label}
+                        className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-slate-950/25"
+                      >
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <p className="text-sm font-semibold text-slate-400">{stat.label}</p>
-                            <strong className="mt-2 block text-2xl font-black text-white">{stat.value}</strong>
-                            <p className="mt-1 text-xs font-semibold text-slate-500">{stat.detail}</p>
+                            <strong className="mt-2 block text-2xl font-black text-white">
+                              {stat.value}
+                            </strong>
+                            <p className="mt-1 text-xs font-semibold text-slate-500">
+                              {stat.detail}
+                            </p>
                           </div>
                           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-teal-300/20 bg-teal-300/10 text-teal-200">
                             <Icon size={21} />
@@ -395,7 +416,10 @@ function AdminDashboardPage() {
                                 <span>{count}</span>
                               </div>
                               <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                                <div className="h-full rounded-full bg-teal-300" style={{ width: `${Math.min(100, (count / total) * 100)}%` }} />
+                                <div
+                                  className="h-full rounded-full bg-teal-300"
+                                  style={{ width: `${Math.min(100, (count / total) * 100)}%` }}
+                                />
                               </div>
                             </div>
                           );
@@ -406,22 +430,27 @@ function AdminDashboardPage() {
                     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                       <h3 className="font-black text-white">Đơn hàng theo trạng thái</h3>
                       <div className="mt-4 space-y-3">
-                        {TRANSACTION_STATUS_OPTIONS.filter((status) => status !== 'all').map((status) => {
-                          const count = getCount(overview?.transactions?.byStatus, status);
-                          const total = Math.max(1, Number(overview?.transactions?.total || 0));
+                        {TRANSACTION_STATUS_OPTIONS.filter((status) => status !== 'all').map(
+                          (status) => {
+                            const count = getCount(overview?.transactions?.byStatus, status);
+                            const total = Math.max(1, Number(overview?.transactions?.total || 0));
 
-                          return (
-                            <div key={status}>
-                              <div className="mb-1 flex justify-between text-xs font-bold text-slate-400">
-                                <span>{TRANSACTION_STATUS_LABELS[status]}</span>
-                                <span>{count}</span>
+                            return (
+                              <div key={status}>
+                                <div className="mb-1 flex justify-between text-xs font-bold text-slate-400">
+                                  <span>{TRANSACTION_STATUS_LABELS[status]}</span>
+                                  <span>{count}</span>
+                                </div>
+                                <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                                  <div
+                                    className="h-full rounded-full bg-violet-300"
+                                    style={{ width: `${Math.min(100, (count / total) * 100)}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                                <div className="h-full rounded-full bg-violet-300" style={{ width: `${Math.min(100, (count / total) * 100)}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          },
+                        )}
                       </div>
                     </div>
                   </div>
@@ -433,14 +462,25 @@ function AdminDashboardPage() {
               <SectionShell
                 title="Quản lý users"
                 description="Tạo tài khoản, đổi role và khóa/mở trạng thái người dùng."
-                action={<SearchInput value={userSearch} onChange={setUserSearch} placeholder="Tìm email hoặc họ tên..." />}
+                action={
+                  <SearchInput
+                    value={userSearch}
+                    onChange={setUserSearch}
+                    placeholder="Tìm email hoặc họ tên..."
+                  />
+                }
               >
-                <form className="mb-5 grid gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:grid-cols-5" onSubmit={handleCreateUser}>
+                <form
+                  className="mb-5 grid gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:grid-cols-5"
+                  onSubmit={handleCreateUser}
+                >
                   <input
                     type="email"
                     placeholder="Email"
                     value={formValues.email}
-                    onChange={(event) => setFormValues((prev) => ({ ...prev, email: event.target.value }))}
+                    onChange={(event) =>
+                      setFormValues((prev) => ({ ...prev, email: event.target.value }))
+                    }
                     className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2.5 text-sm font-semibold text-white outline-none placeholder:text-slate-600 focus:border-teal-300/60"
                     required
                   />
@@ -448,7 +488,9 @@ function AdminDashboardPage() {
                     type="text"
                     placeholder="Họ tên"
                     value={formValues.full_name}
-                    onChange={(event) => setFormValues((prev) => ({ ...prev, full_name: event.target.value }))}
+                    onChange={(event) =>
+                      setFormValues((prev) => ({ ...prev, full_name: event.target.value }))
+                    }
                     className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2.5 text-sm font-semibold text-white outline-none placeholder:text-slate-600 focus:border-teal-300/60"
                   />
                   <div className="flex min-w-0 items-center rounded-2xl border border-white/10 bg-slate-950/70 px-3 focus-within:border-teal-300/60">
@@ -456,7 +498,9 @@ function AdminDashboardPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Mật khẩu"
                       value={formValues.password}
-                      onChange={(event) => setFormValues((prev) => ({ ...prev, password: event.target.value }))}
+                      onChange={(event) =>
+                        setFormValues((prev) => ({ ...prev, password: event.target.value }))
+                      }
                       className="min-w-0 flex-1 bg-transparent py-2.5 text-sm font-semibold text-white outline-none placeholder:text-slate-600"
                       required
                     />
@@ -471,11 +515,15 @@ function AdminDashboardPage() {
                   </div>
                   <select
                     value={formValues.role}
-                    onChange={(event) => setFormValues((prev) => ({ ...prev, role: event.target.value }))}
+                    onChange={(event) =>
+                      setFormValues((prev) => ({ ...prev, role: event.target.value }))
+                    }
                     className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2.5 text-sm font-semibold text-white outline-none focus:border-teal-300/60"
                   >
                     {ROLE_OPTIONS.map((role) => (
-                      <option key={role} value={role}>{role}</option>
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -483,13 +531,21 @@ function AdminDashboardPage() {
                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-300 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-teal-200 disabled:opacity-60"
                     disabled={isCreating}
                   >
-                    {isCreating ? <Loader2 size={17} className="animate-spin" /> : <UserPlus size={17} />}
+                    {isCreating ? (
+                      <Loader2 size={17} className="animate-spin" />
+                    ) : (
+                      <UserPlus size={17} />
+                    )}
                     {isCreating ? 'Đang tạo...' : 'Tạo user'}
                   </button>
                 </form>
 
                 {users.length === 0 ? (
-                  <EmptyPanel icon={Users} title="Không có user nào" description="Dữ liệu user sẽ hiển thị tại đây." />
+                  <EmptyPanel
+                    icon={Users}
+                    title="Không có user nào"
+                    description="Dữ liệu user sẽ hiển thị tại đây."
+                  />
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[860px] border-collapse">
@@ -505,7 +561,10 @@ function AdminDashboardPage() {
                       </thead>
                       <tbody>
                         {users.map((entry) => (
-                          <tr key={entry.id} className="border-b border-white/10 text-sm text-slate-300">
+                          <tr
+                            key={entry.id}
+                            className="border-b border-white/10 text-sm text-slate-300"
+                          >
                             <td className="py-3 pr-4 font-bold text-white">{entry.email}</td>
                             <td className="py-3 pr-4">{entry.full_name || '-'}</td>
                             <td className="py-3 pr-4">
@@ -516,7 +575,9 @@ function AdminDashboardPage() {
                                 disabled={isSavingUserId === entry.id}
                               >
                                 {ROLE_OPTIONS.map((role) => (
-                                  <option key={role} value={role}>{role}</option>
+                                  <option key={role} value={role}>
+                                    {role}
+                                  </option>
                                 ))}
                               </select>
                             </td>
@@ -524,15 +585,21 @@ function AdminDashboardPage() {
                               <select
                                 className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm font-bold text-white outline-none"
                                 value={entry.status || 'active'}
-                                onChange={(event) => handleUpdateStatus(entry.id, event.target.value)}
+                                onChange={(event) =>
+                                  handleUpdateStatus(entry.id, event.target.value)
+                                }
                                 disabled={isSavingUserId === entry.id}
                               >
                                 {USER_STATUS_OPTIONS.map((status) => (
-                                  <option key={status} value={status}>{status}</option>
+                                  <option key={status} value={status}>
+                                    {status}
+                                  </option>
                                 ))}
                               </select>
                             </td>
-                            <td className="py-3 pr-4">{Number(entry.rating_avg || 0).toFixed(1)} ({entry.rating_count || 0})</td>
+                            <td className="py-3 pr-4">
+                              {Number(entry.rating_avg || 0).toFixed(1)} ({entry.rating_count || 0})
+                            </td>
                             <td className="py-3 pr-4">{formatDate(entry.created_at)}</td>
                           </tr>
                         ))}
@@ -547,9 +614,13 @@ function AdminDashboardPage() {
               <SectionShell
                 title="Quản lý sản phẩm"
                 description="Duyệt, ẩn, đánh dấu đã bán hoặc ban sản phẩm vi phạm."
-                action={(
+                action={
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <SearchInput value={productSearch} onChange={setProductSearch} placeholder="Tìm sản phẩm..." />
+                    <SearchInput
+                      value={productSearch}
+                      onChange={setProductSearch}
+                      placeholder="Tìm sản phẩm..."
+                    />
                     <select
                       value={productStatus}
                       onChange={(event) => setProductStatus(event.target.value)}
@@ -557,29 +628,52 @@ function AdminDashboardPage() {
                     >
                       <option value="all">Tất cả</option>
                       {PRODUCT_STATUS_OPTIONS.map((status) => (
-                        <option key={status} value={status}>{PRODUCT_STATUS_LABELS[status]}</option>
+                        <option key={status} value={status}>
+                          {PRODUCT_STATUS_LABELS[status]}
+                        </option>
                       ))}
                     </select>
                   </div>
-                )}
+                }
               >
                 {products.length === 0 ? (
-                  <EmptyPanel icon={PackageSearch} title="Không có sản phẩm" description="Thử đổi bộ lọc hoặc tải lại dữ liệu." />
+                  <EmptyPanel
+                    icon={PackageSearch}
+                    title="Không có sản phẩm"
+                    description="Thử đổi bộ lọc hoặc tải lại dữ liệu."
+                  />
                 ) : (
                   <div className="grid gap-3">
                     {products.map((product) => (
-                      <article key={product.id} className="grid gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:grid-cols-[1fr_auto] lg:items-center">
+                      <article
+                        key={product.id}
+                        className="grid gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:grid-cols-[1fr_auto] lg:items-center"
+                      >
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-black text-white">{product.title}</h3>
-                            <StatusPill tone={product.status === 'active' ? 'teal' : product.status === 'banned' ? 'rose' : product.status === 'hidden' ? 'amber' : 'slate'}>
+                            <StatusPill
+                              tone={
+                                product.status === 'active'
+                                  ? 'teal'
+                                  : product.status === 'banned'
+                                    ? 'rose'
+                                    : product.status === 'hidden'
+                                      ? 'amber'
+                                      : 'slate'
+                              }
+                            >
                               {PRODUCT_STATUS_LABELS[product.status] || product.status}
                             </StatusPill>
                           </div>
                           <p className="mt-2 text-sm text-slate-400">
-                            {formatCurrency(product.price)} · {product.category || 'Chưa phân loại'} · Người bán: {product.profile?.full_name || product.profile?.email || 'Không rõ'}
+                            {formatCurrency(product.price)} · {product.category || 'Chưa phân loại'}{' '}
+                            · Người bán:{' '}
+                            {product.profile?.full_name || product.profile?.email || 'Không rõ'}
                           </p>
-                          <p className="mt-1 line-clamp-1 text-xs text-slate-500">{product.description || 'Không có mô tả'}</p>
+                          <p className="mt-1 line-clamp-1 text-xs text-slate-500">
+                            {product.description || 'Không có mô tả'}
+                          </p>
                         </div>
                         <div className="flex flex-wrap gap-2 lg:justify-end">
                           <Link
@@ -591,11 +685,15 @@ function AdminDashboardPage() {
                           <select
                             className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm font-bold text-white outline-none"
                             value={product.status || 'active'}
-                            onChange={(event) => handleUpdateProductStatus(product.id, event.target.value)}
+                            onChange={(event) =>
+                              handleUpdateProductStatus(product.id, event.target.value)
+                            }
                             disabled={isSavingProductId === product.id}
                           >
                             {PRODUCT_STATUS_OPTIONS.map((status) => (
-                              <option key={status} value={status}>{PRODUCT_STATUS_LABELS[status]}</option>
+                              <option key={status} value={status}>
+                                {PRODUCT_STATUS_LABELS[status]}
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -610,7 +708,7 @@ function AdminDashboardPage() {
               <SectionShell
                 title="Đơn hàng / Transactions"
                 description="Theo dõi luồng giao dịch, doanh thu và trạng thái xử lý."
-                action={(
+                action={
                   <select
                     value={transactionStatus}
                     onChange={(event) => setTransactionStatus(event.target.value)}
@@ -622,10 +720,14 @@ function AdminDashboardPage() {
                       </option>
                     ))}
                   </select>
-                )}
+                }
               >
                 {transactions.length === 0 ? (
-                  <EmptyPanel icon={ClipboardList} title="Không có giao dịch" description="Dữ liệu đơn hàng sẽ hiển thị tại đây." />
+                  <EmptyPanel
+                    icon={ClipboardList}
+                    title="Không có giao dịch"
+                    description="Dữ liệu đơn hàng sẽ hiển thị tại đây."
+                  />
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[920px] border-collapse">
@@ -641,14 +743,34 @@ function AdminDashboardPage() {
                       </thead>
                       <tbody>
                         {transactions.map((transaction) => (
-                          <tr key={transaction.id} className="border-b border-white/10 text-sm text-slate-300">
-                            <td className="py-3 pr-4 font-bold text-white">{transaction.product_name || transaction.product_id || '-'}</td>
-                            <td className="py-3 pr-4">{transaction.buyer?.full_name || transaction.buyer?.email || '-'}</td>
-                            <td className="py-3 pr-4">{transaction.seller?.full_name || transaction.seller?.email || '-'}</td>
-                            <td className="py-3 pr-4 font-black text-teal-200">{formatCurrency(transaction.amount)}</td>
+                          <tr
+                            key={transaction.id}
+                            className="border-b border-white/10 text-sm text-slate-300"
+                          >
+                            <td className="py-3 pr-4 font-bold text-white">
+                              {transaction.product_name || transaction.product_id || '-'}
+                            </td>
                             <td className="py-3 pr-4">
-                              <StatusPill tone={transaction.status === 'completed' ? 'teal' : transaction.status === 'cancelled' ? 'rose' : 'amber'}>
-                                {TRANSACTION_STATUS_LABELS[transaction.status] || transaction.status}
+                              {transaction.buyer?.full_name || transaction.buyer?.email || '-'}
+                            </td>
+                            <td className="py-3 pr-4">
+                              {transaction.seller?.full_name || transaction.seller?.email || '-'}
+                            </td>
+                            <td className="py-3 pr-4 font-black text-teal-200">
+                              {formatCurrency(transaction.amount)}
+                            </td>
+                            <td className="py-3 pr-4">
+                              <StatusPill
+                                tone={
+                                  transaction.status === 'completed'
+                                    ? 'teal'
+                                    : transaction.status === 'cancelled'
+                                      ? 'rose'
+                                      : 'amber'
+                                }
+                              >
+                                {TRANSACTION_STATUS_LABELS[transaction.status] ||
+                                  transaction.status}
                               </StatusPill>
                             </td>
                             <td className="py-3 pr-4">{formatDate(transaction.created_at)}</td>

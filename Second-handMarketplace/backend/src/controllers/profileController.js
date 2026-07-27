@@ -1,8 +1,4 @@
-const {
-  getProfile,
-  updateProfile,
-  uploadAvatar,
-} = require('../services/profileService');
+const { getProfile, updateProfile, uploadAvatar } = require('../services/profileService');
 
 /**
  * GET /api/profile

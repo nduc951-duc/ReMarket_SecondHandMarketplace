@@ -13,7 +13,9 @@ class PaymentContext {
   }
 
   static create(paymentMethod) {
-    const normalizedMethod = String(paymentMethod || '').trim().toLowerCase();
+    const normalizedMethod = String(paymentMethod || '')
+      .trim()
+      .toLowerCase();
     const factory = strategyFactories[normalizedMethod];
 
     if (!factory) {

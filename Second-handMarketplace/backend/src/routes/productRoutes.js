@@ -10,6 +10,8 @@ const {
   autocompleteProductsHandler,
 } = require('../controllers/productController');
 const { attachUserIfPresent, requireAuth } = require('../middlewares/authMiddleware');
+const validateRequest = require('../middlewares/validateRequest');
+const { createProduct } = require('../validation/requestSchemas');
 
 const router = express.Router();
 
@@ -22,7 +24,7 @@ router.get('/:id', attachUserIfPresent, getProductByIdHandler);
 
 // Protected routes (require authentication)
 router.use(requireAuth);
-router.post('/', createProductHandler);
+router.post('/', validateRequest(createProduct), createProductHandler);
 
 router.patch('/:id', updateProductHandler);
 router.delete('/:id', deleteProductHandler);

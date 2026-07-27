@@ -105,12 +105,22 @@ class VnpayStrategy extends PaymentStrategy {
     requireConfig(this.config);
     const signedPayload = this.sanitizeReturnPayload(payload);
     const hashData = buildVnpayHashData(signedPayload);
-    const isValid = verifyHmacSignature(hashData, payload.vnp_SecureHash || '', this.config.hashSecret, 'sha512');
+    const isValid = verifyHmacSignature(
+      hashData,
+      payload.vnp_SecureHash || '',
+      this.config.hashSecret,
+      'sha512',
+    );
 
     return {
       isValid,
-      status: payload.vnp_ResponseCode === '00' && payload.vnp_TransactionStatus === '00' ? 'success' : 'failed',
+      status:
+        payload.vnp_ResponseCode === '00' && payload.vnp_TransactionStatus === '00'
+          ? 'success'
+          : 'failed',
       orderId: payload.vnp_TxnRef,
+      amount: Number(payload.vnp_Amount) / 100,
+      currency: String(payload.vnp_CurrCode || this.config.currCode || 'VND').toUpperCase(),
       gatewayTransactionId: payload.vnp_TransactionNo,
       responseCode: payload.vnp_ResponseCode,
       raw: payload,

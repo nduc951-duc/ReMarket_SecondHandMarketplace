@@ -19,7 +19,10 @@ function WishlistSkeleton() {
   return (
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: 6 }).map((_, index) => (
-        <article key={index} className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70">
+        <article
+          key={index}
+          className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70"
+        >
           <div className="aspect-[4/3] animate-pulse bg-white/10" />
           <div className="space-y-3 p-4">
             <div className="h-5 w-4/5 animate-pulse rounded-full bg-white/10" />
@@ -74,7 +77,10 @@ function WishlistPage() {
       <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-6">
         <header className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-xl shadow-slate-950/30 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <Link to="/app" className="text-sm font-semibold text-slate-400 transition hover:text-cyan-200">
+            <Link
+              to="/app"
+              className="text-sm font-semibold text-slate-400 transition hover:text-cyan-200"
+            >
               Quay lại trang chủ
             </Link>
             <h1 className="mt-3 text-3xl font-black text-white">Sản phẩm yêu thích</h1>
@@ -120,9 +126,16 @@ function WishlistPage() {
                   key={item.product_id}
                   className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70 shadow-lg shadow-slate-950/25 transition hover:-translate-y-1 hover:border-cyan-300/35"
                 >
-                  <Link to={`/products/${product.id}`} className="block aspect-[4/3] overflow-hidden bg-slate-900">
+                  <Link
+                    to={`/products/${product.id}`}
+                    className="block aspect-[4/3] overflow-hidden bg-slate-900"
+                  >
                     {image ? (
-                      <img src={image} alt={product.title} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
+                      <img
+                        src={image}
+                        alt={product.title}
+                        className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-sm font-bold text-slate-500">
                         Chưa có ảnh
@@ -136,7 +149,9 @@ function WishlistPage() {
                         {product.title}
                       </h3>
                     </Link>
-                    <p className="text-xl font-black text-cyan-300">{formatCurrency(product.price)}</p>
+                    <p className="text-xl font-black text-cyan-300">
+                      {formatCurrency(product.price)}
+                    </p>
                     <div className="flex items-center justify-between gap-3 text-xs text-slate-400">
                       <span className="flex min-w-0 items-center gap-1 truncate">
                         <MapPin size={14} className="shrink-0 text-slate-500" />

@@ -86,12 +86,8 @@ function SellerDashboard() {
     return (
       <main className="page-shell">
         <section className="auth-required-card">
-          <h2>
-            Bạn cần đăng nhập
-          </h2>
-          <p>
-            Vui lòng đăng nhập để xem dashboard người bán.
-          </p>
+          <h2>Bạn cần đăng nhập</h2>
+          <p>Vui lòng đăng nhập để xem dashboard người bán.</p>
         </section>
       </main>
     );
@@ -102,7 +98,9 @@ function SellerDashboard() {
       <div className="page-container page-container-wide seller-dashboard-page">
         <header className="seller-hero">
           <div>
-            <Link to="/app" className="back-link">← Quay lại</Link>
+            <Link to="/app" className="back-link">
+              ← Quay lại
+            </Link>
             <h1>Dashboard Người Bán</h1>
             <p>Quản lý đơn đến, cập nhật trạng thái và giữ luồng xử lý rõ ràng.</p>
           </div>
@@ -155,9 +153,7 @@ function SellerDashboard() {
           </div>
         </section>
 
-        {error && (
-          <p className="form-feedback error">{error}</p>
-        )}
+        {error && <p className="form-feedback error">{error}</p>}
 
         {loading ? (
           <div className="page-loading">
@@ -183,13 +179,17 @@ function SellerDashboard() {
                     />
                     <div className="seller-order-info">
                       <h3>{transaction.product_name}</h3>
-                      <p>Người mua: {transaction.buyer?.full_name || transaction.buyer_id || 'N/A'}</p>
+                      <p>
+                        Người mua: {transaction.buyer?.full_name || transaction.buyer_id || 'N/A'}
+                      </p>
                       <span>{formatDate(transaction.created_at)}</span>
                     </div>
                   </div>
                   <div className="seller-order-right">
                     <strong>{formatCurrency(transaction.amount)}</strong>
-                    <span className={`seller-status seller-status-${transaction.status || 'pending'}`}>
+                    <span
+                      className={`seller-status seller-status-${transaction.status || 'pending'}`}
+                    >
                       {statusLabels[transaction.status] || transaction.status}
                     </span>
                   </div>
@@ -250,7 +250,9 @@ function SellerDashboard() {
                 </button>
               </div>
               <div className="dialog-body">
-                <label htmlFor="reject-reason" className="dialog-label">Lý do từ chối</label>
+                <label htmlFor="reject-reason" className="dialog-label">
+                  Lý do từ chối
+                </label>
                 <textarea
                   id="reject-reason"
                   value={rejectionReason}
@@ -269,7 +271,9 @@ function SellerDashboard() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleStatusUpdate(selectedTransaction.id, 'cancelled', rejectionReason)}
+                    onClick={() =>
+                      handleStatusUpdate(selectedTransaction.id, 'cancelled', rejectionReason)
+                    }
                     className="btn-primary"
                     disabled={!rejectionReason.trim()}
                   >

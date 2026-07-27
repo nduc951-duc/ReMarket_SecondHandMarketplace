@@ -1,15 +1,14 @@
 const paymentConfig = require('../config/payment');
 const PaymentContext = require('../contexts/PaymentContext');
+const { getPayment, updatePaymentFromGateway, upsertPayment } = require('../services/paymentStore');
 const {
-  getPayment,
-  updatePaymentFromGateway,
-  upsertPayment,
-} = require('../services/paymentStore');
+  processVerifiedPaymentCallback,
+  sanitizeGatewayPayload,
+} = require('../services/paymentCallbackService');
 const {
   expireUnpaidTransactions,
   markTransactionPaymentCreated,
-  markTransactionPaymentFailed,
-  markTransactionPaymentPaid,
+  prepareTransactionPayment,
 } = require('../services/transactionService');
 
 function sendError(res, error, fallbackMessage) {
@@ -27,16 +26,18 @@ function getRequestBaseUrl(req) {
 
 function getClientIp(req) {
   return (
-    req.headers['x-forwarded-for']?.split(',')?.[0]?.trim()
-    || req.socket?.remoteAddress
-    || req.ip
-    || '127.0.0.1'
+    req.headers['x-forwarded-for']?.split(',')?.[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    req.ip ||
+    '127.0.0.1'
   );
 }
 
 function normalizePaymentPayload(req) {
   const body = req.body || {};
-  const paymentMethod = String(body.paymentMethod || '').trim().toLowerCase();
+  const paymentMethod = String(body.paymentMethod || '')
+    .trim()
+    .toLowerCase();
   const orderId = String(body.orderId || '').trim();
   const amount = Number(body.amount);
 
@@ -48,7 +49,7 @@ function normalizePaymentPayload(req) {
     throw new Error('orderId la bat buoc.');
   }
 
-  if (!Number.isFinite(amount) || amount <= 0) {
+  if (body.amount != null && (!Number.isFinite(amount) || amount <= 0)) {
     throw new Error('amount phai lon hon 0.');
   }
 
@@ -59,8 +60,14 @@ function normalizePaymentPayload(req) {
     orderId,
     amount,
     orderInfo: String(body.orderInfo || `Thanh toan don hang ${orderId}`).trim(),
-    returnUrl: body.returnUrl || paymentConfig.defaultReturnUrl || `${baseUrl}/api/payment/return/${paymentMethod}`,
-    notifyUrl: body.notifyUrl || paymentConfig.defaultNotifyUrl || `${baseUrl}/api/payment/ipn/${paymentMethod}`,
+    returnUrl:
+      body.returnUrl ||
+      paymentConfig.defaultReturnUrl ||
+      `${baseUrl}/api/payment/return/${paymentMethod}`,
+    notifyUrl:
+      body.notifyUrl ||
+      paymentConfig.defaultNotifyUrl ||
+      `${baseUrl}/api/payment/ipn/${paymentMethod}`,
     extraData: body.extraData || '',
     bankCode: body.bankCode || '',
     lang: body.lang || 'vi',
@@ -71,6 +78,14 @@ function normalizePaymentPayload(req) {
 async function createPaymentHandler(req, res) {
   try {
     const payload = normalizePaymentPayload(req);
+    const transaction = await prepareTransactionPayment({
+      transactionId: payload.orderId,
+      buyerId: req.user.id,
+      paymentMethod: payload.paymentMethod,
+    });
+    payload.amount = Number(transaction.amount);
+    payload.currency = String(transaction.payment_currency || 'VND').toUpperCase();
+
     const context = PaymentContext.create(payload.paymentMethod);
     const data = await context.createPayment(payload);
 
@@ -87,9 +102,6 @@ async function createPaymentHandler(req, res) {
     await markTransactionPaymentCreated({
       transactionId: payload.orderId,
       paymentMethod: payload.paymentMethod,
-      paymentUrl: data.paymentUrl,
-    }).catch((error) => {
-      console.error('Mark transaction payment created error:', error);
     });
 
     return res.status(201).json({
@@ -102,59 +114,66 @@ async function createPaymentHandler(req, res) {
 }
 
 async function syncTransactionPaymentResult(paymentMethod, result) {
-  if (!result.isValid) {
-    return;
+  return processVerifiedPaymentCallback(paymentMethod, result);
+}
+
+function getIpnResponse(paymentMethod, defaultResponse, processingResult) {
+  if (paymentMethod !== 'vnpay' || !processingResult) {
+    return defaultResponse;
   }
 
-  const transactionId = result.orderId;
-  if (!transactionId) {
-    return;
+  if (processingResult.replayed) {
+    return { RspCode: '02', Message: 'Order Already Update' };
   }
 
-  if (result.status === 'success') {
-    await markTransactionPaymentPaid({
-      transactionId,
-      paymentMethod,
-      gatewayTransactionId: result.gatewayTransactionId,
-      responseCode: result.responseCode,
-    });
-    return;
-  }
+  const responseByOutcome = {
+    processed: { RspCode: '00', Message: 'Confirm Success' },
+    transaction_not_found: { RspCode: '01', Message: 'Order Not Found' },
+    amount_mismatch: { RspCode: '04', Message: 'Invalid Amount' },
+    currency_mismatch: { RspCode: '04', Message: 'Invalid Currency' },
+    invalid_state: { RspCode: '02', Message: 'Order Already Update' },
+    expired: { RspCode: '02', Message: 'Order Already Update' },
+    provider_mismatch: { RspCode: '99', Message: 'Invalid Provider' },
+    provider_transaction_conflict: {
+      RspCode: '99',
+      Message: 'Provider Transaction Conflict',
+    },
+  };
 
-  if (result.status === 'failed') {
-    await markTransactionPaymentFailed({
-      transactionId,
-      paymentMethod,
-      gatewayTransactionId: result.gatewayTransactionId,
-      responseCode: result.responseCode,
-      reason: 'Thanh toan khong thanh cong.',
-      paymentStatus: 'failed',
-    });
-  }
+  return responseByOutcome[processingResult.outcome] || defaultResponse;
 }
 
 async function handleVerifiedResult(res, paymentMethod, result, isIpn = false) {
+  let processingResult = null;
+
   if (result.isValid) {
-    updatePaymentFromGateway(paymentMethod, result.raw);
-    await syncTransactionPaymentResult(paymentMethod, result).catch((error) => {
-      console.error('Sync transaction payment result error:', error);
-    });
+    const sanitizedPayload = sanitizeGatewayPayload(result.raw);
+    processingResult = await syncTransactionPaymentResult(paymentMethod, result);
+    updatePaymentFromGateway(paymentMethod, sanitizedPayload);
   }
 
   if (isIpn) {
-    return res.status(200).json(result.responsePayload);
+    return res
+      .status(200)
+      .json(getIpnResponse(paymentMethod, result.responsePayload, processingResult));
   }
 
   return res.status(200).json({
     ok: result.isValid,
-    data: result,
+    data: {
+      ...result,
+      raw: sanitizeGatewayPayload(result.raw),
+      processing: processingResult,
+    },
     message: result.isValid ? 'Xac thuc thanh toan thanh cong.' : 'Chu ky thanh toan khong hop le.',
   });
 }
 
 async function paymentReturnHandler(req, res) {
   try {
-    const paymentMethod = String(req.params.method || req.query.paymentMethod || '').trim().toLowerCase();
+    const paymentMethod = String(req.params.method || req.query.paymentMethod || '')
+      .trim()
+      .toLowerCase();
     const context = PaymentContext.create(paymentMethod);
     const payload = { ...req.query, ...req.body };
     const result = context.verifyReturn(payload);
@@ -167,7 +186,9 @@ async function paymentReturnHandler(req, res) {
 
 async function paymentIpnHandler(req, res) {
   try {
-    const paymentMethod = String(req.params.method || req.query.paymentMethod || '').trim().toLowerCase();
+    const paymentMethod = String(req.params.method || req.query.paymentMethod || '')
+      .trim()
+      .toLowerCase();
     const context = PaymentContext.create(paymentMethod);
     const payload = { ...req.query, ...req.body };
     const result = context.verifyIpn(payload);
@@ -184,7 +205,9 @@ async function paymentIpnHandler(req, res) {
 
 async function queryPaymentStatusHandler(req, res) {
   try {
-    const paymentMethod = String(req.params.method || req.query.paymentMethod || '').trim().toLowerCase();
+    const paymentMethod = String(req.params.method || req.query.paymentMethod || '')
+      .trim()
+      .toLowerCase();
     const orderId = String(req.params.orderId || req.query.orderId || '').trim();
 
     if (!orderId) {
@@ -220,7 +243,9 @@ async function queryPaymentStatusHandler(req, res) {
 
 async function refundPaymentHandler(req, res) {
   try {
-    const paymentMethod = String(req.body?.paymentMethod || '').trim().toLowerCase();
+    const paymentMethod = String(req.body?.paymentMethod || '')
+      .trim()
+      .toLowerCase();
     const context = PaymentContext.create(paymentMethod);
     const data = await context.refund(req.body || {});
 

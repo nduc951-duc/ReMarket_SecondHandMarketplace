@@ -1,8 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../config/env');
+const { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../config/env');
 const { createNotification } = require('./notificationService');
 
 const ONLINE_PAYMENT_METHODS = ['momo', 'vnpay'];
@@ -31,9 +28,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -49,9 +44,9 @@ function getAdminClient() {
 function isRelationMissing(error, relationName) {
   const message = String(error?.message || '').toLowerCase();
   return (
-    message.includes('relation')
-    && message.includes('does not exist')
-    && message.includes(relationName)
+    message.includes('relation') &&
+    message.includes('does not exist') &&
+    message.includes(relationName)
   );
 }
 
@@ -61,11 +56,7 @@ async function enrichTransactionsWithProfilesAndReviews(client, userId, transact
   }
 
   const participantIds = Array.from(
-    new Set(
-      transactions
-        .flatMap((item) => [item.buyer_id, item.seller_id])
-        .filter(Boolean),
-    ),
+    new Set(transactions.flatMap((item) => [item.buyer_id, item.seller_id]).filter(Boolean)),
   );
 
   let profileMap = new Map();
@@ -140,9 +131,10 @@ async function notifyTransactionStatusChange({
     if (actorUserId === transaction.seller_id) {
       targetUserId = transaction.buyer_id;
       title = 'Don hang da bi huy';
-      message = currentStatus === 'pending'
-        ? `Nguoi ban da tu choi don ${transaction.product_name || 'san pham'}.`
-        : `Don ${transaction.product_name || 'san pham'} da bi huy boi nguoi ban.`;
+      message =
+        currentStatus === 'pending'
+          ? `Nguoi ban da tu choi don ${transaction.product_name || 'san pham'}.`
+          : `Don ${transaction.product_name || 'san pham'} da bi huy boi nguoi ban.`;
     } else if (actorUserId === transaction.buyer_id) {
       targetUserId = transaction.seller_id;
       title = 'Nguoi mua da huy don';
@@ -170,7 +162,11 @@ async function notifyTransactionStatusChange({
 }
 
 function isOnlinePaymentMethod(paymentMethod) {
-  return ONLINE_PAYMENT_METHODS.includes(String(paymentMethod || '').trim().toLowerCase());
+  return ONLINE_PAYMENT_METHODS.includes(
+    String(paymentMethod || '')
+      .trim()
+      .toLowerCase(),
+  );
 }
 
 async function ensureProfileForUser(client, userId) {
@@ -219,7 +215,10 @@ async function ensureProfileForUser(client, userId) {
     .single();
 
   if (createError) {
-    throw buildServiceError(`Khong the tao profile toi thieu cho nguoi ban: ${createError.message}`, 500);
+    throw buildServiceError(
+      `Khong the tao profile toi thieu cho nguoi ban: ${createError.message}`,
+      500,
+    );
   }
 
   return createdProfile;
@@ -298,9 +297,7 @@ async function getTransactions(userId, options = {}) {
       count = (buyResponse.count || 0) + (sellResponse.count || 0);
     }
   } else {
-    let query = client
-      .from('transactions')
-      .select('*', { count: 'exact' });
+    let query = client.from('transactions').select('*', { count: 'exact' });
 
     if (type === 'buy') {
       query = query.eq('buyer_id', userId);
@@ -312,9 +309,7 @@ async function getTransactions(userId, options = {}) {
       query = query.eq('status', status);
     }
 
-    query = query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
     const response = await query;
     data = response.data || [];
@@ -324,8 +319,8 @@ async function getTransactions(userId, options = {}) {
 
   if (error) {
     if (
-      String(error.message || '').includes('relation')
-      && String(error.message || '').includes('does not exist')
+      String(error.message || '').includes('relation') &&
+      String(error.message || '').includes('does not exist')
     ) {
       return {
         transactions: [],
@@ -438,11 +433,7 @@ async function createTransaction(transactionData) {
     updated_at: now,
   };
 
-  const { data, error } = await client
-    .from('transactions')
-    .insert([payload])
-    .select()
-    .single();
+  const { data, error } = await client.from('transactions').insert([payload]).select().single();
 
   if (error) {
     if (error.code === '23505') {
@@ -512,6 +503,18 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
 
   if (currentStatus === 'awaiting_payment') {
     throw buildServiceError('Don hang dang cho thanh toan, chua the xu ly.', 400);
+  }
+
+  const allowedTransitions = {
+    pending: ['confirmed', 'cancelled'],
+    confirmed: ['shipped', 'cancelled'],
+    shipped: ['completed'],
+    completed: [],
+    cancelled: [],
+  };
+
+  if (!allowedTransitions[currentStatus]?.includes(newStatus)) {
+    throw buildServiceError('Khong the chuyen sang trang thai nay tu trang thai hien tai.', 400);
   }
 
   if (newStatus === 'confirmed') {
@@ -602,7 +605,10 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
         .maybeSingle();
 
       if (productError) {
-        throw buildServiceError(`Không thể cập nhật trạng thái sản phẩm: ${productError.message}`, 500);
+        throw buildServiceError(
+          `Không thể cập nhật trạng thái sản phẩm: ${productError.message}`,
+          500,
+        );
       }
 
       if (!productData) {
@@ -621,7 +627,10 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
         .neq('status', 'banned');
 
       if (productError) {
-        throw buildServiceError(`Không thể cập nhật trạng thái sản phẩm: ${productError.message}`, 500);
+        throw buildServiceError(
+          `Không thể cập nhật trạng thái sản phẩm: ${productError.message}`,
+          500,
+        );
       }
     }
   }
@@ -643,9 +652,7 @@ async function updateTransactionStatus(transactionId, userId, newStatus, additio
 async function markTransactionPaymentCreated({ transactionId, paymentMethod }) {
   const client = getAdminClient();
   const now = new Date().toISOString();
-  const expiresAt = new Date(
-    Date.now() + ONLINE_PAYMENT_EXPIRE_MINUTES * 60 * 1000,
-  ).toISOString();
+  const expiresAt = new Date(Date.now() + ONLINE_PAYMENT_EXPIRE_MINUTES * 60 * 1000).toISOString();
 
   const { data, error } = await client
     .from('transactions')
@@ -671,11 +678,55 @@ async function markTransactionPaymentCreated({ transactionId, paymentMethod }) {
   return data;
 }
 
+async function prepareTransactionPayment({ transactionId, buyerId, paymentMethod }) {
+  const client = getAdminClient();
+  const { data: transaction, error } = await client
+    .from('transactions')
+    .select(
+      'id, buyer_id, amount, status, payment_status, payment_method, payment_currency, payment_expires_at',
+    )
+    .eq('id', transactionId)
+    .maybeSingle();
+
+  if (error) {
+    throw buildServiceError(`Khong the kiem tra don thanh toan: ${error.message}`, 500);
+  }
+
+  if (!transaction) {
+    throw buildServiceError('Khong tim thay don hang thanh toan.', 404);
+  }
+
+  if (transaction.buyer_id !== buyerId) {
+    throw buildServiceError('Ban khong co quyen tao thanh toan cho don hang nay.', 403);
+  }
+
+  if (transaction.status !== 'awaiting_payment' || transaction.payment_status !== 'pending') {
+    throw buildServiceError('Don hang khong o trang thai cho thanh toan.', 409);
+  }
+
+  if (
+    transaction.payment_expires_at &&
+    new Date(transaction.payment_expires_at).getTime() < Date.now()
+  ) {
+    throw buildServiceError('Don hang da het han thanh toan.', 409);
+  }
+
+  if (
+    String(transaction.payment_method || '').toLowerCase() !==
+    String(paymentMethod || '').toLowerCase()
+  ) {
+    throw buildServiceError('Cong thanh toan khong khop voi don hang.', 409);
+  }
+
+  return transaction;
+}
+
 async function markTransactionPaymentPaid({
   transactionId,
   paymentMethod,
   gatewayTransactionId = '',
   responseCode = '',
+  paidAmount,
 }) {
   const client = getAdminClient();
   const now = new Date().toISOString();
@@ -687,7 +738,10 @@ async function markTransactionPaymentPaid({
     .maybeSingle();
 
   if (fetchError) {
-    throw buildServiceError(`Khong the lay don hang de cap nhat thanh toan: ${fetchError.message}`, 500);
+    throw buildServiceError(
+      `Khong the lay don hang de cap nhat thanh toan: ${fetchError.message}`,
+      500,
+    );
   }
 
   if (!transaction) {
@@ -700,6 +754,14 @@ async function markTransactionPaymentPaid({
 
   if (transaction.status === 'cancelled') {
     throw buildServiceError('Don hang da bi huy, khong the xac nhan thanh toan.', 409);
+  }
+
+  const normalizedPaidAmount = Number(paidAmount);
+  if (
+    !Number.isFinite(normalizedPaidAmount) ||
+    normalizedPaidAmount !== Number(transaction.amount)
+  ) {
+    throw buildServiceError('So tien thanh toan khong khop voi don hang.', 409);
   }
 
   const { data, error } = await client
@@ -720,6 +782,9 @@ async function markTransactionPaymentPaid({
     .single();
 
   if (error) {
+    if (error.code === '23505') {
+      throw buildServiceError('Ma giao dich thanh toan da duoc su dung.', 409);
+    }
     throw buildServiceError(`Khong the cap nhat don hang da thanh toan: ${error.message}`, 500);
   }
 
@@ -777,7 +842,41 @@ async function markTransactionPaymentFailed({
     .maybeSingle();
 
   if (error) {
-    throw buildServiceError(`Khong the cap nhat don hang thanh toan that bai: ${error.message}`, 500);
+    throw buildServiceError(
+      `Khong the cap nhat don hang thanh toan that bai: ${error.message}`,
+      500,
+    );
+  }
+
+  return data;
+}
+
+async function processPaymentCallback({
+  paymentMethod,
+  transactionId,
+  gatewayTransactionId,
+  idempotencyKey,
+  status,
+  responseCode,
+  amount,
+  currency,
+  sanitizedPayload,
+}) {
+  const client = getAdminClient();
+  const { data, error } = await client.rpc('process_payment_callback', {
+    p_provider: paymentMethod,
+    p_transaction_id: transactionId,
+    p_provider_transaction_id: gatewayTransactionId || '',
+    p_idempotency_key: idempotencyKey,
+    p_event_status: status,
+    p_response_code: responseCode || '',
+    p_amount: amount,
+    p_currency: currency,
+    p_sanitized_payload: sanitizedPayload,
+  });
+
+  if (error) {
+    throw buildServiceError(`Khong the xu ly payment callback: ${error.message}`, 500);
   }
 
   return data;
@@ -856,5 +955,7 @@ module.exports = {
   markTransactionPaymentCreated,
   markTransactionPaymentFailed,
   markTransactionPaymentPaid,
+  prepareTransactionPayment,
+  processPaymentCallback,
   updateTransactionStatus,
 };

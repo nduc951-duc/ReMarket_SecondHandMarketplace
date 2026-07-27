@@ -1,8 +1,4 @@
-const {
-  getWishlist,
-  getWishlistStatus,
-  toggleWishlist,
-} = require('../services/wishlistService');
+const { getWishlist, getWishlistStatus, toggleWishlist } = require('../services/wishlistService');
 
 function sendError(res, error, fallbackMessage) {
   const statusCode = Number(error?.statusCode) || 500;
@@ -58,9 +54,7 @@ async function toggleWishlistHandler(req, res) {
     return res.status(200).json({
       ok: true,
       data,
-      message: data.wishlisted
-        ? 'Da them vao wishlist.'
-        : 'Da xoa khoi wishlist.',
+      message: data.wishlisted ? 'Da them vao wishlist.' : 'Da xoa khoi wishlist.',
     });
   } catch (error) {
     return sendError(res, error, 'Khong the cap nhat wishlist.');

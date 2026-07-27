@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -19,6 +19,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
+import { supabase } from '../../lib/supabaseClient';
 import { createReview } from '../../services/reviewService';
 import {
   getTransactionById,
@@ -26,6 +27,8 @@ import {
   getTransactionStats,
   updateTransactionStatus,
 } from '../../services/transactionService';
+import { useAuthStore } from '../../store/authStore';
+import { createRealtimeRefreshQueue } from '../../utils/realtime';
 
 const STATUS_LABELS = {
   awaiting_payment: 'Chờ thanh toán',
@@ -91,7 +94,9 @@ function formatDate(dateStr) {
 
 function StatusPill({ status }) {
   return (
-    <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-black ${STATUS_STYLES[status] || STATUS_STYLES.pending}`}>
+    <span
+      className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-black ${STATUS_STYLES[status] || STATUS_STYLES.pending}`}
+    >
       {STATUS_LABELS[status] || status}
     </span>
   );
@@ -101,18 +106,21 @@ function PaymentStatusPill({ status }) {
   if (!status) return null;
 
   return (
-    <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-black ${PAYMENT_STATUS_STYLES[status] || PAYMENT_STATUS_STYLES.unpaid}`}>
+    <span
+      className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-black ${PAYMENT_STATUS_STYLES[status] || PAYMENT_STATUS_STYLES.unpaid}`}
+    >
       {PAYMENT_STATUS_LABELS[status] || status}
     </span>
   );
 }
 
 function EmptyState({ activeTab }) {
-  const description = activeTab === 'buy'
-    ? 'Bạn chưa mua sản phẩm nào.'
-    : activeTab === 'sell'
-      ? 'Bạn chưa bán sản phẩm nào.'
-      : 'Lịch sử giao dịch của bạn đang trống.';
+  const description =
+    activeTab === 'buy'
+      ? 'Bạn chưa mua sản phẩm nào.'
+      : activeTab === 'sell'
+        ? 'Bạn chưa bán sản phẩm nào.'
+        : 'Lịch sử giao dịch của bạn đang trống.';
 
   return (
     <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-10 text-center shadow-xl shadow-slate-950/30">
@@ -130,9 +138,11 @@ function EmptyState({ activeTab }) {
 }
 
 function TransactionHistoryPage() {
+  const user = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState('buy');
   const [transactions, setTransactions] = useState([]);
   const [stats, setStats] = useState(null);
+  const statsRef = useRef(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -144,19 +154,24 @@ function TransactionHistoryPage() {
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const loadData = useCallback(async (type = 'all', page = 1) => {
+  const loadData = useCallback(async (type = 'all', page = 1, { refreshStats = false } = {}) => {
     try {
       setIsLoading(true);
       setError('');
 
       const [statsResult, txResult] = await Promise.all([
-        stats === null ? getTransactionStats() : Promise.resolve(stats),
+        refreshStats || statsRef.current === null
+          ? getTransactionStats()
+          : Promise.resolve(statsRef.current),
         type === 'all'
           ? Promise.all([
               getTransactions({ type: 'buy', page, limit: 10 }),
               getTransactions({ type: 'sell', page, limit: 10 }),
             ]).then(([buyResult, sellResult]) => {
-              const merged = [...(buyResult.transactions || []), ...(sellResult.transactions || [])];
+              const merged = [
+                ...(buyResult.transactions || []),
+                ...(sellResult.transactions || []),
+              ];
               const uniqueMap = new Map();
               for (const item of merged) uniqueMap.set(item.id, item);
 
@@ -181,35 +196,81 @@ function TransactionHistoryPage() {
         total: txResult.total,
       });
 
-      if (stats === null) setStats(statsResult);
+      if (refreshStats || statsRef.current === null) {
+        statsRef.current = statsResult;
+        setStats(statsResult);
+      }
     } catch (err) {
       setError(err.message);
       setTransactions([]);
     } finally {
       setIsLoading(false);
     }
-  }, [stats]);
+  }, []);
 
   useEffect(() => {
     loadData(activeTab, 1);
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const statCards = useMemo(() => [
-    {
-      label: 'Đơn mua',
-      value: stats?.totalBuy || 0,
-      detail: `${stats?.completedBuy || 0} hoàn thành`,
-      icon: ShoppingBag,
-      tone: 'teal',
-    },
-    {
-      label: 'Đơn bán',
-      value: stats?.totalSell || 0,
-      detail: `${stats?.completedSell || 0} hoàn thành`,
-      icon: DollarSign,
-      tone: 'violet',
-    },
-  ], [stats]);
+  useEffect(() => {
+    if (!user || !supabase) return () => {};
+
+    const refreshQueue = createRealtimeRefreshQueue(() =>
+      loadData(activeTab, pagination.page, { refreshStats: true }),
+    );
+    const channel = supabase
+      .channel(`transactions-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'transactions',
+          filter: `buyer_id=eq.${user.id}`,
+        },
+        () => refreshQueue.schedule(),
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'transactions',
+          filter: `seller_id=eq.${user.id}`,
+        },
+        () => refreshQueue.schedule(),
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          refreshQueue.flush();
+        }
+      });
+
+    return () => {
+      refreshQueue.cancel();
+      supabase.removeChannel(channel);
+    };
+  }, [activeTab, loadData, pagination.page, user]);
+
+  const statCards = useMemo(
+    () => [
+      {
+        label: 'Đơn mua',
+        value: stats?.totalBuy || 0,
+        detail: `${stats?.completedBuy || 0} hoàn thành`,
+        icon: ShoppingBag,
+        tone: 'teal',
+      },
+      {
+        label: 'Đơn bán',
+        value: stats?.totalSell || 0,
+        detail: `${stats?.completedSell || 0} hoàn thành`,
+        icon: DollarSign,
+        tone: 'violet',
+      },
+    ],
+    [stats],
+  );
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -338,7 +399,10 @@ function TransactionHistoryPage() {
       <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-6">
         <header className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-xl shadow-slate-950/30 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <Link to="/app" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-teal-200">
+            <Link
+              to="/app"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-teal-200"
+            >
               <ArrowLeft size={17} />
               Quay lại
             </Link>
@@ -361,20 +425,28 @@ function TransactionHistoryPage() {
           <section className="mb-5 grid gap-4 sm:grid-cols-2">
             {statCards.map((stat) => {
               const Icon = stat.icon;
-              const iconTone = stat.tone === 'violet'
-                ? 'border-violet-300/20 bg-violet-300/10 text-violet-200'
-                : 'border-teal-300/20 bg-teal-300/10 text-teal-200';
+              const iconTone =
+                stat.tone === 'violet'
+                  ? 'border-violet-300/20 bg-violet-300/10 text-violet-200'
+                  : 'border-teal-300/20 bg-teal-300/10 text-teal-200';
 
               return (
-                <article key={stat.label} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-slate-950/25">
+                <article
+                  key={stat.label}
+                  className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-slate-950/25"
+                >
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${iconTone}`}>
+                    <div
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${iconTone}`}
+                    >
                       <Icon size={22} />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-slate-400">{stat.label}</p>
                       <div className="mt-1 flex flex-wrap items-baseline gap-2">
-                        <strong className="text-3xl font-black leading-none text-white">{stat.value}</strong>
+                        <strong className="text-3xl font-black leading-none text-white">
+                          {stat.value}
+                        </strong>
                         <span className="rounded-full border border-teal-300/20 bg-teal-300/10 px-2.5 py-1 text-xs font-bold text-teal-100">
                           {stat.detail}
                         </span>
@@ -435,14 +507,20 @@ function TransactionHistoryPage() {
                   <div className="flex min-w-0 gap-4">
                     <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-900">
                       {tx.product_image ? (
-                        <img src={tx.product_image} alt={tx.product_name || 'Sản phẩm'} className="h-full w-full object-cover" />
+                        <img
+                          src={tx.product_image}
+                          alt={tx.product_name || 'Sản phẩm'}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <Package size={28} className="text-slate-500" />
                       )}
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="line-clamp-1 text-lg font-black text-white">{tx.product_name || 'Sản phẩm'}</h2>
+                        <h2 className="line-clamp-1 text-lg font-black text-white">
+                          {tx.product_name || 'Sản phẩm'}
+                        </h2>
                         <StatusPill status={tx.status} />
                         <PaymentStatusPill status={tx.payment_status} />
                       </div>
@@ -465,7 +543,9 @@ function TransactionHistoryPage() {
                   </div>
 
                   <div className="flex flex-col gap-3 border-t border-white/10 pt-4 lg:min-w-56 lg:items-end lg:border-t-0 lg:pt-0">
-                    <strong className="text-2xl font-black text-teal-300">{formatCurrency(tx.amount)}</strong>
+                    <strong className="text-2xl font-black text-teal-300">
+                      {formatCurrency(tx.amount)}
+                    </strong>
                     <div className="flex flex-wrap gap-2 lg:justify-end">
                       <button
                         type="button"
@@ -546,7 +626,8 @@ function TransactionHistoryPage() {
                   <ChevronLeft size={20} />
                 </button>
                 <span className="text-sm font-bold text-slate-400">
-                  Trang <span className="text-white">{pagination.page}</span> / {pagination.totalPages}
+                  Trang <span className="text-white">{pagination.page}</span> /{' '}
+                  {pagination.totalPages}
                 </span>
                 <button
                   type="button"
@@ -559,13 +640,21 @@ function TransactionHistoryPage() {
               </div>
             )}
 
-            <p className="pt-1 text-center text-sm font-semibold text-slate-500">Tổng: {pagination.total} giao dịch</p>
+            <p className="pt-1 text-center text-sm font-semibold text-slate-500">
+              Tổng: {pagination.total} giao dịch
+            </p>
           </section>
         )}
 
         {showTimeline && selectedTransaction && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm" onClick={() => setShowTimeline(false)}>
-            <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0d1324] shadow-2xl shadow-slate-950/50" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+            onClick={() => setShowTimeline(false)}
+          >
+            <div
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0d1324] shadow-2xl shadow-slate-950/50"
+              onClick={(event) => event.stopPropagation()}
+            >
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                 <h3 className="text-lg font-black text-white">Chi tiết giao dịch</h3>
                 <button
@@ -578,19 +667,28 @@ function TransactionHistoryPage() {
               </div>
               <div className="p-5">
                 <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <h4 className="font-black text-white">{selectedTransaction.product_name || 'Sản phẩm'}</h4>
-                  <p className="mt-1 text-xl font-black text-teal-300">{formatCurrency(selectedTransaction.amount)}</p>
+                  <h4 className="font-black text-white">
+                    {selectedTransaction.product_name || 'Sản phẩm'}
+                  </h4>
+                  <p className="mt-1 text-xl font-black text-teal-300">
+                    {formatCurrency(selectedTransaction.amount)}
+                  </p>
                 </div>
 
                 <div className="relative space-y-5 before:absolute before:bottom-3 before:left-3 before:top-3 before:w-px before:bg-white/10">
                   {getTimelineEvents(selectedTransaction).map((event) => (
-                    <div key={`${event.status}-${event.timestamp}`} className="relative z-10 flex gap-4">
+                    <div
+                      key={`${event.status}-${event.timestamp}`}
+                      className="relative z-10 flex gap-4"
+                    >
                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-4 border-[#0d1324] bg-teal-300">
                         <span className="h-2 w-2 rounded-full bg-slate-950" />
                       </div>
                       <div>
                         <h5 className="text-sm font-black text-white">{event.label}</h5>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">{formatDate(event.timestamp)}</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">
+                          {formatDate(event.timestamp)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -599,7 +697,9 @@ function TransactionHistoryPage() {
                 {selectedTransaction.rejection_reason && (
                   <div className="mt-6 rounded-2xl border border-rose-300/20 bg-rose-500/10 p-4">
                     <h5 className="text-xs font-black uppercase text-rose-200">Lý do từ chối</h5>
-                    <p className="mt-1 text-sm text-rose-100">{selectedTransaction.rejection_reason}</p>
+                    <p className="mt-1 text-sm text-rose-100">
+                      {selectedTransaction.rejection_reason}
+                    </p>
                   </div>
                 )}
               </div>
@@ -608,8 +708,14 @@ function TransactionHistoryPage() {
         )}
 
         {showReviewModal && reviewTarget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm" onClick={() => !isSubmittingReview && setShowReviewModal(false)}>
-            <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0d1324] shadow-2xl shadow-slate-950/50" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+            onClick={() => !isSubmittingReview && setShowReviewModal(false)}
+          >
+            <div
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0d1324] shadow-2xl shadow-slate-950/50"
+              onClick={(event) => event.stopPropagation()}
+            >
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                 <h3 className="text-lg font-black text-white">Đánh giá giao dịch</h3>
                 <button
@@ -622,7 +728,8 @@ function TransactionHistoryPage() {
               </div>
               <div className="p-5">
                 <p className="text-sm leading-6 text-slate-400">
-                  Bạn đánh giá trải nghiệm mua sản phẩm <strong className="text-white">{reviewTarget.product_name}</strong> như thế nào?
+                  Bạn đánh giá trải nghiệm mua sản phẩm{' '}
+                  <strong className="text-white">{reviewTarget.product_name}</strong> như thế nào?
                 </p>
 
                 <div className="my-7 flex items-center justify-center gap-2">
@@ -636,13 +743,22 @@ function TransactionHistoryPage() {
                         disabled={isSubmittingReview}
                         className="transition hover:scale-110 active:scale-95 disabled:opacity-60"
                       >
-                        <Star size={36} className={starValue <= reviewRating ? 'fill-current text-amber-300' : 'text-slate-700'} />
+                        <Star
+                          size={36}
+                          className={
+                            starValue <= reviewRating
+                              ? 'fill-current text-amber-300'
+                              : 'text-slate-700'
+                          }
+                        />
                       </button>
                     );
                   })}
                 </div>
 
-                <label htmlFor="review-comment" className="text-sm font-bold text-slate-400">Nhận xét</label>
+                <label htmlFor="review-comment" className="text-sm font-bold text-slate-400">
+                  Nhận xét
+                </label>
                 <textarea
                   id="review-comment"
                   rows={4}

@@ -38,7 +38,7 @@ export function useRealtimeBadges() {
       return () => {};
     }
 
-    const channelId = `unread-badges-${user.id}-${Date.now()}`;
+    const channelId = `unread-badges-${user.id}`;
     const channel = supabase
       .channel(channelId)
       .on(
@@ -55,7 +55,7 @@ export function useRealtimeBadges() {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
@@ -63,9 +63,37 @@ export function useRealtimeBadges() {
         () => {
           refreshBadges();
         },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          refreshBadges();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversation_participants',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          refreshBadges();
+        },
       );
 
-    channel.subscribe();
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        refreshBadges();
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);

@@ -10,6 +10,7 @@ import {
 } from './components/auth/RouteGuards';
 import AgentInboxPage from './pages/agent/AgentInboxPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import ModerationPage from './pages/admin/ModerationPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -42,155 +43,163 @@ function App() {
   return (
     <>
       <Routes>
-      <Route path="/" element={<RootRedirect />} />
-      <Route
-        path="/login"
-        element={
-          <AuthOnlyRoute>
-            <LoginPage />
-          </AuthOnlyRoute>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <AuthOnlyRoute>
-            <RegisterPage />
-          </AuthOnlyRoute>
-        }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <AuthOnlyRoute>
-            <ForgotPasswordPage />
-          </AuthOnlyRoute>
-        }
-      />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route
-        path="/change-password"
-        element={
-          <ProtectedRoute>
-            <ChangePasswordPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transactions"
-        element={
-          <ProtectedRoute>
-            <TransactionHistoryPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/products/new"
-        element={
-          <ProtectedRoute>
-            <ProductFormPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/products/:id/edit"
-        element={
-          <ProtectedRoute>
-            <ProductFormPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/products/:id" element={<ProductDetailPage />} />
-      <Route
-        path="/seller/dashboard"
-        element={
-          <ProtectedRoute>
-            <SellerDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/chat"
-        element={
-          <ProtectedRoute>
-            <ChatPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/support-chat"
-        element={
-          <ProtectedRoute>
-            <SupportChatPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/wishlist"
-        element={
-          <ProtectedRoute>
-            <WishlistPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <NotificationsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <AdminRoute>
-            <AdminDashboardPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/agent/inbox"
-        element={
-          <AgentRoute>
-            <AgentInboxPage />
-          </AgentRoute>
-        }
-      />
-      <Route path="/403" element={<ForbiddenPage />} />
-      <Route path="/500" element={<ServerErrorPage />} />
-      <Route
-        path="/my-products"
-        element={
-          <ProtectedRoute>
-            <MyProductsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/app"
-        element={
-          <ProtectedRoute>
-            <ClientHomePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/search"
-        element={
-          <ProtectedRoute>
-            <SearchResultsPage />
-          </ProtectedRoute>
-        }
-      />
+        <Route path="/" element={<RootRedirect />} />
+        <Route
+          path="/login"
+          element={
+            <AuthOnlyRoute>
+              <LoginPage />
+            </AuthOnlyRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <AuthOnlyRoute>
+              <RegisterPage />
+            </AuthOnlyRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <AuthOnlyRoute>
+              <ForgotPasswordPage />
+            </AuthOnlyRoute>
+          }
+        />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute>
+              <ChangePasswordPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <TransactionHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/new"
+          element={
+            <ProtectedRoute>
+              <ProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id/edit"
+          element={
+            <ProtectedRoute>
+              <ProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route
+          path="/seller/dashboard"
+          element={
+            <ProtectedRoute>
+              <SellerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/support-chat"
+          element={
+            <ProtectedRoute>
+              <SupportChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/agent/inbox"
+          element={
+            <AgentRoute>
+              <AgentInboxPage />
+            </AgentRoute>
+          }
+        />
+        <Route
+          path="/moderation"
+          element={
+            <AgentRoute>
+              <ModerationPage />
+            </AgentRoute>
+          }
+        />
+        <Route path="/403" element={<ForbiddenPage />} />
+        <Route path="/500" element={<ServerErrorPage />} />
+        <Route
+          path="/my-products"
+          element={
+            <ProtectedRoute>
+              <MyProductsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app"
+          element={
+            <ProtectedRoute>
+              <ClientHomePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <SearchResultsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <AiSupportWidget />

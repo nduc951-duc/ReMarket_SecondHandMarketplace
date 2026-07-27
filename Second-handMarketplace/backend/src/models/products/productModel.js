@@ -1,9 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-const {
-  SUPABASE_ANON_KEY,
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
-} = require('../../config/env');
+const { SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } = require('../../config/env');
 
 let adminClient = null;
 let publicClient = null;
@@ -14,9 +10,7 @@ function getAdminClient() {
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      'Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.',
-    );
+    throw new Error('Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong backend/.env.');
   }
 
   adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -43,9 +37,7 @@ function getPublicClient(accessToken = '') {
       persistSession: false,
       autoRefreshToken: false,
     },
-    global: accessToken
-      ? { headers: { Authorization: `Bearer ${accessToken}` } }
-      : undefined,
+    global: accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined,
   });
 
   if (!accessToken) {
@@ -98,11 +90,7 @@ function parseBoolean(value, defaultValue = false) {
 async function createProduct(productData) {
   const client = getAdminClient();
 
-  const { data, error } = await client
-    .from('products')
-    .insert([productData])
-    .select()
-    .single();
+  const { data, error } = await client.from('products').insert([productData]).select().single();
 
   if (error) {
     throw new Error(`Không thể tạo sản phẩm: ${error.message}`);
@@ -116,12 +104,7 @@ async function createProduct(productData) {
  * @param {string} productId
  */
 async function getProductByIdWithClient(client, productId) {
-
-  const { data, error } = await client
-    .from('products')
-    .select('*')
-    .eq('id', productId)
-    .single();
+  const { data, error } = await client.from('products').select('*').eq('id', productId).single();
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -147,11 +130,7 @@ async function getPublicProductById(productId, accessToken = '') {
   const client = getPublicClient(accessToken);
   const admin = getAdminClient();
 
-  const { data, error } = await client
-    .from('products')
-    .select('*')
-    .eq('id', productId)
-    .single();
+  const { data, error } = await client.from('products').select('*').eq('id', productId).single();
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -191,9 +170,7 @@ async function getProductsWithClient(client, options = {}) {
   const verifiedSeller = parseBoolean(options.verified_seller, false);
   const negotiable = parseBoolean(options.negotiable, false);
 
-  let query = client
-    .from('products')
-    .select('*', { count: 'exact' });
+  let query = client.from('products').select('*', { count: 'exact' });
 
   if (inStock) {
     query = query.eq('status', 'active');
@@ -313,9 +290,7 @@ async function getProductsWithClient(client, options = {}) {
     query = query.gte('created_at', startOfDay.toISOString());
   }
 
-  query = query
-    .order(sortField, { ascending })
-    .range(offset, offset + limit - 1);
+  query = query.order(sortField, { ascending }).range(offset, offset + limit - 1);
 
   const { data, error, count } = await query;
 
@@ -513,7 +488,6 @@ async function hasOpenTransactionsForProduct(productId) {
  * @param {object} options - { page, limit, status }
  */
 async function getProductsBySellerWithClient(client, sellerId, options = {}) {
-
   const page = Math.max(1, Number(options.page) || 1);
   const limit = Math.min(50, Math.max(1, Number(options.limit) || 10));
   const offset = (page - 1) * limit;

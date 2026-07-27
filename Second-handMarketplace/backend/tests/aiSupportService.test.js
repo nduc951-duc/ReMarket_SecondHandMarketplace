@@ -26,7 +26,10 @@ test('buildFallbackAnswer recommends human support when context is missing', () 
 
 test('buildFallbackAnswer summarizes matched internal knowledge', () => {
   const contexts = retrieveKnowledge('Thanh toan bi tru tien nhung don hang chua cap nhat');
-  const answer = buildFallbackAnswer('Thanh toan bi tru tien nhung don hang chua cap nhat', contexts);
+  const answer = buildFallbackAnswer(
+    'Thanh toan bi tru tien nhung don hang chua cap nhat',
+    contexts,
+  );
 
   assert.match(answer, /ReMarket/);
   assert.match(answer, /thanh toan/i);

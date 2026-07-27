@@ -21,7 +21,7 @@ async function uploadImagesHandler(req, res) {
           file.buffer,
           file.originalname,
           file.mimetype,
-          req.user.id
+          req.user.id,
         );
         uploadedImages.push(result);
       } catch (error) {

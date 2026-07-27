@@ -1,0 +1,4 @@
+interface:
+  display_name: "ReMarket Conventions"
+  short_description: "Apply repository architecture and coding rules"
+  default_prompt: "Use $remarket-conventions to implement this change in the repository's established style."

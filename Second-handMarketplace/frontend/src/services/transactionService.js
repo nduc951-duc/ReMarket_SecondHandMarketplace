@@ -24,7 +24,7 @@ export async function getTransactions(params = {}) {
   const response = await fetch(`${backendUrl}/api/transactions?${queryParams}`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
   });
 
@@ -54,7 +54,7 @@ export async function getTransactionById(transactionId) {
   const response = await fetch(`${backendUrl}/api/transactions/${transactionId}`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
   });
 
@@ -85,7 +85,7 @@ export async function createTransaction(transactionData) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
     body: JSON.stringify(transactionData),
   });
@@ -119,7 +119,7 @@ export async function updateTransactionStatus(transactionId, status, rejection_r
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
     body: JSON.stringify({
       status,
@@ -152,7 +152,7 @@ export async function getTransactionStats() {
   const response = await fetch(`${backendUrl}/api/transactions/stats`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${session.session.access_token}`,
+      Authorization: `Bearer ${session.session.access_token}`,
     },
   });
 

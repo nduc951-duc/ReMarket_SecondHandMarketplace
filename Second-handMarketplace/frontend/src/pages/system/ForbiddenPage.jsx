@@ -9,8 +9,12 @@ function ForbiddenPage() {
           <h1>Khong co quyen truy cap</h1>
           <p>Ban khong co quyen de xem trang nay.</p>
           <div className="error-page-actions">
-            <Link to="/app" className="btn-primary">Ve trang chu</Link>
-            <Link to="/login" className="btn-outline">Dang nhap lai</Link>
+            <Link to="/app" className="btn-primary">
+              Ve trang chu
+            </Link>
+            <Link to="/login" className="btn-outline">
+              Dang nhap lai
+            </Link>
           </div>
         </div>
       </div>

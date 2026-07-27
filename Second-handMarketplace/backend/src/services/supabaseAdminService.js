@@ -126,9 +126,7 @@ async function changeUserPassword({ userId, email, currentPassword, newPassword 
 
   // Verify current password by attempting sign-in
   const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    '';
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
   const verifyClient = createClient(SUPABASE_URL, anonKey, {
     auth: {

@@ -8,6 +8,8 @@ const {
   markConversationReadHandler,
 } = require('../controllers/chatController');
 const { requireAuth } = require('../middlewares/authMiddleware');
+const validateRequest = require('../middlewares/validateRequest');
+const { sendChatMessage } = require('../validation/requestSchemas');
 
 const router = express.Router();
 
@@ -18,6 +20,6 @@ router.get('/conversations/unread-count', getUnreadConversationCountHandler);
 router.post('/conversations/ensure', ensureConversationHandler);
 router.get('/conversations/:id/messages', getMessagesHandler);
 router.patch('/conversations/:id/read', markConversationReadHandler);
-router.post('/messages', sendMessageHandler);
+router.post('/messages', validateRequest(sendChatMessage), sendMessageHandler);
 
 module.exports = router;

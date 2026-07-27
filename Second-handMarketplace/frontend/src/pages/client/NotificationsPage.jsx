@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import { supabase } from '../../lib/supabaseClient';
+import { createRealtimeRefreshQueue } from '../../utils/realtime';
 import {
   getNotifications,
   markAllNotificationsRead,
@@ -124,10 +125,10 @@ function getPercentChange(oldPrice, newPrice) {
 
 function getSearchQuery(notification) {
   return (
-    notification.metadata?.product_title
-    || notification.metadata?.title
-    || notification.title
-    || ''
+    notification.metadata?.product_title ||
+    notification.metadata?.title ||
+    notification.title ||
+    ''
   ).trim();
 }
 
@@ -145,21 +146,21 @@ function getNotificationKind(notification) {
   }
 
   if (
-    type.includes('unavailable')
-    || type.includes('removed')
-    || type.includes('sold')
-    || text.includes('ngưng bán')
-    || text.includes('bị gỡ')
-    || text.includes('hết hàng')
+    type.includes('unavailable') ||
+    type.includes('removed') ||
+    type.includes('sold') ||
+    text.includes('ngưng bán') ||
+    text.includes('bị gỡ') ||
+    text.includes('hết hàng')
   ) {
     return 'unavailable';
   }
 
   if (
-    type.includes('follow')
-    || type.includes('new_product')
-    || text.includes('vừa đăng')
-    || text.includes('sản phẩm mới')
+    type.includes('follow') ||
+    type.includes('new_product') ||
+    text.includes('vừa đăng') ||
+    text.includes('sản phẩm mới')
   ) {
     return 'new_product';
   }
@@ -212,7 +213,11 @@ function getActionLabel(notification) {
   if (kind === 'unavailable') return 'Tìm tương tự';
   if (kind === 'new_product') return 'Khám phá';
   if (kind === 'price_down' || kind === 'price_up') return 'Xem ngay';
-  return resolveNotificationPath(notification) ? 'Xem' : notification.is_read ? 'Đã đọc' : 'Đánh dấu đã đọc';
+  return resolveNotificationPath(notification)
+    ? 'Xem'
+    : notification.is_read
+      ? 'Đã đọc'
+      : 'Đánh dấu đã đọc';
 }
 
 function getNotificationCopy(notification) {
@@ -288,48 +293,73 @@ function NotificationsPage() {
       return () => {};
     }
 
+    const refreshQueue = createRealtimeRefreshQueue(loadNotifications);
     const channel = supabase
-      .channel(`notifications-${user.id}-${Date.now()}`)
+      .channel(`notifications-${user.id}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          loadNotifications();
+          refreshQueue.schedule();
         },
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          refreshQueue.schedule();
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          refreshQueue.flush();
+        }
+      });
 
     return () => {
+      refreshQueue.cancel();
       supabase.removeChannel(channel);
     };
   }, [loadNotifications, user]);
 
   const enrichedNotifications = useMemo(
-    () => notifications.map((notification) => ({
-      ...notification,
-      kind: getNotificationKind(notification),
-    })),
+    () =>
+      notifications.map((notification) => ({
+        ...notification,
+        kind: getNotificationKind(notification),
+      })),
     [notifications],
   );
 
   const unreadCount = enrichedNotifications.filter((item) => !item.is_read).length;
 
-  const filterCounts = useMemo(() => FILTERS.reduce((counts, filter) => {
-    counts[filter.value] = enrichedNotifications.filter((item) => {
-      if (filter.value === 'all') return true;
-      return getFilterValue(item.kind) === filter.value;
-    }).length;
-    return counts;
-  }, {}), [enrichedNotifications]);
+  const filterCounts = useMemo(
+    () =>
+      FILTERS.reduce((counts, filter) => {
+        counts[filter.value] = enrichedNotifications.filter((item) => {
+          if (filter.value === 'all') return true;
+          return getFilterValue(item.kind) === filter.value;
+        }).length;
+        return counts;
+      }, {}),
+    [enrichedNotifications],
+  );
 
   const visibleNotifications = useMemo(() => {
     if (activeFilter === 'all') return enrichedNotifications;
-    return enrichedNotifications.filter((notification) => getFilterValue(notification.kind) === activeFilter);
+    return enrichedNotifications.filter(
+      (notification) => getFilterValue(notification.kind) === activeFilter,
+    );
   }, [activeFilter, enrichedNotifications]);
 
   const handleMarkRead = async (notification) => {
@@ -342,9 +372,9 @@ function NotificationsPage() {
 
     try {
       await markNotificationRead(notification.id);
-      setNotifications((previous) => previous.map((item) => (
-        item.id === notification.id ? { ...item, is_read: true } : item
-      )));
+      setNotifications((previous) =>
+        previous.map((item) => (item.id === notification.id ? { ...item, is_read: true } : item)),
+      );
 
       if (targetPath) navigate(targetPath);
     } catch (markError) {
@@ -370,13 +400,17 @@ function NotificationsPage() {
       <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-6">
         <header className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-xl shadow-slate-950/30 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <Link to="/app" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-cyan-200">
+            <Link
+              to="/app"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-cyan-200"
+            >
               <ArrowLeft size={17} />
               Quay lại
             </Link>
             <h1 className="mt-3 text-3xl font-black text-white">Thông báo</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-400">
-              Cập nhật mới nhất về tin nhắn, thay đổi giá, sản phẩm yêu thích và shop bạn đang theo dõi.
+              Cập nhật mới nhất về tin nhắn, thay đổi giá, sản phẩm yêu thích và shop bạn đang theo
+              dõi.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -389,7 +423,11 @@ function NotificationsPage() {
               onClick={handleMarkAll}
               disabled={isMarkingAll || unreadCount === 0}
             >
-              {isMarkingAll ? <Loader2 size={17} className="animate-spin" /> : <CheckCheck size={17} />}
+              {isMarkingAll ? (
+                <Loader2 size={17} className="animate-spin" />
+              ) : (
+                <CheckCheck size={17} />
+              )}
               {isMarkingAll ? 'Đang xử lý...' : 'Đánh dấu tất cả đã đọc'}
             </button>
           </div>
@@ -413,7 +451,9 @@ function NotificationsPage() {
               >
                 <Icon size={16} />
                 {filter.label}
-                <span className={`rounded-full px-2 py-0.5 text-xs ${isActive ? 'bg-slate-950/15' : 'bg-white/10 text-slate-200'}`}>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs ${isActive ? 'bg-slate-950/15' : 'bg-white/10 text-slate-200'}`}
+                >
                   {filterCounts[filter.value] || 0}
                 </span>
               </button>
@@ -433,7 +473,9 @@ function NotificationsPage() {
           <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-10 text-center shadow-xl shadow-slate-950/30">
             <Bell className="mx-auto text-slate-500" size={38} />
             <h3 className="mt-4 text-2xl font-black text-white">
-              {notifications.length === 0 ? 'Bạn chưa có thông báo' : 'Không có thông báo trong mục này'}
+              {notifications.length === 0
+                ? 'Bạn chưa có thông báo'
+                : 'Không có thông báo trong mục này'}
             </h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-400">
               Khi có cập nhật mới, hệ thống sẽ tự đồng bộ realtime và hiển thị tại đây.
@@ -454,13 +496,20 @@ function NotificationsPage() {
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 gap-4">
-                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${style.iconBox}`}>
+                      <div
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${style.iconBox}`}
+                      >
                         <Icon size={21} />
                       </div>
                       <div className="min-w-0">
                         <div className="mb-2 flex flex-wrap items-center gap-2">
-                          {(notification.kind === 'price_down' || notification.kind === 'price_up' || notification.kind === 'unavailable' || notification.kind === 'new_product') && (
-                            <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${style.badge}`}>
+                          {(notification.kind === 'price_down' ||
+                            notification.kind === 'price_up' ||
+                            notification.kind === 'unavailable' ||
+                            notification.kind === 'new_product') && (
+                            <span
+                              className={`rounded-full border px-2.5 py-1 text-xs font-black ${style.badge}`}
+                            >
                               {notification.kind === 'price_down'
                                 ? 'Giảm giá'
                                 : notification.kind === 'price_up'
@@ -490,7 +539,9 @@ function NotificationsPage() {
                     </div>
 
                     <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-                      {!notification.is_read && <span className={`h-2.5 w-2.5 rounded-full ${style.unreadDot}`} />}
+                      {!notification.is_read && (
+                        <span className={`h-2.5 w-2.5 rounded-full ${style.unreadDot}`} />
+                      )}
                       <button
                         type="button"
                         className="inline-flex min-w-28 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-black text-slate-100 transition hover:border-cyan-300/35 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"

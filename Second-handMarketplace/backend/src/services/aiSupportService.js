@@ -91,9 +91,7 @@ function buildFallbackAnswer(question, contexts) {
     return 'Mình chưa có đủ dữ liệu để trả lời chắc chắn câu này. Bạn nên liên hệ nhân viên hỗ trợ để được kiểm tra kỹ hơn.';
   }
 
-  const summary = contexts
-    .map((item) => `- ${item.title}: ${item.content}`)
-    .join('\n');
+  const summary = contexts.map((item) => `- ${item.title}: ${item.content}`).join('\n');
 
   return [
     'Mình tìm được một số thông tin liên quan trong phần hỗ trợ của ReMarket:',
@@ -144,11 +142,15 @@ function getAvailableProviders() {
 }
 
 function selectProvider() {
-  const requestedProvider = String(process.env.AI_PROVIDER || '').trim().toLowerCase();
+  const requestedProvider = String(process.env.AI_PROVIDER || '')
+    .trim()
+    .toLowerCase();
   const providers = getAvailableProviders();
 
   if (requestedProvider) {
-    return providers.find((provider) => provider.id === requestedProvider && provider.apiKey) || null;
+    return (
+      providers.find((provider) => provider.id === requestedProvider && provider.apiKey) || null
+    );
   }
 
   return providers.find((provider) => provider.apiKey) || null;

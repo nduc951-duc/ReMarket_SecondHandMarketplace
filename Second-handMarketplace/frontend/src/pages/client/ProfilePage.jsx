@@ -174,14 +174,20 @@ function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 pb-16 pt-6">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
-          <Link to="/app" className="inline-flex items-center gap-2 text-slate-400 hover:text-teal-400 transition-colors font-medium">
+          <Link
+            to="/app"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-teal-400 transition-colors font-medium"
+          >
             ← Quay lại
           </Link>
           <h1 className="text-2xl font-display font-bold text-white">Hồ sơ cá nhân</h1>
         </div>
 
         {/* Profile Card */}
-        <section className="bg-[#111827] rounded-3xl p-6 md:p-8 border border-white/5 shadow-xl relative overflow-hidden" aria-label="Hồ sơ cá nhân">
+        <section
+          className="bg-[#111827] rounded-3xl p-6 md:p-8 border border-white/5 shadow-xl relative overflow-hidden"
+          aria-label="Hồ sơ cá nhân"
+        >
           {/* Subtle background glow */}
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/10 rounded-full blur-[60px] pointer-events-none" />
 
@@ -197,7 +203,9 @@ function ProfilePage() {
               {avatarSrc ? (
                 <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <span className="w-full h-full flex items-center justify-center text-3xl font-bold text-slate-400 bg-[#0d1117]">{initials}</span>
+                <span className="w-full h-full flex items-center justify-center text-3xl font-bold text-slate-400 bg-[#0d1117]">
+                  {initials}
+                </span>
               )}
               <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                 {isUploading ? '⏳' : <Camera size={24} />}
@@ -211,24 +219,36 @@ function ProfilePage() {
               className="hidden"
             />
             <div className="text-center md:text-left flex-1 mt-2">
-              <h2 className="text-2xl font-bold text-white mb-1">{profile?.full_name || 'Chưa cập nhật'}</h2>
+              <h2 className="text-2xl font-bold text-white mb-1">
+                {profile?.full_name || 'Chưa cập nhật'}
+              </h2>
               <p className="text-slate-400 font-medium mb-3 flex items-center justify-center md:justify-start gap-2">
                 <Mail size={16} /> {profile?.email || user?.email}
               </p>
-              
+
               {/* Rating Summary Snippet */}
               <div className="inline-flex items-center gap-2 bg-[#0d1117] px-4 py-2 rounded-full border border-white/5">
                 <Star size={16} className="text-amber-400 fill-current" />
-                <span className="font-bold text-slate-200">{(Number(profile?.rating_avg) || 0).toFixed(1)}</span>
-                <span className="text-slate-500 text-sm">({profile?.rating_count || 0} đánh giá)</span>
+                <span className="font-bold text-slate-200">
+                  {(Number(profile?.rating_avg) || 0).toFixed(1)}
+                </span>
+                <span className="text-slate-500 text-sm">
+                  ({profile?.rating_count || 0} đánh giá)
+                </span>
               </div>
             </div>
           </div>
 
           {/* Feedback */}
           {feedback.message && (
-            <div className={cn("p-4 rounded-xl mt-6 text-sm font-medium border flex items-center gap-2", 
-              feedback.type === 'success' ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20")}>
+            <div
+              className={cn(
+                'p-4 rounded-xl mt-6 text-sm font-medium border flex items-center gap-2',
+                feedback.type === 'success'
+                  ? 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                  : 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+              )}
+            >
               {feedback.message}
             </div>
           )}
@@ -238,56 +258,100 @@ function ProfilePage() {
             {isEditing ? (
               <div className="flex flex-col gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="full_name">Họ và tên</label>
+                  <label
+                    className="block text-sm font-medium text-slate-300 mb-2"
+                    htmlFor="full_name"
+                  >
+                    Họ và tên
+                  </label>
                   <input
                     id="full_name"
                     name="full_name"
                     type="text"
                     value={editForm.full_name}
                     onChange={handleEditChange}
-                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all", formErrors.full_name ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                    className={cn(
+                      'w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all',
+                      formErrors.full_name
+                        ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500'
+                        : 'border-white/10 focus:border-teal-500 focus:ring-teal-500',
+                    )}
                   />
-                  {formErrors.full_name && <span className="text-rose-400 text-xs mt-1 block">{formErrors.full_name}</span>}
+                  {formErrors.full_name && (
+                    <span className="text-rose-400 text-xs mt-1 block">{formErrors.full_name}</span>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="phone">Số điện thoại</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="phone">
+                    Số điện thoại
+                  </label>
                   <input
                     id="phone"
                     name="phone"
                     type="tel"
                     value={editForm.phone}
                     onChange={handleEditChange}
-                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all", formErrors.phone ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                    className={cn(
+                      'w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all',
+                      formErrors.phone
+                        ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500'
+                        : 'border-white/10 focus:border-teal-500 focus:ring-teal-500',
+                    )}
                   />
-                  {formErrors.phone && <span className="text-rose-400 text-xs mt-1 block">{formErrors.phone}</span>}
+                  {formErrors.phone && (
+                    <span className="text-rose-400 text-xs mt-1 block">{formErrors.phone}</span>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="address">Địa chỉ</label>
+                  <label
+                    className="block text-sm font-medium text-slate-300 mb-2"
+                    htmlFor="address"
+                  >
+                    Địa chỉ
+                  </label>
                   <input
                     id="address"
                     name="address"
                     type="text"
                     value={editForm.address}
                     onChange={handleEditChange}
-                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all", formErrors.address ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                    className={cn(
+                      'w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all',
+                      formErrors.address
+                        ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500'
+                        : 'border-white/10 focus:border-teal-500 focus:ring-teal-500',
+                    )}
                   />
-                  {formErrors.address && <span className="text-rose-400 text-xs mt-1 block">{formErrors.address}</span>}
+                  {formErrors.address && (
+                    <span className="text-rose-400 text-xs mt-1 block">{formErrors.address}</span>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="bio">Giới thiệu bản thân</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="bio">
+                    Giới thiệu bản thân
+                  </label>
                   <textarea
                     id="bio"
                     name="bio"
                     value={editForm.bio}
                     onChange={handleEditChange}
                     rows="4"
-                    className={cn("w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all resize-none", formErrors.bio ? "border-rose-500/50 focus:border-rose-500 focus:ring-rose-500" : "border-white/10 focus:border-teal-500 focus:ring-teal-500")}
+                    className={cn(
+                      'w-full bg-[#0d1117] border rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-1 transition-all resize-none',
+                      formErrors.bio
+                        ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500'
+                        : 'border-white/10 focus:border-teal-500 focus:ring-teal-500',
+                    )}
                   />
                   <div className="flex justify-between items-center mt-1">
-                    {formErrors.bio ? <span className="text-rose-400 text-xs block">{formErrors.bio}</span> : <span />}
+                    {formErrors.bio ? (
+                      <span className="text-rose-400 text-xs block">{formErrors.bio}</span>
+                    ) : (
+                      <span />
+                    )}
                     <span className="text-slate-500 text-xs">{editForm.bio.length}/500</span>
                   </div>
                 </div>
@@ -307,7 +371,13 @@ function ProfilePage() {
                     onClick={handleSave}
                     disabled={isSaving}
                   >
-                    {isSaving ? 'Đang lưu...' : <><Save size={18} /> Lưu thay đổi</>}
+                    {isSaving ? (
+                      'Đang lưu...'
+                    ) : (
+                      <>
+                        <Save size={18} /> Lưu thay đổi
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -315,15 +385,19 @@ function ProfilePage() {
               <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
-                    <div className="p-2.5 bg-teal-500/10 rounded-xl text-teal-400 shrink-0"><Phone size={20} /></div>
+                    <div className="p-2.5 bg-teal-500/10 rounded-xl text-teal-400 shrink-0">
+                      <Phone size={20} />
+                    </div>
                     <div>
                       <span className="text-sm text-slate-400 block mb-1">Số điện thoại</span>
                       <span className="font-medium text-slate-200">{profile?.phone || '—'}</span>
                     </div>
                   </div>
-                  
+
                   <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex gap-4 items-start">
-                    <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 shrink-0"><MapPin size={20} /></div>
+                    <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 shrink-0">
+                      <MapPin size={20} />
+                    </div>
                     <div>
                       <span className="text-sm text-slate-400 block mb-1">Địa chỉ</span>
                       <span className="font-medium text-slate-200">{profile?.address || '—'}</span>
@@ -331,12 +405,18 @@ function ProfilePage() {
                   </div>
 
                   <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex gap-4 items-start md:col-span-2">
-                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 shrink-0"><Calendar size={20} /></div>
+                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 shrink-0">
+                      <Calendar size={20} />
+                    </div>
                     <div>
                       <span className="text-sm text-slate-400 block mb-1">Ngày tham gia</span>
                       <span className="font-medium text-slate-200">
                         {profile?.created_at
-                          ? new Date(profile.created_at).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })
+                          ? new Date(profile.created_at).toLocaleDateString('vi-VN', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
                           : '—'}
                       </span>
                     </div>
@@ -345,7 +425,9 @@ function ProfilePage() {
 
                 <div className="bg-[#0d1117] p-5 rounded-2xl border border-white/5 flex flex-col gap-2 mt-2">
                   <span className="text-sm text-slate-400">Giới thiệu</span>
-                  <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">{profile?.bio || 'Chưa có thông tin giới thiệu.'}</p>
+                  <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">
+                    {profile?.bio || 'Chưa có thông tin giới thiệu.'}
+                  </p>
                 </div>
 
                 <button
@@ -366,22 +448,37 @@ function ProfilePage() {
             Đánh giá từ người mua
           </h3>
           {isLoadingReviews ? (
-            <p className="text-slate-400 bg-[#111827] p-6 rounded-2xl border border-white/5 text-center">Đang tải đánh giá...</p>
+            <p className="text-slate-400 bg-[#111827] p-6 rounded-2xl border border-white/5 text-center">
+              Đang tải đánh giá...
+            </p>
           ) : reviews.length === 0 ? (
-            <p className="text-slate-400 bg-[#111827] p-6 rounded-2xl border border-white/5 text-center">Bạn chưa có đánh giá nào.</p>
+            <p className="text-slate-400 bg-[#111827] p-6 rounded-2xl border border-white/5 text-center">
+              Bạn chưa có đánh giá nào.
+            </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {reviews.map((review) => (
-                <article key={review.id} className="bg-[#111827] p-5 rounded-2xl border border-white/5 transition-all hover:border-teal-500/20">
+                <article
+                  key={review.id}
+                  className="bg-[#111827] p-5 rounded-2xl border border-white/5 transition-all hover:border-teal-500/20"
+                >
                   <div className="flex items-center justify-between mb-3">
-                    <strong className="text-slate-200">{review.reviewer_profile?.full_name || 'Người dùng'}</strong>
+                    <strong className="text-slate-200">
+                      {review.reviewer_profile?.full_name || 'Người dùng'}
+                    </strong>
                     <div className="flex text-amber-400">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} size={14} className={i < review.rating ? "fill-current" : "text-slate-600"} />
+                        <Star
+                          key={i}
+                          size={14}
+                          className={i < review.rating ? 'fill-current' : 'text-slate-600'}
+                        />
                       ))}
                     </div>
                   </div>
-                  {review.comment && <p className="text-slate-300 mb-3 text-sm">{review.comment}</p>}
+                  {review.comment && (
+                    <p className="text-slate-300 mb-3 text-sm">{review.comment}</p>
+                  )}
                   <small className="text-slate-500 text-xs">
                     {new Date(review.created_at).toLocaleDateString('vi-VN')}
                   </small>

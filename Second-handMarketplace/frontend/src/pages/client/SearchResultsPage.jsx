@@ -152,11 +152,15 @@ function SearchResultsPage() {
           <section className="rounded-[32px] border border-white/10 bg-slate-950/70 p-5 shadow-2xl shadow-slate-950/35 backdrop-blur-xl md:p-7">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-200">Search Result</p>
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-200">
+                  Search Result
+                </p>
                 <h1 className="mt-2 text-3xl font-black text-white md:text-4xl">
                   {query ? `Kết quả cho "${query}"` : 'Tất cả sản phẩm'}
                 </h1>
-                <p className="mt-1 text-sm text-slate-400">{pagination.total || products.length} sản phẩm phù hợp</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  {pagination.total || products.length} sản phẩm phù hợp
+                </p>
               </div>
               <button
                 type="button"
@@ -193,12 +197,18 @@ function SearchResultsPage() {
               ) : products.length === 0 ? (
                 <div className="rounded-[28px] border border-white/10 bg-slate-950/70 p-10 text-center shadow-xl shadow-slate-950/30">
                   <h2 className="text-2xl font-black text-white">Không tìm thấy sản phẩm</h2>
-                  <p className="mt-2 text-slate-400">Database chưa có sản phẩm phù hợp với bộ lọc này.</p>
+                  <p className="mt-2 text-slate-400">
+                    Database chưa có sản phẩm phù hợp với bộ lọc này.
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} hot={Number(product.view_count || 0) >= 1000} />
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      hot={Number(product.view_count || 0) >= 1000}
+                    />
                   ))}
                 </div>
               )}
@@ -227,7 +237,12 @@ function SearchResultsPage() {
                 <X size={18} />
               </button>
             </div>
-            <SearchFilterSidebar filters={filters} onChange={updateFilters} onClear={clearFilters} categories={categories} />
+            <SearchFilterSidebar
+              filters={filters}
+              onChange={updateFilters}
+              onClear={clearFilters}
+              categories={categories}
+            />
           </div>
         </div>
       )}
