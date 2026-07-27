@@ -1154,8 +1154,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": "paymentcontext.js"
     },
     {
@@ -1165,8 +1165,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentconfig",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": "paymentconfig"
     },
     {
@@ -1176,8 +1176,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_momostrategy",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": "momostrategy"
     },
     {
@@ -1187,8 +1187,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_vnpaystrategy",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": "vnpaystrategy"
     },
     {
@@ -1198,8 +1198,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_strategyfactories",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": "strategyfactories"
     },
     {
@@ -1209,8 +1209,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": "paymentcontext"
     },
     {
@@ -1220,8 +1220,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_constructor",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".constructor()"
     },
     {
@@ -1231,8 +1231,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_create",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".create()"
     },
     {
@@ -1242,8 +1242,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_createpayment",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".createpayment()"
     },
     {
@@ -1253,8 +1253,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_verifyreturn",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".verifyreturn()"
     },
     {
@@ -1264,8 +1264,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_verifyipn",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".verifyipn()"
     },
     {
@@ -1275,8 +1275,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_querystatus",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".querystatus()"
     },
     {
@@ -1286,8 +1286,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_src_contexts_paymentcontext_paymentcontext_refund",
-      "community": 23,
-      "community_name": "PaymentContext.js",
+      "community": 40,
+      "community_name": "paymentController.js",
       "norm_label": ".refund()"
     },
     {
@@ -6984,8 +6984,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "paymentstrategy.js"
     },
     {
@@ -6995,8 +6995,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "paymentstrategy"
     },
     {
@@ -7006,8 +7006,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_constructor",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".constructor()"
     },
     {
@@ -7017,8 +7017,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_method",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".method()"
     },
     {
@@ -7028,8 +7028,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_createpayment",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".createpayment()"
     },
     {
@@ -7039,8 +7039,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_verifyreturn",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".verifyreturn()"
     },
     {
@@ -7050,8 +7050,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_verifyipn",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".verifyipn()"
     },
     {
@@ -7061,8 +7061,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_querystatus",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".querystatus()"
     },
     {
@@ -7072,8 +7072,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_strategies_paymentstrategy_paymentstrategy_refund",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".refund()"
     },
     {
@@ -7083,8 +7083,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "vnpaystrategy.js"
     },
     {
@@ -7094,8 +7094,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_paymentstrategy",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "paymentstrategy"
     },
     {
@@ -7105,8 +7105,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_buildvnpayhashdata_buildvnpayquery_createhmacsignature_sortobject_verifyhmacsignature",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "{\n  buildvnpayhashdata,\n  buildvnpayquery,\n  createhmacsignature,\n  sortobject,\n  verifyhmacsignature,\n}"
     },
     {
@@ -7116,8 +7116,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_requireconfig",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "requireconfig()"
     },
     {
@@ -7127,8 +7127,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_pad",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "pad()"
     },
     {
@@ -7138,8 +7138,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_formatvnpaydate",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "formatvnpaydate()"
     },
     {
@@ -7149,8 +7149,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_getclientip",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "getclientip()"
     },
     {
@@ -7160,8 +7160,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "vnpaystrategy"
     },
     {
@@ -7171,8 +7171,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_method",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".method()"
     },
     {
@@ -7182,8 +7182,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_createsecurehash",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".createsecurehash()"
     },
     {
@@ -7193,8 +7193,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_sanitizereturnpayload",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".sanitizereturnpayload()"
     },
     {
@@ -7204,8 +7204,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_createpayment",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".createpayment()"
     },
     {
@@ -7215,8 +7215,8 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_verifyreturn",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".verifyreturn()"
     },
     {
@@ -7226,8 +7226,8 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_verifyipn",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".verifyipn()"
     },
     {
@@ -7237,8 +7237,8 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "backend_src_strategies_vnpaystrategy_vnpaystrategy_querystatus",
-      "community": 25,
-      "community_name": "VnpayStrategy.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": ".querystatus()"
     },
     {
@@ -7248,8 +7248,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_utils_signature",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "signature.js"
     },
     {
@@ -7259,8 +7259,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_utils_signature_crypto",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "crypto"
     },
     {
@@ -7281,8 +7281,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_utils_signature_sortobject",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "sortobject()"
     },
     {
@@ -7292,8 +7292,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_utils_signature_buildrawsignaturestring",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "buildrawsignaturestring()"
     },
     {
@@ -7303,8 +7303,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_utils_signature_encodevnpayvalue",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "encodevnpayvalue()"
     },
     {
@@ -7314,8 +7314,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "backend_src_utils_signature_buildvnpayhashdata",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "buildvnpayhashdata()"
     },
     {
@@ -7325,8 +7325,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "backend_src_utils_signature_buildvnpayquery",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "buildvnpayquery()"
     },
     {
@@ -7336,8 +7336,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_src_utils_signature_timingsafeequal",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "timingsafeequal()"
     },
     {
@@ -7347,8 +7347,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_src_utils_signature_verifyhmacsignature",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "verifyhmacsignature()"
     },
     {
@@ -8865,8 +8865,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_paymentstrategy_test",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "paymentstrategy.test.js"
     },
     {
@@ -8876,8 +8876,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_paymentstrategy_test_assert",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "assert"
     },
     {
@@ -8887,8 +8887,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "backend_tests_paymentstrategy_test_test",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "test"
     },
     {
@@ -8898,8 +8898,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "backend_tests_paymentstrategy_test_paymentstrategy",
-      "community": 27,
-      "community_name": "PaymentStrategy",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "paymentstrategy"
     },
     {
@@ -9206,8 +9206,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_signature_test",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "signature.test.js"
     },
     {
@@ -9217,8 +9217,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_signature_test_assert",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "assert"
     },
     {
@@ -9228,8 +9228,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "backend_tests_signature_test_crypto",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "crypto"
     },
     {
@@ -9239,8 +9239,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_tests_signature_test_test",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "test"
     },
     {
@@ -9250,8 +9250,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_tests_signature_test_buildrawsignaturestring_buildvnpayhashdata_buildvnpayquery_createhmacsignature_sortobject_verifyhmacsignature",
-      "community": 26,
-      "community_name": "signature.js",
+      "community": 22,
+      "community_name": "MomoStrategy.js",
       "norm_label": "{\n  buildrawsignaturestring,\n  buildvnpayhashdata,\n  buildvnpayquery,\n  createhmacsignature,\n  sortobject,\n  verifyhmacsignature,\n}"
     },
     {
@@ -9332,10 +9332,21 @@
       "norm_label": "supabasemodulepath"
     },
     {
-      "label": "notificationServicePath",
+      "label": "envModulePath",
       "file_type": "code",
       "source_file": "backend/tests/transactionFlows.test.js",
       "source_location": "L9",
+      "_origin": "ast",
+      "id": "backend_tests_transactionflows_test_envmodulepath",
+      "community": 70,
+      "community_name": "transactionFlows.test.js",
+      "norm_label": "envmodulepath"
+    },
+    {
+      "label": "notificationServicePath",
+      "file_type": "code",
+      "source_file": "backend/tests/transactionFlows.test.js",
+      "source_location": "L10",
       "_origin": "ast",
       "id": "backend_tests_transactionflows_test_notificationservicepath",
       "community": 70,
@@ -9346,18 +9357,18 @@
       "label": "createFixture()",
       "file_type": "code",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L11",
+      "source_location": "L12",
       "_origin": "ast",
       "id": "backend_tests_transactionflows_test_createfixture",
-      "community": 70,
-      "community_name": "transactionFlows.test.js",
+      "community": 86,
+      "community_name": "realtimeChat.test.js",
       "norm_label": "createfixture()"
     },
     {
       "label": "order()",
       "file_type": "code",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L26",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "backend_tests_transactionflows_test_order",
       "community": 70,
@@ -9368,7 +9379,7 @@
       "label": "transaction()",
       "file_type": "code",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L39",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "backend_tests_transactionflows_test_transaction",
       "community": 70,
@@ -10416,8 +10427,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_app",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "app.jsx"
     },
     {
@@ -10427,8 +10438,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "frontend_src_app_app",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "app()"
     },
     {
@@ -10438,8 +10449,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_ai_aisupportwidget",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "aisupportwidget.jsx"
     },
     {
@@ -10449,8 +10460,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_src_components_ai_aisupportwidget_initialmessages",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "initialmessages"
     },
     {
@@ -10460,8 +10471,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "frontend_src_components_ai_aisupportwidget_createmessage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "createmessage()"
     },
     {
@@ -10471,8 +10482,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "frontend_src_components_ai_aisupportwidget_aisupportwidget",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "aisupportwidget()"
     },
     {
@@ -10526,8 +10537,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "routeguards.jsx"
     },
     {
@@ -10537,8 +10548,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards_authloadingscreen",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "authloadingscreen()"
     },
     {
@@ -10548,8 +10559,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards_rootredirect",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "rootredirect()"
     },
     {
@@ -10559,8 +10570,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards_authonlyroute",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "authonlyroute()"
     },
     {
@@ -10570,8 +10581,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards_protectedroute",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "protectedroute()"
     },
     {
@@ -10581,8 +10592,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards_adminroute",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "adminroute()"
     },
     {
@@ -10592,8 +10603,8 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "frontend_src_components_auth_routeguards_agentroute",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "agentroute()"
     },
     {
@@ -10603,8 +10614,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_layout_navbar",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "navbar.jsx"
     },
     {
@@ -10647,8 +10658,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_productcard",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "productcard.jsx"
     },
     {
@@ -10658,8 +10669,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_productcard_getproductimage",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "getproductimage()"
     },
     {
@@ -10669,8 +10680,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_productcard_productcard",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "productcard()"
     },
     {
@@ -10724,8 +10735,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_searchfiltersidebar",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "searchfiltersidebar.jsx"
     },
     {
@@ -10735,8 +10746,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_searchfiltersidebar_searchfiltersidebar",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "searchfiltersidebar()"
     },
     {
@@ -10746,8 +10757,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_sidebarcategory",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "sidebarcategory.jsx"
     },
     {
@@ -10757,8 +10768,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_sidebarcategory_iconmap",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "iconmap"
     },
     {
@@ -10768,8 +10779,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "frontend_src_components_marketplace_sidebarcategory_sidebarcategory",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "sidebarcategory()"
     },
     {
@@ -10779,8 +10790,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdown-menu.jsx"
     },
     {
@@ -10790,8 +10801,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenusubtrigger",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenusubtrigger"
     },
     {
@@ -10801,8 +10812,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenusubcontent",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenusubcontent"
     },
     {
@@ -10812,8 +10823,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenucontent",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenucontent"
     },
     {
@@ -10823,8 +10834,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenuitem",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenuitem"
     },
     {
@@ -10834,8 +10845,8 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenucheckboxitem",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenucheckboxitem"
     },
     {
@@ -10845,8 +10856,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenuradioitem",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenuradioitem"
     },
     {
@@ -10856,8 +10867,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenulabel",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenulabel"
     },
     {
@@ -10867,8 +10878,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenuseparator",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenuseparator"
     },
     {
@@ -10878,8 +10889,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "frontend_src_components_ui_dropdown_menu_dropdownmenushortcut",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "dropdownmenushortcut()"
     },
     {
@@ -10889,8 +10900,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "marketplaceconfig.js"
     },
     {
@@ -10900,8 +10911,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_categories",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "categories"
     },
     {
@@ -10911,8 +10922,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_conditions",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "conditions"
     },
     {
@@ -10922,8 +10933,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_sortoptions",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "sortoptions"
     },
     {
@@ -10933,8 +10944,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_locations",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "locations"
     },
     {
@@ -10944,8 +10955,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_getconditionlabel",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "getconditionlabel()"
     },
     {
@@ -10955,8 +10966,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_formatcurrency",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "formatcurrency()"
     },
     {
@@ -10966,8 +10977,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_formatcompactcount",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "formatcompactcount()"
     },
     {
@@ -10977,8 +10988,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "frontend_src_data_marketplaceconfig_formattimeago",
-      "community": 66,
-      "community_name": "requestSchemas.js",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "formattimeago()"
     },
     {
@@ -11043,8 +11054,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "frontend_src_lib_supabaseclient_issupabaseconfigured",
-      "community": 81,
-      "community_name": "MyProductsPage.jsx",
+      "community": 3,
+      "community_name": "authService.js",
       "norm_label": "issupabaseconfigured"
     },
     {
@@ -11054,8 +11065,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_lib_utils",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "utils.js"
     },
     {
@@ -11065,8 +11076,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "frontend_src_lib_utils_cn",
-      "community": 92,
-      "community_name": "tailwind-merge",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "cn()"
     },
     {
@@ -11076,8 +11087,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_main",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "main.jsx"
     },
     {
@@ -11263,8 +11274,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_admin_moderationpage",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "moderationpage.jsx"
     },
     {
@@ -11274,8 +11285,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "frontend_src_pages_admin_moderationpage_status_labels",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "status_labels"
     },
     {
@@ -11285,8 +11296,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_src_pages_admin_moderationpage_moderationpage",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "moderationpage()"
     },
     {
@@ -11296,8 +11307,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_agent_agentinboxpage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "agentinboxpage.jsx"
     },
     {
@@ -11307,8 +11318,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_pages_agent_agentinboxpage_agentinboxpage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "agentinboxpage()"
     },
     {
@@ -11483,8 +11494,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "chatpage.jsx"
     },
     {
@@ -11494,8 +11505,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_formattime",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "formattime()"
     },
     {
@@ -11505,8 +11516,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_formatconversationtime",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "formatconversationtime()"
     },
     {
@@ -11516,8 +11527,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_formatcurrency",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "formatcurrency()"
     },
     {
@@ -11527,8 +11538,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_getinitials",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getinitials()"
     },
     {
@@ -11538,8 +11549,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_getpeer",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getpeer()"
     },
     {
@@ -11549,8 +11560,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_getpeername",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getpeername()"
     },
     {
@@ -11560,8 +11571,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_getpreview",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getpreview()"
     },
     {
@@ -11571,8 +11582,8 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_productmessage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "productmessage()"
     },
     {
@@ -11582,8 +11593,8 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_emptystate",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "emptystate()"
     },
     {
@@ -11593,8 +11604,8 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "frontend_src_pages_client_chatpage_chatpage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "chatpage()"
     },
     {
@@ -12066,8 +12077,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_client_profilepage",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "profilepage.jsx"
     },
     {
@@ -12077,8 +12088,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_src_pages_client_profilepage_defaultformerrors",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "defaultformerrors"
     },
     {
@@ -12088,8 +12099,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_src_pages_client_profilepage_profilepage",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "profilepage()"
     },
     {
@@ -12176,8 +12187,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_client_supportchatpage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "supportchatpage.jsx"
     },
     {
@@ -12187,8 +12198,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_pages_client_supportchatpage_supportchatpage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "supportchatpage()"
     },
     {
@@ -12385,8 +12396,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_system_forbiddenpage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "forbiddenpage.jsx"
     },
     {
@@ -12396,8 +12407,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_pages_system_forbiddenpage_forbiddenpage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "forbiddenpage()"
     },
     {
@@ -12407,8 +12418,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_system_notfoundpage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "notfoundpage.jsx"
     },
     {
@@ -12418,8 +12429,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_pages_system_notfoundpage_notfoundpage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "notfoundpage()"
     },
     {
@@ -12429,8 +12440,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_pages_system_servererrorpage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "servererrorpage.jsx"
     },
     {
@@ -12440,8 +12451,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_pages_system_servererrorpage_servererrorpage",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "servererrorpage()"
     },
     {
@@ -12583,8 +12594,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_services_aisupportservice",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "frontend/src/services/aisupportservice.js"
     },
     {
@@ -12594,8 +12605,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_services_aisupportservice_getbackendurl",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "getbackendurl()"
     },
     {
@@ -12605,8 +12616,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "frontend_src_services_aisupportservice_askaisupport",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 26,
+      "community_name": "signature.js",
       "norm_label": "askaisupport()"
     },
     {
@@ -12825,8 +12836,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "frontend/src/services/chatservice.js"
     },
     {
@@ -12836,8 +12847,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_getaccesstoken",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getaccesstoken()"
     },
     {
@@ -12847,8 +12858,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_getbackendurl",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getbackendurl()"
     },
     {
@@ -12858,8 +12869,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_getconversations",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getconversations()"
     },
     {
@@ -12869,8 +12880,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_getunreadconversationcount",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getunreadconversationcount()"
     },
     {
@@ -12880,8 +12891,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_getconversationmessages",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "getconversationmessages()"
     },
     {
@@ -12891,8 +12902,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_sendmessage",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "sendmessage()"
     },
     {
@@ -12902,8 +12913,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_ensureconversation",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "ensureconversation()"
     },
     {
@@ -12913,8 +12924,8 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "frontend_src_services_chatservice_markconversationread",
-      "community": 82,
-      "community_name": "ChatPage.jsx",
+      "community": 23,
+      "community_name": "PaymentContext.js",
       "norm_label": "markconversationread()"
     },
     {
@@ -13133,8 +13144,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "frontend/src/services/profileservice.js"
     },
     {
@@ -13144,8 +13155,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_getaccesstoken",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "getaccesstoken()"
     },
     {
@@ -13155,8 +13166,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_getbackendurl",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "getbackendurl()"
     },
     {
@@ -13166,8 +13177,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_getprofile",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "getprofile()"
     },
     {
@@ -13177,8 +13188,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_updateprofile",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "updateprofile()"
     },
     {
@@ -13188,8 +13199,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_uploadavatar",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "uploadavatar()"
     },
     {
@@ -13199,8 +13210,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_gettransactions",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "gettransactions()"
     },
     {
@@ -13210,8 +13221,8 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "frontend_src_services_profileservice_gettransactionstats",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 2,
+      "community_name": "ClientHomePage.jsx",
       "norm_label": "gettransactionstats()"
     },
     {
@@ -13221,8 +13232,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_services_reportservice",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "frontend/src/services/reportservice.js"
     },
     {
@@ -13232,8 +13243,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_services_reportservice_getaccesstoken",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "getaccesstoken()"
     },
     {
@@ -13243,8 +13254,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "frontend_src_services_reportservice_fetchreports",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "fetchreports()"
     },
     {
@@ -13254,8 +13265,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "frontend_src_services_reportservice_createproductreport",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "createproductreport()"
     },
     {
@@ -13265,8 +13276,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "frontend_src_services_reportservice_getmoderationreports",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "getmoderationreports()"
     },
     {
@@ -13276,8 +13287,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "frontend_src_services_reportservice_moderatereport",
-      "community": 72,
-      "community_name": "authorizationFlows.test.js",
+      "community": 25,
+      "community_name": "VnpayStrategy.js",
       "norm_label": "moderatereport()"
     },
     {
@@ -13287,8 +13298,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "frontend/src/services/reviewservice.js"
     },
     {
@@ -13298,8 +13309,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice_getaccesstoken",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "getaccesstoken()"
     },
     {
@@ -13309,8 +13320,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice_getbackendurl",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "getbackendurl()"
     },
     {
@@ -13320,8 +13331,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice_createreview",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "createreview()"
     },
     {
@@ -13331,8 +13342,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice_getreviewsbyuser",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "getreviewsbyuser()"
     },
     {
@@ -13342,8 +13353,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice_getmyreviewfortransaction",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "getmyreviewfortransaction()"
     },
     {
@@ -13353,8 +13364,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "frontend_src_services_reviewservice_getmyreviews",
-      "community": 83,
-      "community_name": "ProfilePage.jsx",
+      "community": 72,
+      "community_name": "authorizationFlows.test.js",
       "norm_label": "getmyreviews()"
     },
     {
@@ -13496,8 +13507,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_store_authstore",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "authstore.js"
     },
     {
@@ -13507,8 +13518,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "frontend_src_store_authstore_useauthstore",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "useauthstore"
     },
     {
@@ -13518,8 +13529,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_utils_adminaccess",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "adminaccess.js"
     },
     {
@@ -13529,8 +13540,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_src_utils_adminaccess_parseadminemails",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "parseadminemails()"
     },
     {
@@ -13540,8 +13551,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "frontend_src_utils_adminaccess_parseagentemails",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "parseagentemails()"
     },
     {
@@ -13551,8 +13562,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "frontend_src_utils_adminaccess_getuserrole",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "getuserrole()"
     },
     {
@@ -13562,8 +13573,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "frontend_src_utils_adminaccess_isadminuser",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "isadminuser()"
     },
     {
@@ -13573,8 +13584,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "frontend_src_utils_adminaccess_isagentuser",
-      "community": 3,
-      "community_name": "authService.js",
+      "community": 92,
+      "community_name": "tailwind-merge",
       "norm_label": "isagentuser()"
     },
     {
@@ -32766,7 +32777,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_tests_transactionflows_test_createfixture",
@@ -32946,7 +32957,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_tests_transactionflows_test_createfixture",
@@ -33738,7 +33749,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_tests_transactionflows_test",
@@ -33760,6 +33771,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/transactionFlows.test.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "backend_tests_transactionflows_test",
+      "target": "backend_tests_transactionflows_test_envmodulepath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/transactionFlows.test.js",
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
@@ -33771,7 +33793,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_tests_transactionflows_test",
@@ -33782,7 +33804,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L26",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_tests_transactionflows_test",
@@ -33815,7 +33837,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/transactionFlows.test.js",
-      "source_location": "L39",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_tests_transactionflows_test",
@@ -45403,5 +45425,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e1e947657306f48e8ad59ffd760f19f48c2a0545"
+  "built_at_commit": "eac768268ea0a7d7d4b4fb4dc136321d92c82868"
 }

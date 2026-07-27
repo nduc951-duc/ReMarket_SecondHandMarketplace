@@ -6,6 +6,7 @@ const { loadWithMocks } = require('./helpers/loadWithMocks');
 
 const transactionServicePath = require.resolve('../src/services/transactionService');
 const supabaseModulePath = require.resolve('@supabase/supabase-js');
+const envModulePath = require.resolve('../src/config/env');
 const notificationServicePath = require.resolve('../src/services/notificationService');
 
 function createFixture(overrides = {}) {
@@ -18,6 +19,10 @@ function createFixture(overrides = {}) {
   const memory = createInMemorySupabase(seed);
   const service = loadWithMocks(transactionServicePath, {
     [supabaseModulePath]: { createClient: () => memory.client },
+    [envModulePath]: {
+      SUPABASE_URL: 'http://supabase.test',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
+    },
     [notificationServicePath]: { createNotification: async () => null },
   });
   return { ...memory, service };

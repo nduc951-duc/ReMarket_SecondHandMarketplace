@@ -1,16 +1,16 @@
 # Graph Report - Second-handMarketplace  (2026-07-27)
 
 ## Corpus Check
-- 212 files · ~90,733 words
+- 212 files · ~90,744 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1395 nodes · 2585 edges · 95 communities (86 shown, 9 thin omitted)
+- 1396 nodes · 2586 edges · 92 communities (83 shown, 9 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 183 edges (avg confidence: 0.51)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e1e94765`
+- Built from commit: `eac76826`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -42,7 +42,6 @@
 - dependencies
 - VnpayStrategy.js
 - signature.js
-- PaymentStrategy
 - categoryRoutes.js
 - uploadService.js
 - ProfilePage.jsx
@@ -75,7 +74,6 @@
 - Project map
 - Verify ReMarket
 - class-variance-authority
-- requestSchemas.js
 - paymentRoutes.js
 - categoryRoutes.js
 - paymentWebhookFlows.test.js
@@ -92,7 +90,6 @@
 - clsx
 - MyProductsPage.jsx
 - ChatPage.jsx
-- ProfilePage.jsx
 - paymentRoutes.js
 - databaseHardening.test.js
 - realtimeChat.test.js
@@ -132,7 +129,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (95 total, 9 thin omitted)
+## Communities (92 total, 9 thin omitted)
 
 ### Community 0 - "backend/src/services/transactionService.js"
 Cohesion: 0.06
@@ -156,12 +153,12 @@ Nodes (55): dotenv, buildForgotPasswordHtml(), buildResendVerificationHtml(), bu
 } (+47 more)
 
 ### Community 2 - "ClientHomePage.jsx"
-Cohesion: 0.17
-Nodes (10): CategoryCard(), ProductSection(), SearchBar(), ClientHomePage(), emptySections, readHomeCache(), initialFilters, parseConditions() (+2 more)
+Cohesion: 0.07
+Nodes (42): CategoryCard(), getProductImage(), ProductCard(), ProductSection(), SearchBar(), SearchFilterSidebar(), iconMap, SidebarCategory() (+34 more)
 
 ### Community 3 - "authService.js"
-Cohesion: 0.07
-Nodes (55): App(), AiSupportWidget(), createMessage(), initialMessages, AuthLayout(), PasswordInput(), AdminRoute(), AgentRoute() (+47 more)
+Cohesion: 0.12
+Nodes (36): AuthLayout(), PasswordInput(), isSupabaseConfigured, ChangePasswordPage(), defaultForm, defaultForm, ForgotPasswordPage(), defaultForm (+28 more)
 
 ### Community 4 - "devDependencies"
 Cohesion: 0.04
@@ -273,34 +270,30 @@ Cohesion: 0.10
 Nodes (21): class-variance-authority, dependencies, class-variance-authority, lucide-react, @radix-ui/react-dropdown-menu, react, react-dom, react-helmet-async (+13 more)
 
 ### Community 22 - "MomoStrategy.js"
-Cohesion: 0.25
-Nodes (6): { createHmacSignature, verifyHmacSignature }, createRequestId(), MomoStrategy, PaymentStrategy, requireConfig(), createHmacSignature()
+Cohesion: 0.07
+Nodes (29): { createHmacSignature, verifyHmacSignature }, createRequestId(), MomoStrategy, PaymentStrategy, requireConfig(), PaymentStrategy, {
+  buildVnpayHashData,
+  buildVnpayQuery,
+  createHmacSignature,
+  sortObject,
+  verifyHmacSignature,
+}, formatVnpayDate() (+21 more)
 
 ### Community 23 - "PaymentContext.js"
-Cohesion: 0.15
-Nodes (5): MomoStrategy, paymentConfig, PaymentContext, strategyFactories, VnpayStrategy
+Cohesion: 0.21
+Nodes (19): AgentInboxPage(), ChatPage(), formatConversationTime(), formatCurrency(), formatTime(), getInitials(), getPeer(), getPeerName() (+11 more)
 
 ### Community 24 - "dependencies"
 Cohesion: 0.29
 Nodes (6): Database hardening, Moderation reports, Payment callback idempotency, Realtime chat, Supabase schema invariants, Transactions
 
 ### Community 25 - "VnpayStrategy.js"
-Cohesion: 0.21
-Nodes (7): {
-  buildVnpayHashData,
-  buildVnpayQuery,
-  createHmacSignature,
-  sortObject,
-  verifyHmacSignature,
-}, formatVnpayDate(), getClientIp(), pad(), PaymentStrategy, requireConfig(), VnpayStrategy
+Cohesion: 0.44
+Nodes (7): ModerationPage(), STATUS_LABELS, createProductReport(), fetchReports(), getAccessToken(), getModerationReports(), moderateReport()
 
 ### Community 26 - "signature.js"
-Cohesion: 0.26
-Nodes (12): buildRawSignatureString(), buildVnpayHashData(), buildVnpayQuery(), crypto, encodeVnpayValue(), sortObject(), timingSafeEqual(), verifyHmacSignature() (+4 more)
-
-### Community 27 - "PaymentStrategy"
-Cohesion: 0.15
-Nodes (4): PaymentStrategy, assert, PaymentStrategy, test
+Cohesion: 0.48
+Nodes (5): AiSupportWidget(), createMessage(), initialMessages, askAiSupport(), getBackendUrl()
 
 ### Community 28 - "categoryRoutes.js"
 Cohesion: 0.07
@@ -351,8 +344,8 @@ Cohesion: 0.40
 Nodes (3): { createClient }, path, supabase
 
 ### Community 40 - "paymentController.js"
-Cohesion: 0.16
-Nodes (13): { FRONTEND_ORIGIN }, { checkReadiness }, healthHandler(), readinessHandler(), express, { healthHandler, readinessHandler }, router, checkReadiness() (+5 more)
+Cohesion: 0.08
+Nodes (18): { FRONTEND_ORIGIN }, MomoStrategy, paymentConfig, PaymentContext, strategyFactories, VnpayStrategy, { checkReadiness }, healthHandler() (+10 more)
 
 ### Community 41 - "compilerOptions"
 Cohesion: 0.40
@@ -419,10 +412,6 @@ Nodes (3): Execute, Select checks, Verify ReMarket
 Cohesion: 0.19
 Nodes (9): assert, { loadWithMocks }, test, loadWithMocks(), assert, createHarness(), { createResponse }, { loadWithMocks } (+1 more)
 
-### Community 66 - "requestSchemas.js"
-Cohesion: 0.27
-Nodes (11): getProductImage(), ProductCard(), SearchFilterSidebar(), categories, conditions, formatCompactCount(), formatCurrency(), formatTimeAgo() (+3 more)
-
 ### Community 67 - "paymentRoutes.js"
 Cohesion: 0.33
 Nodes (5): assert, migration, path, { readFileSync }, test
@@ -437,7 +426,7 @@ Nodes (11): assert, { createInMemorySupabase }, { createResponse }, { loadWithMo
 
 ### Community 70 - "transactionFlows.test.js"
 Cohesion: 0.18
-Nodes (9): assert, createFixture(), { createInMemorySupabase }, { loadWithMocks }, notificationServicePath, supabaseModulePath, test, transaction() (+1 more)
+Nodes (9): assert, { createInMemorySupabase }, envModulePath, { loadWithMocks }, notificationServicePath, supabaseModulePath, test, transaction() (+1 more)
 
 ### Community 71 - "paymentExpiryWorker.js"
 Cohesion: 0.23
@@ -447,8 +436,8 @@ Nodes (8): createPaymentExpiryWorker(), { expireUnpaidTransactions }, startStand
 }, test
 
 ### Community 72 - "authorizationFlows.test.js"
-Cohesion: 0.17
-Nodes (17): ModerationPage(), STATUS_LABELS, CONDITION_LABELS, getProductImages(), PAYMENT_METHODS, ProductDetailPage(), readProductCache(), writeProductCache() (+9 more)
+Cohesion: 0.19
+Nodes (16): CONDITION_LABELS, getProductImages(), PAYMENT_METHODS, ProductDetailPage(), readProductCache(), writeProductCache(), createPayment(), getBackendUrl() (+8 more)
 
 ### Community 73 - "AiSupportWidget.jsx"
 Cohesion: 0.18
@@ -479,16 +468,12 @@ Cohesion: 0.40
 Nodes (8): formatCurrency(), getProductImage(), WishlistPage(), getAccessToken(), getBackendUrl(), getWishlist(), getWishlistStatus(), toggleWishlist()
 
 ### Community 81 - "MyProductsPage.jsx"
-Cohesion: 0.18
-Nodes (17): isSupabaseConfigured, clearMyProductsCache(), getCacheKey(), getProductImage(), MyProductsPage(), readCache(), statusLabels, writeCache() (+9 more)
+Cohesion: 0.19
+Nodes (16): clearMyProductsCache(), getCacheKey(), getProductImage(), MyProductsPage(), readCache(), statusLabels, writeCache(), categories (+8 more)
 
 ### Community 82 - "ChatPage.jsx"
-Cohesion: 0.09
-Nodes (36): AgentInboxPage(), ChatPage(), formatConversationTime(), formatCurrency(), formatTime(), getInitials(), getPeer(), getPeerName() (+28 more)
-
-### Community 83 - "ProfilePage.jsx"
-Cohesion: 0.27
-Nodes (15): defaultFormErrors, ProfilePage(), getAccessToken(), getBackendUrl(), getProfile(), getTransactions(), getTransactionStats(), updateProfile() (+7 more)
+Cohesion: 0.14
+Nodes (17): SellerDashboard(), statusLabels, formatCurrency(), formatDate(), PAYMENT_STATUS_LABELS, PAYMENT_STATUS_STYLES, STATUS_LABELS, STATUS_STYLES (+9 more)
 
 ### Community 84 - "paymentRoutes.js"
 Cohesion: 0.15
@@ -505,8 +490,8 @@ Cohesion: 0.20
 Nodes (9): assert, { createInMemorySupabase }, { createResponse }, fs, { loadWithMocks }, migration, migrationPath, path (+1 more)
 
 ### Community 86 - "realtimeChat.test.js"
-Cohesion: 0.14
-Nodes (14): clone(), createInMemorySupabase(), assert, createHarness(), { createInMemorySupabase }, { loadWithMocks }, test, assert (+6 more)
+Cohesion: 0.13
+Nodes (15): clone(), createInMemorySupabase(), assert, createHarness(), { createInMemorySupabase }, { loadWithMocks }, test, assert (+7 more)
 
 ### Community 87 - "realtime.js"
 Cohesion: 0.33
@@ -525,11 +510,11 @@ Cohesion: 0.40
 Nodes (4): Core ERD, Deployment architecture, Idempotent payment callback, ReMarket architecture
 
 ### Community 92 - "tailwind-merge"
-Cohesion: 0.19
-Nodes (13): Navbar(), iconMap, SidebarCategory(), DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem (+5 more)
+Cohesion: 0.18
+Nodes (16): App(), AdminRoute(), AgentRoute(), AuthOnlyRoute(), ProtectedRoute(), RootRedirect(), Navbar(), ForbiddenPage() (+8 more)
 
 ## Knowledge Gaps
-- **542 isolated node(s):** `semi`, `singleQuote`, `trailingComma`, `printWidth`, `tabWidth` (+537 more)
+- **543 isolated node(s):** `semi`, `singleQuote`, `trailingComma`, `printWidth`, `tabWidth` (+538 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -537,16 +522,16 @@ Nodes (13): Navbar(), iconMap, SidebarCategory(), DropdownMenuCheckboxItem, Drop
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `status()` connect `errorHandling.test.js` to `authorizationFlows.test.js`, `AdminDashboardPage.jsx`, `ChatPage.jsx`?**
-  _High betweenness centrality (0.186) - this node is a cross-community bridge._
-- **Why does `TransactionHistoryPage()` connect `ChatPage.jsx` to `ProfilePage.jsx`, `errorHandling.test.js`, `authService.js`, `transactionFlows.test.js`?**
-  _High betweenness centrality (0.080) - this node is a cross-community bridge._
-- **Why does `ProductDetailPage()` connect `authorizationFlows.test.js` to `authService.js`, `errorHandling.test.js`, `clsx`, `MyProductsPage.jsx`, `ProfilePage.jsx`, `tailwind-merge`?**
-  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
+- **Why does `TransactionHistoryPage()` connect `ChatPage.jsx` to `authorizationFlows.test.js`, `errorHandling.test.js`, `tailwind-merge`, `transactionFlows.test.js`?**
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **Why does `ProductDetailPage()` connect `authorizationFlows.test.js` to `ClientHomePage.jsx`, `errorHandling.test.js`, `clsx`, `MyProductsPage.jsx`, `VnpayStrategy.js`, `tailwind-merge`?**
+  _High betweenness centrality (0.072) - this node is a cross-community bridge._
 - **What connects `semi`, `singleQuote`, `trailingComma` to the rest of the system?**
-  _542 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _543 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `backend/src/services/transactionService.js` be split into smaller, more focused modules?**
   _Cohesion score 0.06317907444668008 - nodes in this community are weakly interconnected._
 - **Should `authController.js` be split into smaller, more focused modules?**
   _Cohesion score 0.06001984126984127 - nodes in this community are weakly interconnected._
-- **Should `authService.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.07052631578947369 - nodes in this community are weakly interconnected._
+- **Should `ClientHomePage.jsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.06892655367231638 - nodes in this community are weakly interconnected._
