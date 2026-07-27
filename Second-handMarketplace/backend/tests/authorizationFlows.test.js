@@ -6,6 +6,13 @@ const { createInMemorySupabase } = require('./helpers/inMemorySupabase');
 const { createResponse } = require('./helpers/httpMocks');
 const { loadWithMocks } = require('./helpers/loadWithMocks');
 
+const envModulePath = require.resolve('../src/config/env');
+const testSupabaseEnv = {
+  SUPABASE_URL: 'http://supabase.test',
+  SUPABASE_ANON_KEY: 'test-anon-key',
+  SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
+};
+
 test('customer cannot access admin-only action', () => {
   const res = createResponse();
   let nextCalled = false;
@@ -83,12 +90,11 @@ test('payment creation requires authentication before validation', () => {
 });
 
 test('seller cannot update another seller product', async () => {
-  process.env.SUPABASE_URL = 'http://supabase.test';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
   const memory = createInMemorySupabase({
     products: [{ id: 'product-1', seller_id: 'seller-a', title: 'Original title' }],
   });
   const model = loadWithMocks(require.resolve('../src/models/products/productModel'), {
+    [envModulePath]: testSupabaseEnv,
     [require.resolve('@supabase/supabase-js')]: {
       createClient: () => memory.client,
     },
@@ -101,8 +107,6 @@ test('seller cannot update another seller product', async () => {
 });
 
 test('nonparticipant cannot read conversation messages', async () => {
-  process.env.SUPABASE_URL = 'http://supabase.test';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
   const memory = createInMemorySupabase({
     conversation_participants: [
       { conversation_id: 'conversation-1', user_id: 'buyer-a' },
@@ -110,6 +114,7 @@ test('nonparticipant cannot read conversation messages', async () => {
     ],
   });
   const service = loadWithMocks(require.resolve('../src/services/chatService'), {
+    [envModulePath]: testSupabaseEnv,
     [require.resolve('@supabase/supabase-js')]: {
       createClient: () => memory.client,
     },
@@ -126,8 +131,6 @@ test('nonparticipant cannot read conversation messages', async () => {
 });
 
 test('seller cannot review their own completed sale', async () => {
-  process.env.SUPABASE_URL = 'http://supabase.test';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
   const memory = createInMemorySupabase({
     transactions: [
       {
@@ -142,6 +145,7 @@ test('seller cannot review their own completed sale', async () => {
     reviews: [],
   });
   const service = loadWithMocks(require.resolve('../src/services/reviewService'), {
+    [envModulePath]: testSupabaseEnv,
     [require.resolve('@supabase/supabase-js')]: {
       createClient: () => memory.client,
     },
