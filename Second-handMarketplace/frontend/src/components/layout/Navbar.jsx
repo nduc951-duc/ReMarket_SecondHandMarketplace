@@ -12,6 +12,7 @@ import {
   Heart,
   Search,
 } from 'lucide-react';
+import { ThemeToggle } from '../theme/ThemeToggle';
 import { useAuthStore } from '@/store/authStore';
 import { useRealtimeBadges } from '@/hooks/useRealtimeBadges';
 import { cn } from '@/lib/utils';
@@ -97,6 +98,7 @@ const Navbar = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <ThemeToggle />
             <Link
               to="/chat"
               className="relative rounded-full p-2 text-slate-400 transition-all duration-200 hover:bg-white/10 hover:text-white"

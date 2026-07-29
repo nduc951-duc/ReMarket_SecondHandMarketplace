@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ShieldCheck, MessageSquare, ListChecks } from 'lucide-react';
+import { ThemeToggle } from '../theme/ThemeToggle';
 
 function AuthLayout({ title, subtitle, alternateLabel, alternateAction, alternatePath, children }) {
   return (
     <main className="min-h-screen bg-[#0a0f1e] text-slate-200 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+      <div className="absolute right-4 top-4 z-20 rounded-full border border-border bg-background/80 shadow-sm backdrop-blur">
+        <ThemeToggle />
+      </div>
       {/* Background Glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-teal-500/10 blur-[120px] animate-pulse"></div>
