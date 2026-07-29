@@ -1,4 +1,4 @@
-export const categories = [
+export const fallbackCategories = [
   { name: 'Điện tử' },
   { name: 'Thời trang' },
   { name: 'Đồ gia dụng' },
@@ -13,45 +13,52 @@ export const conditions = [
   { value: 'new', label: 'Mới 100%' },
   { value: 'like_new', label: 'Như mới' },
   { value: 'good', label: 'Còn tốt' },
-  { value: 'fair', label: 'Trung bình' },
+  { value: 'fair', label: 'Đã qua sử dụng' },
   { value: 'poor', label: 'Cũ' },
-];
+] as const;
 
 export const sortOptions = [
   { value: 'newest', label: 'Mới nhất' },
   { value: 'price_asc', label: 'Giá thấp đến cao' },
   { value: 'price_desc', label: 'Giá cao đến thấp' },
   { value: 'view_desc', label: 'Nhiều lượt xem' },
-];
+] as const;
 
 export const locations = ['TP.HCM', 'Hà Nội', 'Đà Nẵng', 'Cần Thơ', 'Bình Dương'];
 
-export function getConditionLabel(value) {
+export function getConditionLabel(value?: string | null) {
   return (
     conditions.find((condition) => condition.value === value)?.label || value || 'Đã qua sử dụng'
   );
 }
 
-export function formatCurrency(amount) {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+export function formatCurrency(amount?: number | null) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(amount || 0);
 }
 
-export function formatCompactCount(value) {
+export function formatCompactCount(value?: number | null) {
   const amount = Number(value || 0);
   if (amount < 1000) return String(amount);
   return `${(amount / 1000).toFixed(amount >= 10000 ? 0 : 1)}k`;
 }
 
-export function formatTimeAgo(value) {
-  if (!value) return '';
-  const now = new Date();
-  const created = new Date(value);
-  const diffMs = Math.max(0, now - created);
-  const minutes = Math.floor(diffMs / 60000);
+export function formatTimeAgo(value?: string | null) {
+  if (!value) return 'Vừa đăng';
+  const diffMs = Math.max(0, Date.now() - new Date(value).getTime());
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return 'Vừa đăng';
   if (minutes < 60) return `${minutes} phút trước`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} giờ trước`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days} ngày trước`;
   return `${Math.floor(days / 7)} tuần trước`;
+}
+
+export function getCategoryName(category: { name: string } | string | null | undefined) {
+  return typeof category === 'string' ? category : category?.name || 'Khác';
 }

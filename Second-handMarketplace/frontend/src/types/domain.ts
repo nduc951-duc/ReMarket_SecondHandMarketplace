@@ -35,6 +35,7 @@ export interface Category {
   slug?: string | null;
   icon?: string | null;
   image_url?: string | null;
+  count?: number;
 }
 
 export interface Product {
@@ -46,13 +47,54 @@ export interface Product {
   status: ProductStatus | string;
   condition?: string | null;
   category_id?: string | null;
-  category?: Category | null;
+  category?: Category | string | null;
   seller?: Profile | null;
+  profiles?:
+    | (Profile & {
+        verified?: boolean;
+        rating_avg?: number | null;
+        rating_count?: number | null;
+      })
+    | null;
   image_url?: string | null;
+  thumbnail_url?: string | null;
   images?: string[] | null;
   location?: string | null;
+  view_count?: number | null;
+  isHot?: boolean;
   created_at?: string | null;
   updated_at?: string | null;
+}
+
+export interface ProductFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  condition?: string;
+  min_price?: string | number;
+  max_price?: string | number;
+  city?: string;
+  sort?: string;
+  status?: string;
+}
+
+export interface ProductListResult {
+  products: Product[];
+  pagination?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+}
+
+export interface WishlistItem {
+  id?: string;
+  user_id?: string;
+  product_id: string;
+  product: Product | null;
+  created_at?: string | null;
 }
 
 export interface Transaction {
