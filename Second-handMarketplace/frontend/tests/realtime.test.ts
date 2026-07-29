@@ -1,7 +1,6 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import { expect, test } from 'vitest';
 
-import { createRealtimeRefreshQueue, mergeRealtimeMessages } from '../src/utils/realtime.js';
+import { createRealtimeRefreshQueue, mergeRealtimeMessages } from '../src/utils/realtime';
 
 test('realtime message reconciliation replaces optimistic message without duplicates', () => {
   const optimistic = {
@@ -20,9 +19,9 @@ test('realtime message reconciliation replaces optimistic message without duplic
 
   const messages = mergeRealtimeMessages([optimistic], [persisted, persisted]);
 
-  assert.equal(messages.length, 1);
-  assert.equal(messages[0].id, 'message-1');
-  assert.equal(messages[0].status, 'sent');
+  expect(messages).toHaveLength(1);
+  expect(messages[0].id).toBe('message-1');
+  expect(messages[0].status).toBe('sent');
 });
 
 test('realtime reconciliation sorts out-of-order fetch and event arrivals', () => {
@@ -31,10 +30,7 @@ test('realtime reconciliation sorts out-of-order fetch and event arrivals', () =
     [{ id: 'message-1', created_at: '2026-01-01T00:00:01.000Z' }],
   );
 
-  assert.deepEqual(
-    messages.map((message) => message.id),
-    ['message-1', 'message-2'],
-  );
+  expect(messages.map((message) => message.id)).toEqual(['message-1', 'message-2']);
 });
 
 test('realtime refresh queue coalesces bursts and cancels on cleanup', async () => {
@@ -47,10 +43,10 @@ test('realtime refresh queue coalesces bursts and cancels on cleanup', async () 
   queue.schedule();
   queue.schedule();
   await new Promise((resolve) => setTimeout(resolve, 15));
-  assert.equal(refreshCount, 1);
+  expect(refreshCount).toBe(1);
 
   queue.schedule();
   queue.cancel();
   await new Promise((resolve) => setTimeout(resolve, 15));
-  assert.equal(refreshCount, 1);
+  expect(refreshCount).toBe(1);
 });
