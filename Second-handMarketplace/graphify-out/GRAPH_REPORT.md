@@ -2,18 +2,18 @@
 
 ## Corpus Check
 
-- 253 files · ~95,709 words
+- 254 files · ~96,397 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 1650 nodes · 3364 edges · 97 communities (89 shown, 8 thin omitted)
+- 1696 nodes · 3373 edges · 108 communities (100 shown, 8 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.51)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `87d46630`
+- Built from commit: `865957a9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -108,22 +108,31 @@
 - frontend/src/services/reviewService.js
 - clsx
 - tailwind-merge
+- ModerationPage.tsx
 - server.js
 - realtime.js
+- PurchaseDialog.tsx
 - vite-env.d.ts
+- paymentExpiryWorker.js
+- Button
+- AdminDashboardPage.tsx
+- reviewService.ts
+- paymentCallbackService.js
+- Product
+- ReviewList.tsx
 
 ## God Nodes (most connected - your core abstractions)
 
-1. `cn()` - 62 edges
+1. `cn()` - 60 edges
 2. `useAuthStore` - 35 edges
 3. `Button` - 30 edges
 4. `Query` - 20 edges
-5. `compilerOptions` - 20 edges
-6. `Product` - 19 edges
-7. `ChatPage()` - 16 edges
-8. `MarketplaceLayout()` - 15 edges
-9. `Skeleton()` - 15 edges
-10. `buildServiceError()` - 14 edges
+5. `Product` - 19 edges
+6. `compilerOptions` - 19 edges
+7. `MarketplaceLayout()` - 15 edges
+8. `Skeleton()` - 15 edges
+9. `buildServiceError()` - 14 edges
+10. `createNotification()` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 
@@ -142,20 +151,12 @@
 
 - None detected.
 
-## Communities (97 total, 8 thin omitted)
+## Communities (108 total, 8 thin omitted)
 
 ### Community 0 - "backend/src/services/transactionService.js"
 
-Cohesion: 0.05
-Nodes (73): createPaymentHandler(), {
-
-expireUnpaidTransactions,
-
-markTransactionPaymentCreated,
-
-prepareTransactionPayment,
-
-}, getClientIp(), getIpnResponse(), { getPayment, updatePaymentFromGateway, upsertPayment }, getRequestBaseUrl(), handleVerifiedResult(), normalizePaymentPayload() (+65 more)
+Cohesion: 0.20
+Nodes (23): buildServiceError(), { createClient }, { createNotification }, createTransaction(), enrichTransactionsWithProfilesAndReviews(), ensureProfileForUser(), expireUnpaidTransactions(), getAdminClient() (+15 more)
 
 ### Community 1 - "authController.js"
 
@@ -182,13 +183,13 @@ SIGNUP_COOLDOWN_SECONDS,
 
 ### Community 2 - "ClientHomePage.jsx"
 
-Cohesion: 0.13
-Nodes (16): SearchFilterSidebarProps, EmptyState(), EmptyStateProps, ErrorStateProps, buildSections(), ClientHomePage(), emptySections, HomeCache (+8 more)
+Cohesion: 0.14
+Nodes (16): SearchBar(), MarketplaceFilters, SearchFilterSidebarProps, DrawerContent(), buildSections(), ClientHomePage(), emptySections, HomeCache (+8 more)
 
 ### Community 3 - "authService.js"
 
-Cohesion: 0.06
-Nodes (69): AuthFeedback(), AuthFeedbackProps, FeedbackTone, AuthLayoutProps, PasswordInput(), PasswordInputProps, readStoredTheme(), Theme (+61 more)
+Cohesion: 0.09
+Nodes (48): AuthFeedback(), AuthFeedbackProps, FeedbackTone, AuthLayoutProps, PasswordInput(), PasswordInputProps, ChangePasswordPage(), initialForm (+40 more)
 
 ### Community 4 - "devDependencies"
 
@@ -197,13 +198,21 @@ Nodes (48): author, dependencies, cors, dotenv, express, express-rate-limit, hel
 
 ### Community 5 - "authMiddleware.js"
 
-Cohesion: 0.06
-Nodes (53): { getProfile, updateProfile, uploadAvatar }, getProfileHandler(), updateProfileHandler(), uploadAvatarHandler(), { uploadImage }, uploadImagesHandler(), { getWishlist, getWishlistStatus, toggleWishlist }, getWishlistHandler() (+45 more)
+Cohesion: 0.20
+Nodes (18): { getWishlist, getWishlistStatus, toggleWishlist }, getWishlistHandler(), getWishlistStatusHandler(), sendError(), toggleWishlistHandler(), express, {
+
+getWishlistHandler,
+
+getWishlistStatusHandler,
+
+toggleWishlistHandler,
+
+}, { requireAuth } (+10 more)
 
 ### Community 6 - "productModel.js"
 
-Cohesion: 0.11
-Nodes (40): ALLOWED_CONDITIONS, ALLOWED_PRODUCT_STATUSES, autocompleteProductsHandler(), {
+Cohesion: 0.06
+Nodes (58): ALLOWED_CONDITIONS, ALLOWED_PRODUCT_STATUSES, autocompleteProductsHandler(), {
 
 createProduct,
 
@@ -225,12 +234,12 @@ incrementProductViewCount,
 
 autocompleteProducts,
 
-}, createProductHandler(), deleteProductHandler(), getMyProductsHandler(), getProductByIdHandler() (+32 more)
+}, createProductHandler(), deleteProductHandler(), getMyProductsHandler(), getProductByIdHandler() (+50 more)
 
 ### Community 7 - "adminController.js"
 
-Cohesion: 0.22
-Nodes (23): createUserHandler(), {
+Cohesion: 0.06
+Nodes (63): createUserHandler(), {
 
 getAdminOverview,
 
@@ -248,19 +257,19 @@ updateUserStatus,
 
 createUser,
 
-}, getAdminOverviewHandler(), getAdminProductsHandler(), getAdminTransactionsHandler(), getAdminUsersHandler(), sendError(), updateProductStatusByAdminHandler() (+15 more)
+}, getAdminOverviewHandler(), getAdminProductsHandler(), getAdminTransactionsHandler(), getAdminUsersHandler(), sendError(), updateProductStatusByAdminHandler() (+55 more)
 
 ### Community 8 - "backend/src/services/chatService.js"
 
 Cohesion: 0.08
-Nodes (58): ensureConversationHandler(), {
+Nodes (59): ensureConversationHandler(), {
 getConversations,
 getMessages,
 sendMessage,
 ensureConversation,
 markConversationRead,
 getUnreadConversationCount,
-}, getConversationsHandler(), getMessagesHandler(), getUnreadConversationCountHandler(), markConversationReadHandler(), sendError(), sendMessageHandler() (+50 more)
+}, getConversationsHandler(), getMessagesHandler(), getUnreadConversationCountHandler(), markConversationReadHandler(), sendError(), sendMessageHandler() (+51 more)
 
 ### Community 9 - "backend/src/services/aiSupportService.js"
 
@@ -269,13 +278,13 @@ Nodes (26): { answerAiSupportQuestion }, askAiSupportHandler(), sendError(), aiK
 
 ### Community 10 - "AdminDashboardPage.jsx"
 
-Cohesion: 0.14
-Nodes (25): AdminDashboardPage(), AdminTab, formatCurrency(), formatDate(), productLabels, transactionStatuses, UserCard(), UserItemProps (+17 more)
+Cohesion: 0.26
+Nodes (16): AdminDashboardPage(), formatCurrency(), createAdminUser(), CreateAdminUserInput, getAccessToken(), getAdminOverview(), getAdminProducts(), getAdminTransactions() (+8 more)
 
 ### Community 11 - "backend/src/services/notificationService.js"
 
-Cohesion: 0.17
-Nodes (22): {
+Cohesion: 0.16
+Nodes (23): {
 
 createReview,
 
@@ -295,7 +304,7 @@ getReviewForTransactionHandler,
 
 getMyReviewsHandler,
 
-} (+14 more)
+} (+15 more)
 
 ### Community 12 - "App.jsx"
 
@@ -304,13 +313,13 @@ Nodes (24): For /graphify add and --watch, For /graphify query, For the commit h
 
 ### Community 14 - "backend/src/services/reviewService.js"
 
-Cohesion: 0.05
-Nodes (41): eslint-plugin-react, eslint-plugin-react-hooks, devDependencies, eslint, eslint-config-prettier, eslint-plugin-react, eslint-plugin-react-hooks, jsdom (+33 more)
+Cohesion: 0.04
+Nodes (45): @axe-core/playwright, eslint-plugin-react, eslint-plugin-react-hooks, devDependencies, @axe-core/playwright, eslint, eslint-config-prettier, eslint-plugin-react (+37 more)
 
 ### Community 15 - "NotificationsPage.jsx"
 
-Cohesion: 0.12
-Nodes (27): getProductImage(), ProductCard(), ProductCardProps, ProductSectionProps, ProductGallery(), ProductGalleryProps, ProductPurchasePanel(), ProductPurchasePanelProps (+19 more)
+Cohesion: 0.25
+Nodes (14): getProductImage(), ProductCard(), ProductPurchasePanel(), PurchaseDialog(), useToast(), conditions, fallbackCategories, formatCompactCount() (+6 more)
 
 ### Community 16 - "supabaseClient.js"
 
@@ -319,13 +328,21 @@ Nodes (13): createObservabilityMiddleware(), logger, isSensitiveKey(), redact(),
 
 ### Community 17 - "app.js"
 
-Cohesion: 0.14
-Nodes (24): ChatEmptyState(), ChatMessageBubble(), ChatMessageBubbleProps, ChatProductCard(), ProductCardData, ChatPage(), formatConversationTime(), formatTime() (+16 more)
+Cohesion: 0.11
+Nodes (20): ChatEmptyState(), ChatMessageBubble(), ChatMessageBubbleProps, ChatProductCard(), ProductCardData, ChatPage(), ChatPageProps, ConnectionStatus (+12 more)
 
 ### Community 18 - "ProductDetailPage.jsx"
 
-Cohesion: 0.26
-Nodes (10): App(), AdminRoute(), AgentRoute(), AuthOnlyRoute(), ProtectedRoute(), RootRedirect(), AgentInboxPage(), SupportChatPage() (+2 more)
+Cohesion: 0.17
+Nodes (20): createPaymentHandler(), {
+
+expireUnpaidTransactions,
+
+markTransactionPaymentCreated,
+
+prepareTransactionPayment,
+
+}, getClientIp(), getIpnResponse(), { getPayment, updatePaymentFromGateway, upsertPayment }, getRequestBaseUrl(), handleVerifiedResult(), normalizePaymentPayload() (+12 more)
 
 ### Community 19 - "TransactionHistoryPage.jsx"
 
@@ -340,7 +357,7 @@ Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent 
 ### Community 21 - "dependencies"
 
 Cohesion: 0.04
-Nodes (47): @base-ui/react, class-variance-authority, clsx, @fontsource-variable/geist, author, dependencies, @base-ui/react, class-variance-authority (+39 more)
+Nodes (48): @base-ui/react, class-variance-authority, clsx, @fontsource-variable/geist, author, dependencies, @base-ui/react, class-variance-authority (+40 more)
 
 ### Community 22 - "MomoStrategy.js"
 
@@ -349,8 +366,8 @@ Nodes (6): { createHmacSignature, verifyHmacSignature }, createRequestId(), Momo
 
 ### Community 23 - "PaymentContext.js"
 
-Cohesion: 0.14
-Nodes (24): formatDate(), ReviewList(), ReviewListProps, formatDate(), ProfileErrors, ProfilePage(), validateProfileForm(), getAccessToken() (+16 more)
+Cohesion: 0.10
+Nodes (25): SystemStatusPage(), SystemStatusPageProps, buttonVariants, formatDate(), ModerationPage(), formatDate(), ProfileErrors, ProfilePage() (+17 more)
 
 ### Community 24 - "dependencies"
 
@@ -411,18 +428,18 @@ Nodes (14): buildSeedUsers(), { createClient }, ensureUser(), findUserByEmail(),
 
 ### Community 33 - "scripts"
 
-Cohesion: 0.07
-Nodes (29): compilerOptions, allowJs, allowSyntheticDefaultImports, baseUrl, checkJs, esModuleInterop, forceConsistentCasingInFileNames, isolatedModules (+21 more)
+Cohesion: 0.06
+Nodes (31): compilerOptions, allowJs, allowSyntheticDefaultImports, baseUrl, esModuleInterop, forceConsistentCasingInFileNames, isolatedModules, jsx (+23 more)
 
 ### Community 34 - "frontend/package.json"
 
-Cohesion: 0.20
-Nodes (9): DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut(), DropdownMenuSubContent (+1 more)
+Cohesion: 0.18
+Nodes (10): DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut(), DropdownMenuSubContent (+2 more)
 
 ### Community 35 - "AiSupportWidget.jsx"
 
-Cohesion: 0.08
-Nodes (18): AppError, AppError, formatIssues(), validateRequest(), { createReport }, { createReportHandler, getMyReportsHandler }, express, { requireAuth } (+10 more)
+Cohesion: 0.15
+Nodes (16): ProductGallery(), ProductGalleryProps, PurchaseDialogProps, ProductReportInput, ReportDialog(), SellerCard(), getProductImages(), ProductDetailPage() (+8 more)
 
 ### Community 36 - "backend/.prettierrc.json"
 
@@ -476,18 +493,22 @@ Nodes (5): buildCommand, framework, outputDirectory, rewrites, $schema
 
 ### Community 49 - "postcss.config.js"
 
-Cohesion: 0.16
-Nodes (16): { ADMIN_EMAILS, AGENT_EMAILS }, isAdminUser(), isAgentUser(), parseAdminEmails(), parseAgentEmails(), requireAdmin(), requireAdminOrAgent(), express (+8 more)
+Cohesion: 0.18
+Nodes (16): { getProfile, updateProfile, uploadAvatar }, getProfileHandler(), updateProfileHandler(), uploadAvatarHandler(), express, {
+getProfileHandler,
+updateProfileHandler,
+uploadAvatarHandler,
+}, multer, { requireAuth } (+8 more)
 
 ### Community 50 - "tailwind.config.js"
 
-Cohesion: 0.11
-Nodes (18): PurchaseDialogProps, CreatePaymentInput, CreatePaymentResult, CreateTransactionInput, AdminProductListResult, AdminTransactionListResult, AdminUserListResult, ApiErrorPayload (+10 more)
+Cohesion: 0.14
+Nodes (13): AdminOverview, AdminProductListResult, AdminTransactionListResult, AdminUser, AdminUserListResult, ApiErrorPayload, ConversationParticipant, PaginatedResult (+5 more)
 
 ### Community 54 - "transactionRoutes.js"
 
 Cohesion: 0.17
-Nodes (15): createPayment, createProduct, createReview, createTransaction, idParamsSchema, nonEmptyString, paymentMethodSchema, sendChatMessage (+7 more)
+Nodes (14): createPayment, createProduct, createTransaction, idParamsSchema, nonEmptyString, paymentMethodSchema, refundPayment, updateTransactionStatus (+6 more)
 
 ### Community 56 - "tailwind-merge"
 
@@ -531,8 +552,8 @@ Nodes (3): Execute, Select checks, Verify ReMarket
 
 ### Community 65 - "class-variance-authority"
 
-Cohesion: 0.19
-Nodes (9): assert, { loadWithMocks }, test, loadWithMocks(), assert, createHarness(), { createResponse }, { loadWithMocks } (+1 more)
+Cohesion: 0.14
+Nodes (14): assert, { createResponse }, { loadWithMocks }, test, assert, { loadWithMocks }, test, createResponse() (+6 more)
 
 ### Community 66 - "PaymentContext.js"
 
@@ -551,8 +572,8 @@ Nodes (9): { getCategories }, getCategoriesHandler(), express, { getCategoriesHa
 
 ### Community 69 - "paymentWebhookFlows.test.js"
 
-Cohesion: 0.14
-Nodes (13): assert, { createInMemorySupabase }, { createResponse }, envModulePath, { loadWithMocks }, { requireAdmin, requireAdminOrAgent }, test, testSupabaseEnv (+5 more)
+Cohesion: 0.17
+Nodes (15): { ADMIN_EMAILS, AGENT_EMAILS }, isAdminUser(), isAgentUser(), parseAdminEmails(), parseAgentEmails(), requireAdmin(), requireAdminOrAgent(), assert (+7 more)
 
 ### Community 70 - "transactionFlows.test.js"
 
@@ -561,28 +582,30 @@ Nodes (9): assert, createFixture(), { createInMemorySupabase }, envModulePath, {
 
 ### Community 71 - "paymentExpiryWorker.js"
 
-Cohesion: 0.29
-Nodes (15): {
-
-createReport,
-
-getModerationReports,
-
-getMyReports,
-
-moderateReport,
-
-}, createReportHandler(), getModerationReportsHandler(), getMyReportsHandler(), moderateReportHandler(), sendError(), buildServiceError(), { createClient } (+7 more)
+Cohesion: 0.14
+Nodes (15): readStoredTheme(), Theme, ThemeContext, ThemeContextValue, ThemeProvider(), useTheme(), ToastContext, ToastContextValue (+7 more)
 
 ### Community 72 - "authorizationFlows.test.js"
 
-Cohesion: 0.15
-Nodes (17): ToastContext, ToastContextValue, ToastInput, ToastProvider(), ToastRecord, ToastTone, toneStyles, rootElement (+9 more)
+Cohesion: 0.38
+Nodes (9): WishlistPage(), getAccessToken(), getBackendUrl(), getWishlist(), getWishlistStatus(), parseResult(), toggleWishlist(), WishlistResult (+1 more)
 
 ### Community 73 - "AiSupportWidget.jsx"
 
-Cohesion: 0.29
-Nodes (6): SystemStatusPage(), SystemStatusPageProps, buttonVariants, ForbiddenPage(), NotFoundPage(), ServerErrorPage()
+Cohesion: 0.19
+Nodes (16): {
+
+createTransaction,
+
+getTransactionById,
+
+getTransactions,
+
+getTransactionStats,
+
+updateTransactionStatus,
+
+}, createTransactionHandler(), { getProductById }, getTransactionByIdHandler(), getTransactionsHandler(), getTransactionStatsHandler(), sendError(), updateTransactionStatusHandler() (+8 more)
 
 ### Community 74 - "ReMarket RLS policies"
 
@@ -591,8 +614,8 @@ Nodes (3): Browser/backend access boundary, Realtime chat, ReMarket RLS policies
 
 ### Community 75 - "errorHandling.test.js"
 
-Cohesion: 0.20
-Nodes (8): AppError, errorHandler(), normalizeError(), notFoundHandler(), app, assert, { errorHandler }, test
+Cohesion: 0.15
+Nodes (9): AppError, AppError, errorHandler(), normalizeError(), notFoundHandler(), app, assert, { errorHandler } (+1 more)
 
 ### Community 76 - "inMemorySupabase.js"
 
@@ -617,12 +640,12 @@ Nodes (4): PaymentStrategy, assert, PaymentStrategy, test
 ### Community 81 - "MyProductsPage.jsx"
 
 Cohesion: 0.17
-Nodes (25): ConfirmDialog(), filters, formatCurrency(), MyProductsPage(), productImage(), categories, initialForm, ProductFormErrors (+17 more)
+Nodes (26): ConfirmDialog(), Skeleton(), filters, formatCurrency(), MyProductsPage(), productImage(), categories, initialForm (+18 more)
 
 ### Community 82 - "ChatPage.jsx"
 
-Cohesion: 0.12
-Nodes (30): status(), transaction(), MarketplaceLayout(), MarketplaceLayoutProps, Card(), CardContent(), ErrorState(), Skeleton() (+22 more)
+Cohesion: 0.18
+Nodes (22): status(), transaction(), StatusBadge(), filters, formatCurrency(), formatDate(), SellerDashboard(), formatCurrency() (+14 more)
 
 ### Community 83 - "frontend/src/services/reviewService.js"
 
@@ -631,8 +654,8 @@ Nodes (6): Badge(), badgeVariants, StatusBadgeProps, statusLabels, StatusTone, s
 
 ### Community 84 - "notificationService.ts"
 
-Cohesion: 0.23
-Nodes (15): filters, formatDate(), kindConfig, kindOf(), metadataOf(), NotificationKind, NotificationsPage(), targetOf() (+7 more)
+Cohesion: 0.16
+Nodes (20): filters, formatDate(), kindConfig, kindOf(), metadataOf(), NotificationKind, NotificationsPage(), targetOf() (+12 more)
 
 ### Community 85 - "databaseHardening.test.js"
 
@@ -657,7 +680,7 @@ Nodes (4): assert, fs, path, test
 ### Community 89 - "WishlistPage.jsx"
 
 Cohesion: 0.15
-Nodes (12): refundPaymentHandler(), { DEMO_READ_ONLY_ADMIN }, requireDemoWriteAccess(), { createPayment, refundPayment }, {
+Nodes (12): refundPaymentHandler(), AppError, formatIssues(), validateRequest(), { createPayment, refundPayment }, {
 
 createPaymentHandler,
 
@@ -669,7 +692,7 @@ queryPaymentStatusHandler,
 
 refundPaymentHandler,
 
-}, express, { requireAdmin }, { requireAuth } (+4 more)
+}, express, { requireAdmin } (+4 more)
 
 ### Community 90 - "frontend/src/services/reviewService.js"
 
@@ -678,22 +701,73 @@ Nodes (4): Core ERD, Deployment architecture, Idempotent payment callback, ReMar
 
 ### Community 91 - "clsx"
 
-Cohesion: 0.10
-Nodes (35): SearchBar(), SearchBarProps, MarketplaceFilters, SearchFilterSidebar(), iconMap, SidebarCategory(), ReportDialogProps, SellerCard() (+27 more)
+Cohesion: 0.16
+Nodes (18): SearchBarProps, SearchFilterSidebar(), Card(), CardContent(), CardDescription(), CardFooter(), CardHeader(), CardTitle() (+10 more)
 
 ### Community 92 - "tailwind-merge"
 
-Cohesion: 0.27
-Nodes (10): Navbar(), primaryLinks, useRealtimeBadges(), getUnreadConversationCount(), getUnreadNotificationCount(), getUserRole(), isAdminUser(), isAgentUser() (+2 more)
+Cohesion: 0.07
+Nodes (41): AdminDashboardPage, AgentInboxPage, AiSupportWidget, App(), ChangePasswordPage, ChatPage, ClientHomePage, ForbiddenPage (+33 more)
+
+### Community 93 - "ModerationPage.tsx"
+
+Cohesion: 0.18
+Nodes (8): MarketplaceLayout(), MarketplaceLayoutProps, EmptyState(), EmptyStateProps, ErrorState(), ErrorStateProps, actionLabels, statusOptions
 
 ### Community 95 - "realtime.js"
 
-Cohesion: 0.70
-Nodes (3): createRealtimeRefreshQueue(), mergeRealtimeMessages(), messageIdentity()
+Cohesion: 0.17
+Nodes (14): isSupabaseConfigured, ConversationListResult, ensureConversation(), EnsureConversationInput, EnsureConversationResult, getAccessToken(), getConversationMessages(), getConversations() (+6 more)
+
+### Community 96 - "PurchaseDialog.tsx"
+
+Cohesion: 0.38
+Nodes (8): ReportDialogProps, ConfirmDialogProps, DialogContent(), DialogDescription(), DialogFooter(), DialogHeader(), DialogTitle(), Textarea()
+
+### Community 99 - "paymentExpiryWorker.js"
+
+Cohesion: 0.23
+Nodes (8): createPaymentExpiryWorker(), { expireUnpaidTransactions }, startStandaloneWorker(), { createPaymentExpiryWorker }, runPaymentExpiryOnce(), assert, {
+
+DEFAULT_INTERVAL_MS,
+
+createPaymentExpiryWorker,
+
+}, test
+
+### Community 100 - "Button"
+
+Cohesion: 0.29
+Nodes (6): primaryLinks, ThemeToggle(), Avatar(), AvatarProps, Button, ButtonProps
+
+### Community 101 - "AdminDashboardPage.tsx"
+
+Cohesion: 0.20
+Nodes (7): AdminTab, formatDate(), productLabels, transactionStatuses, UserCard(), UserItemProps, UserRow()
+
+### Community 102 - "reviewService.ts"
+
+Cohesion: 0.44
+Nodes (9): backendUrl(), createReview(), getAccessToken(), getMyReviewForTransaction(), getMyReviews(), getReviewsByUser(), parse(), ReviewInput (+1 more)
+
+### Community 103 - "paymentCallbackService.js"
+
+Cohesion: 0.36
+Nodes (7): syncTransactionPaymentResult(), buildPaymentIdempotencyKey(), { createHash }, { processPaymentCallback }, processVerifiedPaymentCallback(), sanitizeGatewayPayload(), stableSerialize()
+
+### Community 104 - "Product"
+
+Cohesion: 0.29
+Nodes (6): ProductCardProps, ProductSectionProps, ProductPurchasePanelProps, HomeSections, ProductCache, Product
+
+### Community 105 - "ReviewList.tsx"
+
+Cohesion: 0.40
+Nodes (4): formatDate(), ReviewList(), ReviewListProps, Review
 
 ## Knowledge Gaps
 
-- **639 isolated node(s):** `semi`, `singleQuote`, `trailingComma`, `printWidth`, `tabWidth` (+634 more)
+- **676 isolated node(s):** `semi`, `singleQuote`, `trailingComma`, `printWidth`, `tabWidth` (+671 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -702,16 +776,16 @@ Nodes (3): createRealtimeRefreshQueue(), mergeRealtimeMessages(), messageIdentit
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `status()` connect `ChatPage.jsx` to `MyProductsPage.jsx`, `AdminDashboardPage.jsx`, `errorHandling.test.js`?**
-  _High betweenness centrality (0.250) - this node is a cross-community bridge._
-- **Why does `useAuthStore` connect `ProductDetailPage.jsx` to `authService.js`, `NotificationsPage.jsx`, `MyProductsPage.jsx`, `app.js`, `ChatPage.jsx`, `notificationService.ts`, `PaymentContext.js`, `tailwind-merge`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
-- **Why does `TransactionHistoryPage()` connect `ChatPage.jsx` to `ProductDetailPage.jsx`, `realtime.js`, `PaymentContext.js`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
+  _High betweenness centrality (0.254) - this node is a cross-community bridge._
+- **Why does `useAuthStore` connect `tailwind-merge` to `authService.js`, `Button`, `AiSupportWidget.jsx`, `NotificationsPage.jsx`, `MyProductsPage.jsx`, `app.js`, `ChatPage.jsx`, `notificationService.ts`, `PaymentContext.js`?**
+  _High betweenness centrality (0.144) - this node is a cross-community bridge._
+- **Why does `TransactionHistoryPage()` connect `ChatPage.jsx` to `tailwind-merge`, `reviewService.ts`, `notificationService.ts`?**
+  _High betweenness centrality (0.094) - this node is a cross-community bridge._
 - **What connects `semi`, `singleQuote`, `trailingComma` to the rest of the system?**
-  _639 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `backend/src/services/transactionService.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.051131354687040845 - nodes in this community are weakly interconnected._
+  _676 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `authController.js` be split into smaller, more focused modules?**
   _Cohesion score 0.06001984126984127 - nodes in this community are weakly interconnected._
 - **Should `ClientHomePage.jsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.13230769230769232 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.13666666666666666 - nodes in this community are weakly interconnected._
+- **Should `authService.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.08831306187202538 - nodes in this community are weakly interconnected._

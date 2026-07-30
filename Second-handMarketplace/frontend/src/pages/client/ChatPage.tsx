@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
@@ -24,11 +32,38 @@ import {
   sendMessage,
 } from '../../services/chatService';
 import { useAuthStore } from '../../store/authStore';
+import type { Conversation, Message } from '../../types/domain';
 import { mergeRealtimeMessages } from '../../utils/realtime';
 
 const MESSAGE_LIMIT = 80;
 
-function formatTime(value) {
+type ConnectionStatus = 'connecting' | 'online' | 'offline';
+
+interface ChatPageProps {
+  defaultReceiverId?: string;
+  disableProductCard?: boolean;
+  headerLabel?: string;
+}
+
+interface ConversationLoadOptions {
+  keepSelection?: boolean;
+}
+
+interface MessageLoadOptions {
+  silent?: boolean;
+  markRead?: boolean;
+}
+
+interface ProductCardMetadata {
+  type?: string;
+  product?: { title?: string };
+}
+
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function formatTime(value?: string | null) {
   if (!value) return '';
   return new Intl.DateTimeFormat('vi-VN', {
     hour: '2-digit',
@@ -36,7 +71,7 @@ function formatTime(value) {
   }).format(new Date(value));
 }
 
-function formatConversationTime(value) {
+function formatConversationTime(value?: string | null) {
   if (!value) return '';
   const date = new Date(value);
   const now = new Date();
@@ -52,7 +87,7 @@ function formatConversationTime(value) {
   }).format(date);
 }
 
-function getInitials(name) {
+function getInitials(name?: string | null) {
   const normalized = String(name || '').trim();
   if (!normalized) return 'U';
 
@@ -64,20 +99,21 @@ function getInitials(name) {
     .toUpperCase();
 }
 
-function getPeer(conversation, currentUserId) {
+function getPeer(conversation: Conversation | null | undefined, currentUserId?: string) {
   if (conversation?.peer) return conversation.peer;
   return (conversation?.participants || []).find((item) => item.user_id !== currentUserId) || null;
 }
 
-function getPeerName(conversation, currentUserId) {
+function getPeerName(conversation: Conversation | null | undefined, currentUserId?: string) {
   const peer = getPeer(conversation, currentUserId);
   return peer?.profile?.full_name || 'Người dùng';
 }
 
-function getPreview(message) {
+function getPreview(message: Message | null | undefined) {
   if (!message) return 'Chưa có tin nhắn';
-  if (message.is_system && message.metadata?.type === 'product_card') {
-    return message.metadata?.product?.title || 'Đang hỏi về sản phẩm';
+  const metadata = message.metadata as ProductCardMetadata | null | undefined;
+  if (message.is_system && metadata?.type === 'product_card') {
+    return metadata.product?.title || 'Đang hỏi về sản phẩm';
   }
 
   return message.content || 'Tin nhắn mới';
@@ -87,7 +123,7 @@ function ChatPage({
   defaultReceiverId = '',
   disableProductCard = false,
   headerLabel = 'Tin nhắn',
-}) {
+}: ChatPageProps) {
   const user = useAuthStore((state) => state.user);
   const [searchParams] = useSearchParams();
   const queryReceiverId = String(searchParams.get('receiver') || '').trim();
@@ -95,19 +131,21 @@ function ChatPage({
   const receiverId = queryReceiverId || defaultReceiverId;
   const productId = disableProductCard ? '' : queryProductId;
 
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState('');
-  const [conversationDetail, setConversationDetail] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [conversationDetail, setConversationDetail] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
   const [filterText, setFilterText] = useState('');
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState(supabase ? 'connecting' : 'offline');
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
+    supabase ? 'connecting' : 'offline',
+  );
 
-  const endRef = useRef(null);
+  const endRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const activeConversationIdRef = useRef('');
   const lastReadMessageIdRef = useRef('');
@@ -135,38 +173,44 @@ function ChatPage({
     [activeConversationId, conversationDetail, conversations],
   );
 
-  const loadConversations = useCallback(async ({ keepSelection = true } = {}) => {
-    try {
-      setError('');
-      const data = await getConversations();
-      const nextConversations = data?.conversations || [];
-      setConversations(nextConversations);
+  const loadConversations = useCallback(
+    async ({ keepSelection = true }: ConversationLoadOptions = {}) => {
+      try {
+        setError('');
+        const data = await getConversations();
+        const nextConversations = data.conversations || [];
+        setConversations(nextConversations);
 
-      if (!keepSelection && nextConversations[0]) {
-        setActiveConversationId(nextConversations[0].id);
-      }
+        if (!keepSelection && nextConversations[0]) {
+          setActiveConversationId(nextConversations[0].id);
+        }
 
-      if (keepSelection && !activeConversationIdRef.current && nextConversations[0]) {
-        setActiveConversationId(nextConversations[0].id);
-      }
+        if (keepSelection && !activeConversationIdRef.current && nextConversations[0]) {
+          setActiveConversationId(nextConversations[0].id);
+        }
 
-      if (
-        keepSelection &&
-        activeConversationIdRef.current &&
-        !nextConversations.some((item) => item.id === activeConversationIdRef.current) &&
-        nextConversations[0]
-      ) {
-        setActiveConversationId(nextConversations[0].id);
+        if (
+          keepSelection &&
+          activeConversationIdRef.current &&
+          !nextConversations.some((item) => item.id === activeConversationIdRef.current) &&
+          nextConversations[0]
+        ) {
+          setActiveConversationId(nextConversations[0].id);
+        }
+      } catch (err) {
+        setError(errorMessage(err, 'Không thể tải danh sách trò chuyện.'));
+      } finally {
+        setIsLoadingConversations(false);
       }
-    } catch (err) {
-      setError(err.message || 'Không thể tải danh sách trò chuyện.');
-    } finally {
-      setIsLoadingConversations(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const loadMessages = useCallback(
-    async (conversationId, { silent = false, markRead = true } = {}) => {
+    async (
+      conversationId: string,
+      { silent = false, markRead = true }: MessageLoadOptions = {},
+    ) => {
       if (!conversationId) return;
 
       try {
@@ -188,7 +232,7 @@ function ChatPage({
           await markConversationRead(conversationId).catch(() => {});
         }
       } catch (err) {
-        setError(err.message || 'Không thể tải tin nhắn.');
+        setError(errorMessage(err, 'Không thể tải tin nhắn.'));
       } finally {
         setIsLoadingMessages(false);
       }
@@ -251,7 +295,7 @@ function ChatPage({
         }
       } catch (err) {
         if (!ignore) {
-          setError(err.message || 'Không thể tạo cuộc trò chuyện.');
+          setError(errorMessage(err, 'Không thể tạo cuộc trò chuyện.'));
         }
       } finally {
         if (!ignore) {
@@ -285,12 +329,13 @@ function ChatPage({
   }, [messages, activeConversationId]);
 
   useEffect(() => {
-    if (!user || !supabase) {
+    const client = supabase;
+    if (!user || !client) {
       setConnectionStatus('offline');
       return () => {};
     }
 
-    const channel = supabase
+    const channel = client
       .channel(`chat-feed-${user.id}`)
       .on(
         'postgres_changes',
@@ -343,16 +388,17 @@ function ChatPage({
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [loadConversations, loadMessages, user]);
 
   useEffect(() => {
-    if (!user || !supabase || !activeConversationId) {
+    const client = supabase;
+    if (!user || !client || !activeConversationId) {
       return () => {};
     }
 
-    const channel = supabase
+    const channel = client
       .channel(`chat-conversation-${user.id}-${activeConversationId}`)
       .on(
         'postgres_changes',
@@ -363,7 +409,7 @@ function ChatPage({
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         (payload) => {
-          const message = payload.new;
+          const message = payload.new as Message;
           if (!message?.id) return;
 
           setMessages((current) => mergeRealtimeMessages(current, [message]));
@@ -376,7 +422,7 @@ function ChatPage({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [activeConversationId, user]);
 
@@ -400,16 +446,16 @@ function ChatPage({
     };
   }, [loadConversations, loadMessages, user]);
 
-  async function handleSend(event) {
+  async function handleSend(event: FormEvent | KeyboardEvent<HTMLTextAreaElement>) {
     event.preventDefault();
     const content = draft.trim();
     if (!content || isSending) return;
 
     const clientMessageId = `${user?.id || 'user'}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const optimisticMessage = {
+    const optimisticMessage: Message = {
       id: `pending-${clientMessageId}`,
       conversation_id: activeConversationId,
-      sender_id: user?.id,
+      sender_id: user?.id || '',
       content,
       client_message_id: clientMessageId,
       is_system: false,
@@ -441,7 +487,7 @@ function ChatPage({
       ]);
       await loadConversations({ keepSelection: true });
     } catch (err) {
-      setError(err.message || 'Không thể gửi tin nhắn.');
+      setError(errorMessage(err, 'Không thể gửi tin nhắn.'));
       setMessages((current) =>
         current.map((message) =>
           message.id === optimisticMessage.id ? { ...message, status: 'failed' } : message,

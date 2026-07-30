@@ -14,5 +14,19 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './vitest.setup.ts',
     css: true,
+    include: ['tests/**/*.{test,spec}.{ts,tsx}'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('@supabase')) return 'supabase-vendor';
+          if (id.includes('lucide-react')) return 'icons-vendor';
+          if (id.includes('@base-ui') || id.includes('@radix-ui')) return 'ui-vendor';
+          return undefined;
+        },
+      },
+    },
   },
 });

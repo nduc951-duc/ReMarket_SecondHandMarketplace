@@ -34,12 +34,13 @@ export function useRealtimeBadges() {
   }, [refreshBadges]);
 
   useEffect(() => {
-    if (!user || !supabase) {
+    const client = supabase;
+    if (!user || !client) {
       return () => {};
     }
 
     const channelId = `unread-badges-${user.id}`;
-    const channel = supabase
+    const channel = client
       .channel(channelId)
       .on(
         'postgres_changes',
@@ -96,7 +97,7 @@ export function useRealtimeBadges() {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [refreshBadges, user]);
 

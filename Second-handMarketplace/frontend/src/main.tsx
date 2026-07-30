@@ -5,8 +5,6 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { ThemeProvider } from './components/theme/ThemeProvider';
 import { ToastProvider } from './components/ui/toast';
-import './assets/auth.css';
-import './assets/marketplace.css';
 import './index.css';
 
 const rootElement = document.getElementById('root');

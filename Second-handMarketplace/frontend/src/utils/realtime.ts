@@ -1,18 +1,28 @@
-function messageIdentity(message) {
+interface RealtimeMessage {
+  id?: string | null;
+  client_message_id?: string | null;
+  created_at?: string | null;
+  status?: string;
+}
+
+function messageIdentity(message: RealtimeMessage) {
   return message?.client_message_id || message?.id || '';
 }
 
-export function mergeRealtimeMessages(currentMessages, incomingMessages) {
-  const messagesByIdentity = new Map();
+export function mergeRealtimeMessages<T extends RealtimeMessage>(
+  currentMessages: T[],
+  incomingMessages: T[],
+): Array<T & RealtimeMessage> {
+  const messagesByIdentity = new Map<string, T & RealtimeMessage>();
 
   for (const message of [...currentMessages, ...incomingMessages]) {
     const identity = messageIdentity(message);
     if (!identity) continue;
 
     const existing = messagesByIdentity.get(identity);
-    const merged = existing ? { ...existing, ...message } : message;
+    let merged = existing ? { ...existing, ...message } : message;
     if (existing?.status && message.id && !String(message.id).startsWith('pending-')) {
-      merged.status = 'sent';
+      merged = { ...merged, status: 'sent' };
     }
     messagesByIdentity.set(identity, merged);
   }
@@ -24,8 +34,8 @@ export function mergeRealtimeMessages(currentMessages, incomingMessages) {
   });
 }
 
-export function createRealtimeRefreshQueue(refresh, delay = 75) {
-  let timeoutId = null;
+export function createRealtimeRefreshQueue(refresh: () => void | Promise<void>, delay = 75) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   function cancel() {
     if (timeoutId !== null) {
