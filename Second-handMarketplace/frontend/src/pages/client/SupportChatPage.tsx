@@ -1,4 +1,4 @@
-import ChatPage from './ChatPage';
+import ChatPage from '@/pages/client/ChatPage';
 
 function SupportChatPage() {
   const supportReceiverId = String(import.meta.env.VITE_SUPPORT_USER_ID || '').trim();
@@ -7,7 +7,7 @@ function SupportChatPage() {
     <ChatPage
       defaultReceiverId={supportReceiverId}
       disableProductCard
-      headerLabel="Ho tro khach hang"
+      headerLabel="Hỗ trợ khách hàng"
     />
   );
 }

@@ -103,6 +103,8 @@ export interface Transaction {
   seller_id: string;
   product_id: string;
   product_name?: string | null;
+  product_image?: string | null;
+  note?: string | null;
   amount: number;
   status: TransactionStatus | string;
   payment_status?: PaymentStatus | string | null;
@@ -110,9 +112,14 @@ export interface Transaction {
   payment_expires_at?: string | null;
   paid_at?: string | null;
   rejection_reason?: string | null;
+  confirmed_at?: string | null;
+  shipped_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
   product?: Product | null;
   buyer?: Profile | null;
   seller?: Profile | null;
+  my_review?: Review | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -133,6 +140,8 @@ export interface Conversation {
   product_id?: string | null;
   product?: Product | null;
   participants?: Profile[];
+  peer?: Profile | null;
+  latest_message?: Message | null;
   last_message?: Message | null;
   unread_count?: number;
   created_at?: string | null;
@@ -146,6 +155,10 @@ export interface Message {
   content: string;
   client_message_id?: string | null;
   sender?: Profile | null;
+  sender_profile?: Profile | null;
+  is_system?: boolean;
+  metadata?: Record<string, Json | undefined> | null;
+  status?: 'sending' | 'sent' | 'failed';
   read_at?: string | null;
   created_at?: string | null;
 }
@@ -159,8 +172,46 @@ export interface Notification {
   is_read?: boolean;
   conversation_id?: string | null;
   transaction_id?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
   metadata?: Record<string, Json | undefined> | null;
   created_at?: string | null;
+}
+
+export interface TransactionListResult {
+  transactions: Transaction[];
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+}
+
+export interface TransactionStats {
+  totalBuy?: number;
+  completedBuy?: number;
+  totalSell?: number;
+  completedSell?: number;
+}
+
+export interface ChatMessagePage {
+  conversation?: Conversation | null;
+  messages: Message[];
+  pagination?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+}
+
+export interface NotificationListResult {
+  notifications: Notification[];
+  pagination?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
 }
 
 export interface Report {
