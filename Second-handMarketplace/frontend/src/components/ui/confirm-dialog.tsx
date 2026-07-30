@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,7 +46,7 @@ function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger as React.ReactElement} />
+      <DialogTrigger render={trigger as ReactElement} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
