@@ -1,3 +1,7 @@
+import type { User } from '@supabase/supabase-js';
+
+export type UserRole = 'guest' | 'customer' | 'seller' | 'agent' | 'admin' | string;
+
 export function parseAdminEmails() {
   return String(import.meta.env.VITE_ADMIN_EMAILS || '')
     .split(',')
@@ -12,7 +16,7 @@ export function parseAgentEmails() {
     .filter(Boolean);
 }
 
-export function getUserRole(user) {
+export function getUserRole(user: User | null | undefined): UserRole {
   if (!user) {
     return 'guest';
   }
@@ -39,10 +43,10 @@ export function getUserRole(user) {
   return 'customer';
 }
 
-export function isAdminUser(user) {
+export function isAdminUser(user: User | null | undefined) {
   return getUserRole(user) === 'admin';
 }
 
-export function isAgentUser(user) {
+export function isAgentUser(user: User | null | undefined) {
   return getUserRole(user) === 'agent';
 }

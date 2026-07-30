@@ -25,6 +25,11 @@ interface EnsureConversationResult {
   conversation_id: string;
 }
 
+interface ConversationListResult {
+  conversations: Conversation[];
+  unread?: number;
+}
+
 async function getAccessToken() {
   const { supabase } = await import('@/lib/supabaseClient');
   if (!supabase) throw new Error('Supabase chưa được cấu hình.');
@@ -62,8 +67,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return result.data as T;
 }
 
-export function getConversations(): Promise<Conversation[]> {
-  return request<Conversation[]>('/api/chat/conversations');
+export function getConversations(): Promise<ConversationListResult> {
+  return request<ConversationListResult>('/api/chat/conversations');
 }
 
 export async function getUnreadConversationCount(): Promise<number> {

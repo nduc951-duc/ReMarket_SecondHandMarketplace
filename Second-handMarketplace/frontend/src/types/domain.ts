@@ -139,12 +139,19 @@ export interface Review {
   created_at?: string | null;
 }
 
+export interface ConversationParticipant {
+  user_id: string;
+  conversation_id?: string;
+  last_read_at?: string | null;
+  profile?: Profile | null;
+}
+
 export interface Conversation {
   id: string;
   product_id?: string | null;
   product?: Product | null;
-  participants?: Profile[];
-  peer?: Profile | null;
+  participants?: ConversationParticipant[];
+  peer?: ConversationParticipant | null;
   latest_message?: Message | null;
   last_message?: Message | null;
   unread_count?: number;
