@@ -379,21 +379,6 @@
     "ast_hash": "45d93425d6c90c4e0a82c9062d7b17e8",
     "semantic_hash": ""
   },
-  "frontend/src/components/auth/AuthLayout.jsx": {
-    "mtime": 1785308988.174333,
-    "ast_hash": "0c4917eebd546480bf514de09b28d02c",
-    "semantic_hash": ""
-  },
-  "frontend/src/components/auth/PasswordInput.jsx": {
-    "mtime": 1785307258.5505226,
-    "ast_hash": "2a2dfafbbad1f1d0f83be9b0d93b7d9c",
-    "semantic_hash": ""
-  },
-  "frontend/src/components/auth/RouteGuards.jsx": {
-    "mtime": 1785137288.2969987,
-    "ast_hash": "21791d9c0e16fad0c03e32dc8e6afc17",
-    "semantic_hash": ""
-  },
   "frontend/src/components/marketplace/SidebarCategory.jsx": {
     "mtime": 1785137288.3522096,
     "ast_hash": "99c27573dea483aaacbea8e1d3b06dc3",
@@ -419,94 +404,14 @@
     "ast_hash": "2085252d80033ef2f9b90f2fec78a2d9",
     "semantic_hash": ""
   },
-  "frontend/src/pages/admin/AdminDashboardPage.jsx": {
-    "mtime": 1785307258.7631226,
-    "ast_hash": "a1a118fb5fc70d324a937d90a326c3ae",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/agent/AgentInboxPage.jsx": {
-    "mtime": 1785137288.4398296,
-    "ast_hash": "bd337e9bdf629b2ddc85ab07715ce32b",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/auth/ChangePasswordPage.jsx": {
-    "mtime": 1785307258.7793045,
-    "ast_hash": "f9134e4c057da2b3f87cd14b321ce7f5",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/auth/ForgotPasswordPage.jsx": {
-    "mtime": 1785137288.4578393,
-    "ast_hash": "4f41e58caf93f9a340945fb5c0545794",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/auth/LoginPage.jsx": {
-    "mtime": 1785307258.787827,
-    "ast_hash": "c38d027d896c2358fea24a4bcabd13b6",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/auth/RegisterPage.jsx": {
-    "mtime": 1785137288.4706302,
-    "ast_hash": "4ae9079f43654d5d63f0bd549e993d24",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/auth/ResetPasswordPage.jsx": {
-    "mtime": 1785137288.4761817,
-    "ast_hash": "7d90cc177796e9172032e8008aad02c4",
-    "semantic_hash": ""
-  },
   "frontend/src/pages/client/ChatPage.jsx": {
-    "mtime": 1785394144.18043,
+    "mtime": 1785396071.2621138,
     "ast_hash": "936cbc60efe90d90e1945c226b78e291",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/client/ProfilePage.jsx": {
-    "mtime": 1785307258.9020512,
-    "ast_hash": "914f4cfc41177bf71c7ab2746d10e8e6",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/system/ForbiddenPage.jsx": {
-    "mtime": 1785307258.9563723,
-    "ast_hash": "fd4b6988cb376c2d5fc480207afb07d7",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/system/NotFoundPage.jsx": {
-    "mtime": 1785307258.9609919,
-    "ast_hash": "68b13ec229fb52927db0c41fd4bddafd",
-    "semantic_hash": ""
-  },
-  "frontend/src/pages/system/ServerErrorPage.jsx": {
-    "mtime": 1785307258.9635527,
-    "ast_hash": "996069d0d630a547b310127689ed8fc1",
-    "semantic_hash": ""
-  },
-  "frontend/src/services/adminService.js": {
-    "mtime": 1785307258.9687047,
-    "ast_hash": "e6074cc02c453f9007baea00387585df",
-    "semantic_hash": ""
-  },
-  "frontend/src/services/authService.js": {
-    "mtime": 1785307258.9805837,
-    "ast_hash": "bacae64e3a26e352ee180036ead9b27d",
-    "semantic_hash": ""
-  },
-  "frontend/src/services/profileService.js": {
-    "mtime": 1785307259.0060735,
-    "ast_hash": "c5e3c17b1393694cc95b1752698385b7",
-    "semantic_hash": ""
-  },
-  "frontend/src/store/authStore.js": {
-    "mtime": 1785137288.7589483,
-    "ast_hash": "7354722b812f6d2633e2b2296fe96722",
     "semantic_hash": ""
   },
   "frontend/src/utils/adminAccess.js": {
     "mtime": 1785307259.0350506,
     "ast_hash": "c7fb5225f654ac17cb9d16729ad392a6",
-    "semantic_hash": ""
-  },
-  "frontend/src/utils/authValidation.js": {
-    "mtime": 1785307259.0411575,
-    "ast_hash": "35c072503430883005af0d9c4aa68b44",
     "semantic_hash": ""
   },
   "frontend/vercel.json": {
@@ -914,16 +819,6 @@
     "ast_hash": "015415a7bea28770ff4a36b3d731d4d5",
     "semantic_hash": ""
   },
-  "frontend/src/pages/admin/ModerationPage.jsx": {
-    "mtime": 1785307258.7686408,
-    "ast_hash": "4bda189d6c23781ee1ee875d7d32e5d5",
-    "semantic_hash": ""
-  },
-  "frontend/src/services/reportService.js": {
-    "mtime": 1785307259.0081065,
-    "ast_hash": "38d8581bc6a2d0c3c9c9ed23d9f883b7",
-    "semantic_hash": ""
-  },
   "frontend/src/App.tsx": {
     "mtime": 1785308987.9852467,
     "ast_hash": "4013c2ab3056d8baaf082c2c30b7ce70",
@@ -965,7 +860,7 @@
     "semantic_hash": ""
   },
   "frontend/src/components/ui/confirm-dialog.tsx": {
-    "mtime": 1785393127.047782,
+    "mtime": 1785396071.0269785,
     "ast_hash": "8d8d412644c3b62d4970597f9f686b75",
     "semantic_hash": ""
   },
@@ -1015,8 +910,8 @@
     "semantic_hash": ""
   },
   "frontend/src/components/ui/status-badge.tsx": {
-    "mtime": 1785393125.577762,
-    "ast_hash": "31a3d4fe475d346150859ffccb7ec40a",
+    "mtime": 1785396071.0614824,
+    "ast_hash": "3a00bc33f47ad59e11bc1a443d6acea5",
     "semantic_hash": ""
   },
   "frontend/src/components/ui/tabs.tsx": {
@@ -1045,8 +940,8 @@
     "semantic_hash": ""
   },
   "frontend/src/types/domain.ts": {
-    "mtime": 1785394144.4300108,
-    "ast_hash": "eb7c741f11f7ee1ef6b5619e8b29dad1",
+    "mtime": 1785396071.5525637,
+    "ast_hash": "a636f086d74bc2a2736314d8d4fc974c",
     "semantic_hash": ""
   },
   "frontend/src/vite-env.d.ts": {
@@ -1200,88 +1095,208 @@
     "semantic_hash": ""
   },
   "frontend/src/components/ai/AiSupportWidget.tsx": {
-    "mtime": 1785394143.8473175,
+    "mtime": 1785396070.848425,
     "ast_hash": "ccb4d303312d66240a9dd06790b7a744",
     "semantic_hash": ""
   },
   "frontend/src/components/chat/ChatEmptyState.tsx": {
-    "mtime": 1785393690.1612048,
+    "mtime": 1785396070.877711,
     "ast_hash": "e414d1486c58c3cb614a91a2b1c25b61",
     "semantic_hash": ""
   },
   "frontend/src/components/chat/ChatMessageBubble.tsx": {
-    "mtime": 1785393689.5866213,
+    "mtime": 1785396070.88371,
     "ast_hash": "12fd1474be3f1c27768f8bd93656e2c2",
     "semantic_hash": ""
   },
   "frontend/src/components/chat/ChatProductCard.tsx": {
-    "mtime": 1785393688.9671297,
+    "mtime": 1785396070.8890507,
     "ast_hash": "e0d203649ba9266d923dc139b6d00720",
     "semantic_hash": ""
   },
   "frontend/src/pages/client/MyProductsPage.tsx": {
-    "mtime": 1785394144.2158983,
+    "mtime": 1785396071.292232,
     "ast_hash": "e457fcd08724201f5efe831ffe4cfb3b",
     "semantic_hash": ""
   },
   "frontend/src/pages/client/NotificationsPage.tsx": {
-    "mtime": 1785394144.2261384,
+    "mtime": 1785396071.310548,
     "ast_hash": "35dc6bf02dd456fd72741a5eb6c67745",
     "semantic_hash": ""
   },
   "frontend/src/pages/client/ProductFormPage.tsx": {
-    "mtime": 1785394144.2620223,
+    "mtime": 1785396071.3637512,
     "ast_hash": "ae251affbdb5ebf2df865bac73f0587e",
     "semantic_hash": ""
   },
   "frontend/src/pages/client/SellerDashboard.tsx": {
-    "mtime": 1785394144.2977803,
+    "mtime": 1785396071.4100664,
     "ast_hash": "d07181697dba516d86e6222c3edea526",
     "semantic_hash": ""
   },
   "frontend/src/pages/client/SupportChatPage.tsx": {
-    "mtime": 1785393970.0408974,
+    "mtime": 1785396071.4149525,
     "ast_hash": "ea9c9fa80c756d725fbd7294a23dc421",
     "semantic_hash": ""
   },
   "frontend/src/pages/client/TransactionHistoryPage.tsx": {
-    "mtime": 1785394144.3331656,
+    "mtime": 1785396071.4392183,
     "ast_hash": "9cd1fa84e49e102c58ce8186a378b183",
     "semantic_hash": ""
   },
   "frontend/src/services/aiSupportService.ts": {
-    "mtime": 1785392918.189879,
+    "mtime": 1785396071.4662738,
     "ast_hash": "b4b84abdc5ef62a34e6a45c804b9feca",
     "semantic_hash": ""
   },
   "frontend/src/services/chatService.ts": {
-    "mtime": 1785394322.4578948,
+    "mtime": 1785396071.4965537,
     "ast_hash": "ebaed40ec7b246b4a2c92942a7fa8424",
     "semantic_hash": ""
   },
   "frontend/src/services/notificationService.ts": {
-    "mtime": 1785394144.3757594,
+    "mtime": 1785396071.5014822,
     "ast_hash": "5145c2b669c4612d81077aa23a52b2db",
     "semantic_hash": ""
   },
   "frontend/src/services/paymentService.ts": {
-    "mtime": 1785392952.6751785,
+    "mtime": 1785396071.5059762,
     "ast_hash": "7b42dfc5715fa831d52211747199bd6e",
     "semantic_hash": ""
   },
   "frontend/src/services/reviewService.ts": {
-    "mtime": 1785393554.9254763,
+    "mtime": 1785396071.5289702,
     "ast_hash": "5d24a62eb75a34a10523daf3340fa603",
     "semantic_hash": ""
   },
   "frontend/src/services/transactionService.ts": {
-    "mtime": 1785394144.3986883,
+    "mtime": 1785396071.532571,
     "ast_hash": "d0cdb5169a3ec4224dcbcd8cdec5e579",
     "semantic_hash": ""
   },
   "frontend/tests/commerce-flows.test.tsx": {
-    "mtime": 1785394144.4470801,
+    "mtime": 1785396071.582055,
     "ast_hash": "5afc8abdcaf56fba5b48f8c32e3351bb",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/auth/AuthFeedback.tsx": {
+    "mtime": 1785395419.233351,
+    "ast_hash": "d875ad43c93107c073fb73581f09d8a7",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/auth/AuthLayout.tsx": {
+    "mtime": 1785396070.8624084,
+    "ast_hash": "7277adccf7ff14e0433c4dcc0f363187",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/auth/PasswordInput.tsx": {
+    "mtime": 1785395410.7190595,
+    "ast_hash": "48140c7fe9177d8879d6a18eb9c1aa17",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/auth/RouteGuards.tsx": {
+    "mtime": 1785395676.8151138,
+    "ast_hash": "63ba7c60a055fbe71f1665909aadab54",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/system/SystemStatusPage.tsx": {
+    "mtime": 1785396070.9980419,
+    "ast_hash": "0424e0cfe5bf4777908fee265c318eaf",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/admin/AdminDashboardPage.tsx": {
+    "mtime": 1785396071.1662383,
+    "ast_hash": "a03ff5c2587f6b802ef13ee34d720ad6",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/admin/ModerationPage.tsx": {
+    "mtime": 1785396071.1881232,
+    "ast_hash": "b3e7a09322a25a4a0233750b6157e96e",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/agent/AgentInboxPage.tsx": {
+    "mtime": 1785395921.8048556,
+    "ast_hash": "f52926d412b9493599df442c2e7a300b",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/auth/ChangePasswordPage.tsx": {
+    "mtime": 1785395537.157238,
+    "ast_hash": "da2d2adcbac9f82bb9fc760ec696f2aa",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/auth/ForgotPasswordPage.tsx": {
+    "mtime": 1785395534.5134284,
+    "ast_hash": "97fe7e8b28eb1ef09ece38d8ac68d2da",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/auth/LoginPage.tsx": {
+    "mtime": 1785396071.21432,
+    "ast_hash": "1a38708b483444b47af1b5e68f63bc86",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/auth/RegisterPage.tsx": {
+    "mtime": 1785396017.6680655,
+    "ast_hash": "0ee31b3b80dfd59bcf438270fd79506d",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/auth/ResetPasswordPage.tsx": {
+    "mtime": 1785395535.8613863,
+    "ast_hash": "08697bbe2d30baa0c9971e85e19578f7",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/client/ProfilePage.tsx": {
+    "mtime": 1785396071.3808854,
+    "ast_hash": "69666287e517e9aa2fad894cef54ecb4",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/system/ForbiddenPage.tsx": {
+    "mtime": 1785395680.3424947,
+    "ast_hash": "86e557092aa9b4e90574996938b76cba",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/system/NotFoundPage.tsx": {
+    "mtime": 1785395679.0739644,
+    "ast_hash": "c5279fb2c2e56c05edd91b48ab12e1c0",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/system/ServerErrorPage.tsx": {
+    "mtime": 1785395681.6175456,
+    "ast_hash": "6e6a5f752c4d8b540d69c8d4fb3d3bd9",
+    "semantic_hash": ""
+  },
+  "frontend/src/services/adminService.ts": {
+    "mtime": 1785396071.4622781,
+    "ast_hash": "e4ecb184fbaef6995646be95c00d824d",
+    "semantic_hash": ""
+  },
+  "frontend/src/services/authService.ts": {
+    "mtime": 1785396071.4864395,
+    "ast_hash": "667b9732c43da7da3c50d318575a9c14",
+    "semantic_hash": ""
+  },
+  "frontend/src/services/profileService.ts": {
+    "mtime": 1785395334.7493532,
+    "ast_hash": "521d75710615c0a924f3d71dce4fcc3b",
+    "semantic_hash": ""
+  },
+  "frontend/src/services/reportService.ts": {
+    "mtime": 1785395337.5356717,
+    "ast_hash": "8df98a5aafb10a0cafaf6c4402be40b2",
+    "semantic_hash": ""
+  },
+  "frontend/src/store/authStore.ts": {
+    "mtime": 1785395374.2275286,
+    "ast_hash": "8d512b648e2d6a409ef68ce25c4c9e90",
+    "semantic_hash": ""
+  },
+  "frontend/src/utils/authValidation.ts": {
+    "mtime": 1785396071.561379,
+    "ast_hash": "ad78191f34d9c02332a6f77f033428b4",
+    "semantic_hash": ""
+  },
+  "frontend/tests/account-admin-flows.test.tsx": {
+    "mtime": 1785396152.8279493,
+    "ast_hash": "0b64950670196a8e150dc883f1200154",
     "semantic_hash": ""
   }
 }

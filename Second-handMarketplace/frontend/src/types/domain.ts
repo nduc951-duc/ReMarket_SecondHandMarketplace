@@ -21,9 +21,12 @@ export interface Profile {
   avatar_url?: string | null;
   phone?: string | null;
   address?: string | null;
+  bio?: string | null;
   role?: UserRole | string | null;
   status?: string | null;
   rating?: number | null;
+  rating_avg?: number | null;
+  rating_count?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
   user_metadata?: Record<string, Json | undefined>;
@@ -132,6 +135,7 @@ export interface Review {
   rating: number;
   comment?: string | null;
   reviewer?: Profile | null;
+  reviewer_profile?: Profile | null;
   created_at?: string | null;
 }
 
@@ -226,10 +230,59 @@ export interface Report {
   status: ReportStatus | string;
   resolution_action?: string | null;
   resolution_note?: string | null;
+  resolved_at?: string | null;
+  assigned_to?: string | null;
+  moderator_id?: string | null;
   reporter?: Profile | null;
   product?: Product | null;
   created_at?: string | null;
   updated_at?: string | null;
+}
+
+export interface AdminOverview {
+  users: {
+    total: number;
+    emailConfirmed: number;
+  };
+  products: {
+    total: number;
+    byStatus: Record<string, number>;
+  };
+  transactions: {
+    total: number;
+    byStatus: Record<string, number>;
+    totalRevenue: number;
+  };
+}
+
+export interface AdminUser extends Profile {
+  email: string;
+  role: UserRole | string;
+  status: string;
+}
+
+export interface AdminUserListResult {
+  items: AdminUser[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AdminProductListResult {
+  products: Product[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AdminTransactionListResult {
+  transactions: Transaction[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
 export interface PaginatedResult<T> {
