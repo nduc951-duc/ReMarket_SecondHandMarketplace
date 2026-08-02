@@ -66,7 +66,7 @@ function ProductCard({
   };
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl hover:shadow-primary/5">
+    <article className="group min-w-0 overflow-hidden rounded-xl border border-border bg-card transition-[border-color,box-shadow] duration-200 ease-out hover:border-primary/35 hover:shadow-md motion-reduce:transition-none">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <Link to={`/products/${product.id}`} className="block size-full">
           {productImage && !imageFailed ? (
@@ -74,8 +74,10 @@ function ProductCard({
               src={productImage}
               alt={product.title}
               loading="lazy"
+              width="640"
+              height="480"
               onError={() => setImageFailed(true)}
-              className="size-full object-cover transition duration-500 group-hover:scale-105"
+              className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
             />
           ) : (
             <div className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -101,7 +103,7 @@ function ProductCard({
             onClick={handleWishlist}
             disabled={isUpdatingWishlist}
             className={cn(
-              'grid size-10 place-items-center rounded-full border border-white/25 bg-black/45 text-white shadow-sm backdrop-blur transition hover:scale-105 hover:bg-black/60 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/50 disabled:opacity-60',
+              'grid size-10 touch-manipulation place-items-center rounded-full border border-white/25 bg-black/45 text-white shadow-sm backdrop-blur transition-[background-color,transform] duration-150 ease-out hover:bg-black/60 active:scale-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/50 disabled:opacity-60 motion-reduce:transition-none',
               wishlisted && 'border-rose-300/50 bg-rose-500 text-white hover:bg-rose-500',
             )}
             aria-label={wishlisted ? 'Bỏ khỏi danh sách đã lưu' : 'Lưu sản phẩm'}
@@ -119,7 +121,7 @@ function ProductCard({
               {product.title}
             </h3>
           </Link>
-          <p className="mt-1 text-xl font-bold tracking-tight text-primary">
+          <p className="mt-1 whitespace-nowrap text-xl font-bold tabular-nums tracking-tight text-primary">
             {formatCurrency(product.price)}
           </p>
         </div>

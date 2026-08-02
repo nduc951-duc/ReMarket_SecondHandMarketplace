@@ -195,7 +195,7 @@ function NotificationsPage() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Trung tâm cập nhật</p>
           <h1 className="mt-2 text-3xl font-bold">Thông báo</h1>
@@ -269,7 +269,7 @@ function NotificationsPage() {
             return (
               <article
                 key={notification.id}
-                className={`rounded-2xl border border-l-4 border-border bg-card p-4 shadow-sm transition hover:shadow-md sm:p-5 ${config.className} ${
+                className={`rounded-xl border border-l-4 border-border bg-card p-4 transition-colors hover:bg-muted/25 sm:p-5 ${config.className} ${
                   notification.is_read ? 'opacity-75' : ''
                 }`}
               >

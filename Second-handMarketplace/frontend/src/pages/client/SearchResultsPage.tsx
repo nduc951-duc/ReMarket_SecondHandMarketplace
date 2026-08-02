@@ -152,7 +152,7 @@ function SearchResultsPage() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <header className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7">
+      <header className="border-b border-border pb-6">
         <p className="text-sm font-semibold text-primary">Marketplace</p>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -160,7 +160,7 @@ function SearchResultsPage() {
               {query ? `Kết quả cho “${query}”` : 'Tất cả sản phẩm'}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {isLoading ? 'Đang tìm sản phẩm phù hợp...' : `${total} sản phẩm phù hợp`}
+              {isLoading ? 'Đang tìm sản phẩm phù hợp…' : `${total} sản phẩm phù hợp`}
             </p>
           </div>
           <Drawer>
@@ -202,7 +202,7 @@ function SearchResultsPage() {
               key={filter.key}
               type="button"
               onClick={() => removeFilter(filter.key)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium transition hover:border-destructive/40 hover:text-destructive"
+              className="inline-flex touch-manipulation items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium transition-colors hover:border-destructive/40 hover:text-destructive"
             >
               {filter.label}
               <X className="size-3" />

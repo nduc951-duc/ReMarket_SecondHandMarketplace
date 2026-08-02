@@ -55,7 +55,7 @@ function WishlistPage() {
 
   return (
     <MarketplaceLayout className="space-y-7">
-      <header className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-8">
+      <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Bộ sưu tập của bạn</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Tin đã lưu</h1>
@@ -78,7 +78,7 @@ function WishlistPage() {
       ) : isLoading ? (
         <WishlistSkeleton />
       ) : items.length === 0 ? (
-        <div className="flex min-h-96 flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-muted/25 p-8 text-center">
+        <div className="flex min-h-96 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/25 p-8 text-center">
           <span className="relative grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
             <Heart className="size-8" />
             <Search className="absolute -bottom-1 -right-1 size-5 rounded-full bg-background p-1" />

@@ -21,7 +21,13 @@ function Avatar({ src, alt, fallback, className, imageClassName, ...props }: Ava
       {...props}
     >
       {src ? (
-        <img src={src} alt={alt} className={cn('size-full object-cover', imageClassName)} />
+        <img
+          src={src}
+          alt={alt}
+          width="96"
+          height="96"
+          className={cn('size-full object-cover', imageClassName)}
+        />
       ) : fallback ? (
         <span aria-label={alt}>{fallback.slice(0, 2).toUpperCase()}</span>
       ) : (

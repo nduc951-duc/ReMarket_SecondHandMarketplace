@@ -97,7 +97,7 @@ function LoginPage() {
   return (
     <AuthLayout
       title="Đăng nhập"
-      subtitle="Chào mừng bạn quay lại. Tiếp tục quản lý sản phẩm, đơn hàng và cuộc trò chuyện."
+      subtitle="Quản lý tin đăng, đơn hàng và các cuộc trò chuyện của bạn."
       alternateLabel="Chưa có tài khoản?"
       alternateAction="Đăng ký miễn phí"
       alternatePath="/register"

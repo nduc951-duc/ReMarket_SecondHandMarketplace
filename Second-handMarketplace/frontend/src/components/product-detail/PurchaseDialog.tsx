@@ -57,7 +57,13 @@ function PurchaseDialog({
 
         <div className="flex items-center gap-4 rounded-xl bg-muted/55 p-3">
           {image ? (
-            <img src={image} alt="" className="size-16 rounded-lg object-cover" />
+            <img
+              src={image}
+              alt=""
+              width="64"
+              height="64"
+              className="size-16 rounded-lg object-cover"
+            />
           ) : (
             <span className="grid size-16 place-items-center rounded-lg bg-muted">
               <ShoppingBag className="size-6 text-muted-foreground" />
@@ -86,7 +92,7 @@ function PurchaseDialog({
               onChange={(event) => onNoteChange(event.target.value)}
               rows={3}
               maxLength={500}
-              placeholder="Ví dụ: Gọi cho tôi vào buổi chiều..."
+              placeholder="Ví dụ: Gọi cho tôi vào buổi chiều…"
             />
           </FormField>
           {feedback?.message && (
@@ -109,7 +115,7 @@ function PurchaseDialog({
             Hủy
           </Button>
           <Button type="button" onClick={onConfirm} disabled={submitting}>
-            {submitting ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
+            {submitting ? 'Đang xử lý…' : 'Xác nhận đặt hàng'}
           </Button>
         </DialogFooter>
       </DialogContent>

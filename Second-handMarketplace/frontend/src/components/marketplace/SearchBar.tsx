@@ -41,7 +41,7 @@ function SearchBar({ initialValue = '', onSearch, compact = false, className }: 
         <Input
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Tìm iPhone, xe máy, sách, bàn ghế..."
+          placeholder="Tìm iPhone, xe máy, sách, bàn ghế…"
           aria-label="Từ khóa tìm kiếm"
           className={cn(
             'border-0 bg-transparent pl-11 shadow-none focus-visible:ring-0',

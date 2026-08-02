@@ -1,5 +1,6 @@
 import { Bot, Loader2, MessageCircle, Send, X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { Button, Card, Textarea } from '@/components/ui';
 import { askAiSupport } from '@/services/aiSupportService';
@@ -28,11 +29,21 @@ function createMessage(role: SupportMessage['role'], content: string): SupportMe
 }
 
 function AiSupportWidget() {
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const hiddenOnCurrentRoute = [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/change-password',
+    '/403',
+    '/500',
+  ].includes(pathname);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,11 +73,13 @@ function AiSupportWidget() {
     }
   };
 
+  if (hiddenOnCurrentRoute) return null;
+
   return (
-    <div className="fixed bottom-20 right-4 z-40 md:bottom-6 md:right-6">
+    <div className="fixed bottom-6 right-6 z-40 hidden md:block">
       {open && (
         <Card
-          className="mb-3 flex h-[min(580px,calc(100vh-8rem))] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden shadow-2xl"
+          className="mb-3 flex h-[min(560px,calc(100dvh-9.5rem))] w-[min(380px,calc(100vw-1.5rem))] flex-col overflow-hidden border-border/80 shadow-xl"
           aria-label="Trợ lý AI ReMarket"
         >
           <header className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 text-primary-foreground">
@@ -141,7 +154,7 @@ function AiSupportWidget() {
 
       <Button
         size="icon"
-        className="ml-auto size-13 rounded-full shadow-lg"
+        className="ml-auto size-12 rounded-full border border-primary-foreground/15 shadow-md"
         aria-label={open ? 'Đóng trợ lý AI' : 'Mở trợ lý AI'}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}

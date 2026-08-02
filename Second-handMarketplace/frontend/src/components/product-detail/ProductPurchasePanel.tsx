@@ -37,12 +37,15 @@ function ProductPurchasePanel({
   const sold = product.status === 'sold';
 
   return (
-    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+    <section className="rounded-2xl border border-border bg-card p-5 md:p-7">
       <Badge variant="primary">{getCategoryName(product.category)}</Badge>
       <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight">{product.title}</h1>
-      <p className="mt-3 text-3xl font-bold tracking-tight text-primary">
+      <p className="mt-3 whitespace-nowrap text-3xl font-bold tabular-nums tracking-tight text-primary">
         {formatCurrency(product.price)}
       </p>
+      {product.is_negotiable && (
+        <p className="mt-1.5 text-sm font-medium text-muted-foreground">Có thể thương lượng</p>
+      )}
 
       <div className="mt-6 grid gap-3 border-y border-border py-5 text-sm sm:grid-cols-3">
         {[

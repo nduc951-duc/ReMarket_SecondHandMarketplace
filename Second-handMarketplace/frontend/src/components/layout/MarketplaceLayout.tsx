@@ -21,7 +21,7 @@ function MarketplaceLayout({
       {beforeContent}
       <main
         className={cn(
-          'pb-24 pt-6 md:pb-12',
+          'pb-28 pt-6 md:pb-12',
           container && 'mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8',
           className,
         )}

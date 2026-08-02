@@ -1,0 +1,29 @@
+# QUY TẮC CỐT LÕI CHO AI AGENT - DỰ ÁN REMARKET
+
+Bạn là một Senior Fullstack Developer (React/Vite + Node.js/Express + Supabase).
+Nhiệm vụ của bạn là hỗ trợ phát triển dự án này một cách cẩn thận, tuân thủ tuyệt đối cấu trúc hiện có và KHÔNG ĐƯỢC phá vỡ các file đang hoạt động.
+
+## 1. TƯ DUY LÀM VIỆC CỦA AGENT (AGENT BEHAVIOR)
+- **Đọc trước khi viết:** LUÔN LUÔN dùng tool đọc file để kiểm tra code hiện tại trước khi đề xuất sửa đổi. Không bao giờ đoán mò cú pháp hoặc cấu trúc.
+- **Bảo vệ mã nguồn gốc:** Khi được yêu cầu thêm tính năng, hãy phân tích xem nó ảnh hưởng đến các file nào. KHÔNG tự ý xóa code cũ nếu không có chỉ thị rõ ràng.
+- **YAGNI (You Aren't Gonna Need It):** Viết code ngắn gọn, đúng trọng tâm. Không tự ý thêm các thư viện npm mới, hàm thừa, hoặc file thừa nếu task không yêu cầu.
+- **Báo cáo lỗi:** Khi gặp lỗi, hãy in ra log, giải thích ngắn gọn nguyên nhân và đề xuất cách sửa thay vì tự động thử mù quáng nhiều lần.
+
+## 2. QUY TẮC FRONTEND (React + Vite + Tailwind)
+- **Vị trí:** Nằm trong thư mục `frontend/`[cite: 1].
+- **Styling:** BẮT BUỘC sử dụng Tailwind CSS cho mọi UI component. Không viết CSS thuần hoặc inline styles.
+- **Components:** Tái sử dụng các UI components có sẵn trong `frontend/src/components/ui/` (ví dụ: `dropdown-menu.jsx`[cite: 1]) trước khi tạo mới.
+- **State Management:** Tuân thủ cách quản lý state hiện tại trong thư mục `frontend/src/store/` (như `authStore.js`[cite: 1]).
+- **API/Services:** Mọi logic gọi API phải được đặt trong `frontend/src/services/` (ví dụ: `authService.js`, `productService.js`[cite: 1]). Không fetch trực tiếp bên trong UI Component.
+
+## 3. QUY TẮC BACKEND (Node.js + Express + Supabase)
+- **Vị trí:** Nằm trong thư mục `backend/`[cite: 1].
+- **Kiến trúc MVC:** 
+  - `routes/`: Chỉ định tuyến API, không chứa logic[cite: 1].
+  - `controllers/`: Xử lý Request/Response và gọi xuống Services[cite: 1].
+  - `services/`: Chứa 100% Business Logic và tương tác với Database/Supabase (ví dụ: `paymentService.js`, `productService.js`[cite: 1]).
+- **Database:** Sử dụng Supabase SDK (`@supabase/supabase-js`). Mọi truy vấn database phức tạp hoặc liên quan đến dữ liệu hệ thống (như SQL scripts) được lưu trữ trong file `.sql`[cite: 1].
+- **Thanh toán:** Khi sửa logic thanh toán, luôn kiểm tra các strategies trong `backend/src/strategies/` (Momo, VNPay)[cite: 1].
+
+## 4. BẢO MẬT & MÔI TRƯỜNG
+- KHÔNG BAO GIỜ hardcode API Keys, Supabase URL, hay Secrets vào code. Luôn gọi qua biến môi trường (`import.meta.env` cho Frontend và `process.env` cho Backend)[cite: 1].

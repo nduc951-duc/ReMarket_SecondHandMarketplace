@@ -14,7 +14,7 @@ function SellerCard({ product }: { product: Product }) {
   const ratingCount = 'rating_count' in seller ? Number(seller.rating_count || 0) : 0;
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <section className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center gap-4">
         <Avatar
           src={seller.avatar_url}
@@ -29,22 +29,23 @@ function SellerCard({ product }: { product: Product }) {
               <CheckCircle2 className="size-4 shrink-0 text-primary" aria-label="Đã xác minh" />
             )}
           </div>
-          <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1 font-semibold text-warning-foreground dark:text-warning">
               <Star className="size-4 fill-current" />
               {rating.toFixed(1)}
             </span>
             <span>·</span>
-            <span>{ratingCount} đánh giá</span>
+            <span className="whitespace-nowrap">{ratingCount} đánh giá</span>
           </div>
         </div>
         <Button
           render={<Link to={`/chat?receiver=${product.seller_id}&product=${product.id}`} />}
           variant="outline"
-          size="sm"
+          size="icon"
+          aria-label="Nhắn tin cho người bán"
+          title="Nhắn tin"
         >
           <MessageCircle />
-          Nhắn tin
         </Button>
       </div>
     </section>

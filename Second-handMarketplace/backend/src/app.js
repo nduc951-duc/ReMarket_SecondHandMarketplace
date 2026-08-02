@@ -27,6 +27,23 @@ const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware
 
 const app = express();
 
+const configuredFrontendOrigin = FRONTEND_ORIGIN.replace(/\/$/, '');
+const localDevelopmentOrigins = new Set(['http://localhost:5173', 'http://127.0.0.1:5173']);
+
+function allowCorsOrigin(origin, callback) {
+  if (!origin) {
+    callback(null, true);
+    return;
+  }
+
+  const normalizedOrigin = origin.replace(/\/$/, '');
+  const isConfiguredOrigin = normalizedOrigin === configuredFrontendOrigin;
+  const isLocalDevelopmentOrigin =
+    NODE_ENV !== 'production' && localDevelopmentOrigins.has(normalizedOrigin);
+
+  callback(null, isConfiguredOrigin || isLocalDevelopmentOrigin);
+}
+
 if (NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
@@ -37,7 +54,7 @@ app.use(errorResponseMiddleware);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN,
+    origin: allowCorsOrigin,
     credentials: true,
     exposedHeaders: ['X-Request-Id'],
   }),

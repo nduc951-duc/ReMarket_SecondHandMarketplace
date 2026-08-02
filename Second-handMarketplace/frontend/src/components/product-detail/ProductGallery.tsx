@@ -17,11 +17,13 @@ function ProductGallery({ title, images, selectedIndex, onSelect }: ProductGalle
 
   return (
     <section aria-label="Hình ảnh sản phẩm" className="space-y-3">
-      <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl border border-border bg-muted sm:aspect-square">
+      <div className="flex aspect-[4/3] max-h-[34rem] items-center justify-center overflow-hidden rounded-2xl border border-border bg-muted sm:aspect-square">
         {selectedImage && !selectedFailed ? (
           <img
             src={selectedImage}
             alt={title}
+            width="800"
+            height="800"
             onError={() => setFailedImages((current) => [...current, selectedImage])}
             className="size-full object-contain"
           />
@@ -43,13 +45,13 @@ function ProductGallery({ title, images, selectedIndex, onSelect }: ProductGalle
               aria-label={`Xem ảnh ${index + 1}`}
               aria-pressed={selectedIndex === index}
               className={cn(
-                'size-20 shrink-0 overflow-hidden rounded-xl border-2 bg-muted transition focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
+                'size-20 shrink-0 touch-manipulation overflow-hidden rounded-lg border-2 bg-muted transition-[border-color,opacity] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
                 selectedIndex === index
                   ? 'border-primary'
                   : 'border-transparent opacity-65 hover:opacity-100',
               )}
             >
-              <img src={image} alt="" className="size-full object-cover" />
+              <img src={image} alt="" width="160" height="160" className="size-full object-cover" />
             </button>
           ))}
         </div>

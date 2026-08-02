@@ -64,6 +64,10 @@ export interface Product {
   images?: string[] | null;
   location?: string | null;
   view_count?: number | null;
+  comment_count?: number | null;
+  avg_rating?: number | null;
+  rating_count?: number | null;
+  is_negotiable?: boolean | null;
   isHot?: boolean;
   created_at?: string | null;
   updated_at?: string | null;

@@ -195,7 +195,7 @@ function ProfilePage() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-8">
         <div className="absolute -right-20 -top-20 size-56 rounded-full bg-primary/10 blur-3xl" />
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
           <button

@@ -236,7 +236,7 @@ function ProductFormPage() {
 
   return (
     <MarketplaceLayout className="max-w-4xl space-y-6">
-      <header className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Button variant="ghost" size="sm" className="-ml-3" onClick={leaveForm}>
             <ArrowLeft className="size-4" />
@@ -357,6 +357,8 @@ function ProductFormPage() {
                       <img
                         src={image}
                         alt={`Ảnh sản phẩm ${index + 1}`}
+                        width="320"
+                        height="320"
                         className="size-full object-cover"
                       />
                       <Button
