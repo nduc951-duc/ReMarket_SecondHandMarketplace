@@ -22,6 +22,7 @@ const ChatPage = lazy(() => import('./pages/client/ChatPage'));
 const ClientHomePage = lazy(() => import('./pages/client/ClientHomePage'));
 const MyProductsPage = lazy(() => import('./pages/client/MyProductsPage'));
 const NotificationsPage = lazy(() => import('./pages/client/NotificationsPage'));
+const PaymentReturnPage = lazy(() => import('./pages/client/PaymentReturnPage'));
 const ProductDetailPage = lazy(() => import('./pages/client/ProductDetailPage'));
 const ProductFormPage = lazy(() => import('./pages/client/ProductFormPage'));
 const ProfilePage = lazy(() => import('./pages/client/ProfilePage'));
@@ -129,6 +130,7 @@ function App() {
             }
           />
           <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/payment/return/:method" element={<PaymentReturnPage />} />
           <Route
             path="/seller/dashboard"
             element={

@@ -42,4 +42,11 @@ module.exports = {
   API_RATE_LIMIT_MAX: Number(process.env.API_RATE_LIMIT_MAX || 300),
   DEMO_READ_ONLY_ADMIN: parseBoolean(process.env.DEMO_READ_ONLY_ADMIN),
   READINESS_TIMEOUT_MS: Number(process.env.READINESS_TIMEOUT_MS || 3000),
+  VECTOR_RAG_ENABLED: parseBoolean(process.env.VECTOR_RAG_ENABLED),
+  EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || 'gemini',
+  EMBEDDING_MODEL: process.env.EMBEDDING_MODEL || 'gemini-embedding-001',
+  EMBEDDING_DIMENSIONS: Number(process.env.EMBEDDING_DIMENSIONS || 1536),
+  EMBEDDING_VERSION: Number(process.env.EMBEDDING_VERSION || 1),
+  EMBEDDING_BATCH_SIZE: Number(process.env.EMBEDDING_BATCH_SIZE || 10),
+  EMBEDDING_WORKER_INTERVAL_MS: Number(process.env.EMBEDDING_WORKER_INTERVAL_MS || 5000),
 };

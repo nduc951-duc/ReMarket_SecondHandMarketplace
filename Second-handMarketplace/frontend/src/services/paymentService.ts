@@ -16,7 +16,16 @@ export interface CreatePaymentResult {
   paymentUrl?: string;
   deeplink?: string;
   qrCodeUrl?: string;
+  expiresAt?: string;
   [key: string]: unknown;
+}
+
+export interface VerifyPaymentReturnResult {
+  isValid: boolean;
+  status: 'success' | 'failed' | string;
+  orderId?: string;
+  responseCode?: string | number;
+  processing?: { outcome?: string; replayed?: boolean } | null;
 }
 
 export async function createPayment(payload: CreatePaymentInput): Promise<CreatePaymentResult> {
@@ -44,4 +53,25 @@ export async function createPayment(payload: CreatePaymentInput): Promise<Create
     throw new Error(result.error?.message || result.message || 'Không thể tạo thanh toán.');
   }
   return result.data || {};
+}
+
+export async function verifyPaymentReturn(
+  paymentMethod: string,
+  searchParams: URLSearchParams,
+): Promise<VerifyPaymentReturnResult> {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
+  const response = await fetch(
+    `${backendUrl}/api/payment/return/${encodeURIComponent(paymentMethod)}?${searchParams.toString()}`,
+  );
+  const result = (await response.json().catch(() => ({}))) as {
+    data?: VerifyPaymentReturnResult;
+    message?: string;
+    error?: { message?: string };
+  };
+  if (!response.ok) {
+    throw new Error(
+      result.error?.message || result.message || 'Không thể xác minh kết quả thanh toán.',
+    );
+  }
+  return result.data || { isValid: false, status: 'failed' };
 }

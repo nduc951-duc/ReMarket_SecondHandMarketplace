@@ -30,6 +30,7 @@ vi.mock('@/services/transactionService', () => ({
 }));
 
 vi.mock('@/services/reviewService', () => ({ createReview: vi.fn() }));
+vi.mock('@/services/paymentService', () => ({ createPayment: vi.fn() }));
 
 describe('commerce UI flows', () => {
   beforeEach(() => {
@@ -117,5 +118,36 @@ describe('commerce UI flows', () => {
     await waitFor(() =>
       expect(updateTransactionStatus).toHaveBeenCalledWith('transaction-1', 'completed', ''),
     );
+  });
+
+  it('shows the 15-minute online payment deadline and resume action', async () => {
+    vi.mocked(getTransactions).mockResolvedValueOnce({
+      transactions: [
+        {
+          id: 'transaction-payment',
+          buyer_id: 'buyer-1',
+          seller_id: 'seller-1',
+          product_id: 'product-1',
+          product_name: 'Camera Sony cũ',
+          amount: 4_500_000,
+          status: 'awaiting_payment',
+          payment_status: 'pending',
+          payment_method: 'vnpay',
+          payment_expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+        },
+      ],
+      page: 1,
+      totalPages: 1,
+      total: 1,
+    });
+
+    render(
+      <MemoryRouter>
+        <TransactionHistoryPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(/Còn \d{2}:\d{2} để thanh toán/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Thanh toán ngay/i })).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
 const {
   createProduct,
+  getProductById,
   getPublicProductById,
   getPublicProducts,
   updateProduct,
@@ -10,6 +11,7 @@ const {
   incrementProductViewCount,
   autocompleteProducts,
 } = require('../models/products/productModel');
+const { notifySellerFollowersOfPriceChange } = require('../services/followService');
 
 const ALLOWED_CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
 const ALLOWED_PRODUCT_STATUSES = ['active', 'sold', 'hidden'];
@@ -240,6 +242,10 @@ async function getProductByIdHandler(req, res) {
 async function updateProductHandler(req, res) {
   try {
     const { id } = req.params;
+    const previousProduct = await getProductById(id);
+    if (!previousProduct || previousProduct.seller_id !== req.user.id) {
+      return res.status(404).json({ ok: false, message: 'Không tìm thấy sản phẩm của bạn.' });
+    }
     const {
       title,
       description,
@@ -330,6 +336,17 @@ async function updateProductHandler(req, res) {
     if (is_negotiable !== undefined) updateData.is_negotiable = is_negotiable;
 
     const product = await updateProduct(id, req.user.id, updateData);
+
+    if (price !== undefined && Number(previousProduct.price) !== Number(product.price)) {
+      notifySellerFollowersOfPriceChange({
+        sellerId: req.user.id,
+        product,
+        oldPrice: previousProduct.price,
+        newPrice: product.price,
+      }).catch((notificationError) => {
+        console.error('Notify product price change error:', notificationError);
+      });
+    }
 
     return res.status(200).json({
       ok: true,

@@ -61,6 +61,58 @@ Migration: `backend/supabase_database_hardening.sql`
 - The migration runs read-only preflight checks and fails with counts instead of
   deleting or silently rewriting invalid historical data.
 
+## Product comments from completed transactions
+
+Migration: `backend/supabase_product_transaction_reviews.sql`
+
+- `reviews` is the canonical product-comment source; every row remains tied to a
+  completed marketplace transaction and authenticated buyer.
+- A database trigger derives `product_id` and `reviewed_user_id` from the
+  transaction and rejects non-buyers or non-completed transactions.
+- Existing review rows are backfilled from `transactions`, so legacy comments
+  become product-scoped without trusting old client payloads.
+- Product detail reads reviews by `product_id`, not every review ever received by
+  the seller.
+- Browser roles can read comments but cannot write them directly. Inserts remain
+  backend/service-role operations after transaction ownership checks.
+- A trigger refreshes product rating and non-empty comment counters. The legacy
+  `product_reviews` table is not deleted so existing installations can migrate safely.
+
+## Seller follows and price notifications
+
+Migration: `backend/supabase_seller_follows.sql`
+
+- `(follower_id, seller_id)` is unique and self-follow is rejected by a check constraint.
+- Follow mutations go through authenticated Express routes; callers cannot submit a different
+  follower identity.
+- When an owner changes a product price, the backend creates a product-scoped notification for
+  every follower. Notification delivery failure does not roll back the product edit.
+
+## Smart product search
+
+Migration: `backend/supabase_smart_product_search.sql`
+
+- Exact full-text search remains the first choice.
+- `smart_product_suggestions(...)` uses accent-insensitive trigram similarity for misspellings
+  and near matches when exact search/autocomplete finds nothing.
+- The backend also has a bounded in-process fuzzy fallback so an unapplied RPC migration does
+  not turn a harmless zero-result query into an API error.
+
+## Hybrid vector RAG
+
+Migration: `backend/supabase_vector_rag.sql`
+
+- Embeddings use `extensions.vector(1536)` and HNSW cosine indexes. Changing the
+  embedding dimensionality requires a coordinated schema migration.
+- `ai_documents`, `ai_document_chunks`, `product_embeddings`, and
+  `embedding_jobs` are backend-only under RLS.
+- Product source text is derived from trusted product columns by a database
+  trigger. Price, status, category, condition, and location remain SQL filters.
+- Jobs use `FOR UPDATE SKIP LOCKED`, bounded retries, content hashes, and stale
+  detection so an old vector cannot overwrite newer content.
+- Hybrid RPCs use reciprocal-rank fusion over full-text and vector rankings.
+  Lexical/fuzzy retrieval remains the runtime fallback until backfill completes.
+
 ## Moderation reports
 
 Migration: `backend/supabase_moderation_reports.sql`

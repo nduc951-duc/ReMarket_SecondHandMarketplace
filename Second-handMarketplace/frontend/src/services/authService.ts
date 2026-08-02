@@ -36,6 +36,24 @@ export class AuthenticationError extends Error {
   email?: string;
 }
 
+export function getLoginErrorMessage(message = '') {
+  const normalized = String(message).trim().toLowerCase();
+
+  if (
+    normalized.includes('invalid login credentials') ||
+    normalized.includes('invalid credentials') ||
+    normalized.includes('user not found')
+  ) {
+    return 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.';
+  }
+
+  if (normalized.includes('rate limit') || normalized.includes('too many requests')) {
+    return 'Bạn đã thử đăng nhập quá nhiều lần. Vui lòng đợi một chút rồi thử lại.';
+  }
+
+  return 'Không thể đăng nhập. Vui lòng thử lại.';
+}
+
 function ensureSupabase() {
   if (!isSupabaseConfigured || !supabase) {
     throw new Error(SUPABASE_NOT_CONFIGURED_MESSAGE);
@@ -96,7 +114,7 @@ export async function loginWithEmail({ email, password }: LoginInput) {
       authError.email = email;
       throw authError;
     }
-    throw new Error(error.message || 'Đăng nhập thất bại.');
+    throw new Error(getLoginErrorMessage(error.message));
   }
 
   return { message: 'Đăng nhập thành công.', session: data.session };

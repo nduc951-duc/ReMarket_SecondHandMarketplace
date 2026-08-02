@@ -1,11 +1,25 @@
-import { CheckCircle2, MessageCircle, Star } from 'lucide-react';
+import { Bell, BellOff, CheckCircle2, MessageCircle, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import type { Product } from '@/types/domain';
 
-function SellerCard({ product }: { product: Product }) {
+interface SellerCardProps {
+  product: Product;
+  canFollow?: boolean;
+  following?: boolean;
+  followLoading?: boolean;
+  onToggleFollow?: () => void;
+}
+
+function SellerCard({
+  product,
+  canFollow = false,
+  following = false,
+  followLoading = false,
+  onToggleFollow,
+}: SellerCardProps) {
   const seller = product.profiles || product.seller;
   if (!seller) return null;
   const sellerName = seller.full_name || seller.display_name || 'Người bán ReMarket';
@@ -38,15 +52,30 @@ function SellerCard({ product }: { product: Product }) {
             <span className="whitespace-nowrap">{ratingCount} đánh giá</span>
           </div>
         </div>
-        <Button
-          render={<Link to={`/chat?receiver=${product.seller_id}&product=${product.id}`} />}
-          variant="outline"
-          size="icon"
-          aria-label="Nhắn tin cho người bán"
-          title="Nhắn tin"
-        >
-          <MessageCircle />
-        </Button>
+        <div className="flex items-center gap-2">
+          {canFollow && (
+            <Button
+              type="button"
+              variant={following ? 'secondary' : 'outline'}
+              size="sm"
+              disabled={followLoading}
+              onClick={onToggleFollow}
+              aria-pressed={following}
+            >
+              {following ? <BellOff /> : <Bell />}
+              {following ? 'Đang theo dõi' : 'Theo dõi'}
+            </Button>
+          )}
+          <Button
+            render={<Link to={`/chat?receiver=${product.seller_id}&product=${product.id}`} />}
+            variant="outline"
+            size="icon"
+            aria-label="Nhắn tin cho người bán"
+            title="Nhắn tin"
+          >
+            <MessageCircle />
+          </Button>
+        </div>
       </div>
     </section>
   );

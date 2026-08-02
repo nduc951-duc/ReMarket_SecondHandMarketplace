@@ -38,6 +38,11 @@ class Query {
     return this;
   }
 
+  delete() {
+    this.action = 'delete';
+    return this;
+  }
+
   eq(field, value) {
     this.filters.push((row) => row[field] === value);
     return this;
@@ -173,6 +178,16 @@ class Query {
         }
       }
       return { data: clone(upserted), error: null };
+    }
+
+    if (this.action === 'delete') {
+      const deleted = [];
+      this.database.tables[this.table] = this.database.tables[this.table].filter((row) => {
+        if (!this.matches(row)) return true;
+        deleted.push(row);
+        return false;
+      });
+      return { data: clone(deleted), error: null };
     }
 
     const updated = [];

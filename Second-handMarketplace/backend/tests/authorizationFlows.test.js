@@ -166,6 +166,54 @@ test('seller cannot review their own completed sale', async () => {
   );
 });
 
+test('product comments only return reviews tied to that purchased product', async () => {
+  const memory = createInMemorySupabase({
+    profiles: [
+      {
+        id: 'buyer-a',
+        full_name: 'Người mua đã xác minh',
+        avatar_url: 'buyer-a.jpg',
+      },
+    ],
+    reviews: [
+      {
+        id: 'review-camera',
+        transaction_id: 'transaction-1',
+        product_id: 'camera',
+        reviewer_id: 'buyer-a',
+        rating: 5,
+        comment: 'Máy đúng mô tả.',
+      },
+      {
+        id: 'review-bag',
+        transaction_id: 'transaction-2',
+        product_id: 'bag',
+        reviewer_id: 'buyer-b',
+        rating: 4,
+        comment: 'Túi còn tốt.',
+      },
+    ],
+  });
+  const service = loadWithMocks(require.resolve('../src/services/reviewService'), {
+    [envModulePath]: testSupabaseEnv,
+    [require.resolve('@supabase/supabase-js')]: {
+      createClient: () => memory.client,
+    },
+    [require.resolve('../src/services/notificationService')]: {
+      createNotification: async () => null,
+    },
+  });
+
+  const result = await service.getReviewsByProduct('camera');
+
+  assert.deepEqual(
+    result.reviews.map((review) => review.id),
+    ['review-camera'],
+  );
+  assert.equal(result.total, 1);
+  assert.equal(result.reviews[0].reviewer_profile.full_name, 'Người mua đã xác minh');
+});
+
 test('transaction controller rejects seller buying own product', async () => {
   const controller = loadWithMocks(require.resolve('../src/controllers/transactionController'), {
     [require.resolve('../src/services/transactionService')]: {

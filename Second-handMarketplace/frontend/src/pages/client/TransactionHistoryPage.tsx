@@ -1,6 +1,7 @@
 import {
   Check,
   Clock3,
+  CreditCard,
   DollarSign,
   Package,
   PackageCheck,
@@ -32,6 +33,7 @@ import {
 } from '@/components/ui';
 import { supabase } from '@/lib/supabaseClient';
 import { createReview } from '@/services/reviewService';
+import { createPayment } from '@/services/paymentService';
 import {
   getTransactionById,
   getTransactions,
@@ -75,6 +77,14 @@ function timeline(transaction: Transaction) {
   return events;
 }
 
+function paymentTimeLeft(expiresAt: string | null | undefined, now: number) {
+  if (!expiresAt) return '';
+  const remaining = Math.max(0, new Date(expiresAt).getTime() - now);
+  const minutes = Math.floor(remaining / 60_000);
+  const seconds = Math.floor((remaining % 60_000) / 1000);
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
 function TransactionHistoryPage() {
   const user = useAuthStore((state) => state.user);
   const [role, setRole] = useState<OrderRole>('buy');
@@ -92,6 +102,7 @@ function TransactionHistoryPage() {
   const [busyId, setBusyId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [clock, setClock] = useState(Date.now());
   const statsLoaded = useRef(false);
   const statsRef = useRef<TransactionStats | null>(null);
 
@@ -126,6 +137,12 @@ function TransactionHistoryPage() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (!transactions.some((transaction) => transaction.status === 'awaiting_payment')) return;
+    const interval = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, [transactions]);
 
   useEffect(() => {
     if (!user || !supabase) return;
@@ -182,6 +199,28 @@ function TransactionHistoryPage() {
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Không thể tải chi tiết.');
     } finally {
+      setBusyId('');
+    }
+  };
+
+  const resumePayment = async (transaction: Transaction) => {
+    const method = String(transaction.payment_method || '').toLowerCase();
+    if (method !== 'momo' && method !== 'vnpay') return;
+
+    try {
+      setBusyId(transaction.id);
+      setError('');
+      const payment = await createPayment({
+        orderId: transaction.id,
+        amount: transaction.amount,
+        orderInfo: `Thanh toán đơn hàng ${transaction.id}`,
+        paymentMethod: method,
+        returnUrl: `${window.location.origin}/payment/return/${method}`,
+      });
+      if (!payment.paymentUrl) throw new Error('Cổng thanh toán chưa trả về đường dẫn.');
+      window.location.assign(payment.paymentUrl);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Không thể tiếp tục thanh toán.');
       setBusyId('');
     }
   };
@@ -320,6 +359,11 @@ function TransactionHistoryPage() {
                       <Clock3 className="size-3.5" />
                       {formatDate(transaction.created_at)}
                     </p>
+                    {transaction.status === 'awaiting_payment' && (
+                      <p className="mt-2 text-sm font-semibold text-warning-foreground dark:text-warning">
+                        Còn {paymentTimeLeft(transaction.payment_expires_at, clock)} để thanh toán
+                      </p>
+                    )}
                     {transaction.note && (
                       <p className="mt-2 line-clamp-2 text-sm italic text-muted-foreground">
                         “{transaction.note}”
@@ -341,6 +385,16 @@ function TransactionHistoryPage() {
                       <ReceiptText className="size-4" />
                       Chi tiết
                     </Button>
+                    {role === 'buy' && transaction.status === 'awaiting_payment' && (
+                      <Button
+                        size="sm"
+                        disabled={busyId === transaction.id}
+                        onClick={() => void resumePayment(transaction)}
+                      >
+                        <CreditCard className="size-4" />
+                        Thanh toán ngay
+                      </Button>
+                    )}
                     {role === 'buy' && transaction.status === 'shipped' && (
                       <Button
                         size="sm"
@@ -360,7 +414,7 @@ function TransactionHistoryPage() {
                           onClick={() => setReviewTarget(transaction)}
                         >
                           <Star className="size-4" />
-                          Đánh giá
+                          Bình luận sản phẩm
                         </Button>
                       )}
                     {role === 'sell' && transaction.status === 'pending' && (
@@ -468,9 +522,9 @@ function TransactionHistoryPage() {
       <Dialog open={Boolean(reviewTarget)} onOpenChange={(open) => !open && setReviewTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Đánh giá giao dịch</DialogTitle>
+            <DialogTitle>Bình luận về sản phẩm</DialogTitle>
             <DialogDescription>
-              Chia sẻ trải nghiệm để cộng đồng mua bán an tâm hơn.
+              Nhận xét đúng tình trạng và trải nghiệm sử dụng sản phẩm bạn đã nhận.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-center gap-2">
@@ -492,7 +546,7 @@ function TransactionHistoryPage() {
             value={comment}
             onChange={(event) => setComment(event.target.value)}
             maxLength={500}
-            placeholder="Nhận xét của bạn…"
+            placeholder="Ví dụ: Sản phẩm đúng mô tả, ngoại hình còn tốt…"
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setReviewTarget(null)}>
@@ -502,7 +556,7 @@ function TransactionHistoryPage() {
               disabled={!reviewTarget || busyId === reviewTarget.id}
               onClick={() => void submitReview()}
             >
-              Gửi đánh giá
+              Gửi bình luận
             </Button>
           </DialogFooter>
         </DialogContent>

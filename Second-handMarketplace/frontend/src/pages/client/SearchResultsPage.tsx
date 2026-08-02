@@ -41,6 +41,17 @@ function readFilters(params: URLSearchParams): MarketplaceFilters {
   };
 }
 
+function filtersEqual(left: MarketplaceFilters, right: MarketplaceFilters) {
+  return (
+    left.minPrice === right.minPrice &&
+    left.maxPrice === right.maxPrice &&
+    left.category === right.category &&
+    left.location === right.location &&
+    left.sort === right.sort &&
+    left.conditions.join(',') === right.conditions.join(',')
+  );
+}
+
 function ResultsSkeleton() {
   return (
     <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -63,11 +74,13 @@ function SearchResultsPage() {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [matchMode, setMatchMode] = useState('exact');
   const [filters, setFilters] = useState<MarketplaceFilters>(() => readFilters(searchParams));
   const query = searchParams.get('q') || '';
 
   useEffect(() => {
-    setFilters(readFilters(searchParams));
+    const nextFilters = readFilters(searchParams);
+    setFilters((current) => (filtersEqual(current, nextFilters) ? current : nextFilters));
   }, [searchParams]);
 
   useEffect(() => {
@@ -93,9 +106,11 @@ function SearchResultsPage() {
       });
       setProducts(result.products || []);
       setTotal(result.pagination?.total || result.products?.length || 0);
+      setMatchMode(result.pagination?.matchMode || 'exact');
     } catch (loadError) {
       setProducts([]);
       setTotal(0);
+      setMatchMode('exact');
       setError(loadError instanceof Error ? loadError.message : 'Không thể tải sản phẩm.');
     } finally {
       setIsLoading(false);
@@ -211,6 +226,13 @@ function SearchResultsPage() {
           <Button variant="ghost" size="xs" onClick={clearFilters}>
             Xóa tất cả
           </Button>
+        </div>
+      )}
+
+      {!isLoading && !error && query && products.length > 0 && matchMode === 'fuzzy' && (
+        <div className="rounded-xl border border-info/25 bg-info/10 px-4 py-3 text-sm text-info">
+          Không có kết quả trùng hoàn toàn với “{query}”. ReMarket đang hiển thị các sản phẩm gần
+          đúng nhất.
         </div>
       )}
 
