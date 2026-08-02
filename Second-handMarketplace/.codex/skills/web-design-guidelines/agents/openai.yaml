@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web Design Guidelines"
+  short_description: "Audit UI accessibility and web best practices"
+  default_prompt: "Use $web-design-guidelines to review this UI for accessibility and modern web interface best practices."

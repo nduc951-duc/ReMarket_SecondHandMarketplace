@@ -31,7 +31,13 @@ function ChatProductCard({ message }: { message: Message }) {
       >
         <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-muted">
           {product.image_url ? (
-            <img src={product.image_url} alt="" className="size-full object-cover" />
+            <img
+              src={product.image_url}
+              alt=""
+              width="64"
+              height="64"
+              className="size-full object-cover"
+            />
           ) : (
             <Package className="size-5 text-muted-foreground" />
           )}

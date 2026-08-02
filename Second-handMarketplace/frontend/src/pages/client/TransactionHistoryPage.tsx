@@ -207,7 +207,7 @@ function TransactionHistoryPage() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Giao dịch</p>
           <h1 className="mt-2 text-3xl font-bold">Đơn hàng của bạn</h1>
@@ -298,6 +298,8 @@ function TransactionHistoryPage() {
                       <img
                         src={transaction.product_image}
                         alt=""
+                        width="80"
+                        height="80"
                         className="size-full object-cover"
                       />
                     ) : (

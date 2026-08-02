@@ -112,7 +112,7 @@ function ModerationPage() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <header className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <header className="border-b border-border pb-6">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="flex items-center gap-2 text-sm font-semibold text-primary">

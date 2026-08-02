@@ -79,7 +79,7 @@ function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
           <Drawer>
             <DrawerTrigger
               render={
@@ -91,7 +91,13 @@ function Navbar() {
             <DrawerContent side="left" className="p-0">
               <div className="border-b border-border p-5">
                 <Link to="/app" className="inline-flex items-center gap-2">
-                  <img src={remarketLogo} alt="" className="size-9 rounded-xl" />
+                  <img
+                    src={remarketLogo}
+                    alt=""
+                    width="36"
+                    height="36"
+                    className="size-9 rounded-xl"
+                  />
                   <span className="text-xl font-bold tracking-tight">ReMarket</span>
                 </Link>
                 <p className="mt-3 text-sm text-muted-foreground">
@@ -118,13 +124,29 @@ function Navbar() {
                     }
                   />
                 ))}
+                <DrawerClose
+                  render={
+                    <Link
+                      to="/support-chat"
+                      className={cn(
+                        'flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold',
+                        location.pathname === '/support-chat'
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      <MessageCircle className="size-5" />
+                      Trợ lý hỗ trợ
+                    </Link>
+                  }
+                />
               </nav>
             </DrawerContent>
           </Drawer>
 
           <Link to="/app" className="flex shrink-0 items-center gap-2" aria-label="ReMarket">
-            <img src={remarketLogo} alt="" className="size-9 rounded-xl shadow-sm" />
-            <span className="hidden text-xl font-bold tracking-tight sm:inline">ReMarket</span>
+            <img src={remarketLogo} alt="" width="36" height="36" className="size-9 rounded-xl" />
+            <span className="hidden text-xl font-bold tracking-tight xl:inline">ReMarket</span>
           </Link>
 
           <form
@@ -138,7 +160,7 @@ function Navbar() {
             <input
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
-              placeholder="Tìm sản phẩm, danh mục..."
+              placeholder="Tìm sản phẩm, danh mục…"
               aria-label="Tìm kiếm toàn trang"
               className="h-10 w-full rounded-full border border-input bg-muted/55 pl-10 pr-4 text-sm outline-none transition focus:border-ring focus:bg-background focus:ring-3 focus:ring-ring/20"
             />
@@ -150,7 +172,7 @@ function Navbar() {
                 key={path}
                 to={path}
                 className={cn(
-                  'rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
+                  'whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
                   location.pathname === path
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -164,7 +186,7 @@ function Navbar() {
           <div className="ml-auto flex shrink-0 items-center gap-1">
             <Link
               to="/products/new"
-              className="hidden h-9 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:inline-flex"
+              className="hidden h-9 touch-manipulation items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 xl:inline-flex"
             >
               <Plus className="size-4" />
               Đăng tin
@@ -279,7 +301,7 @@ function Navbar() {
             <input
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
-              placeholder="Tìm sản phẩm..."
+              placeholder="Tìm sản phẩm…"
               aria-label="Tìm kiếm toàn trang"
               className="h-10 w-full rounded-full border border-input bg-muted/55 pl-9 pr-4 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/20"
             />
@@ -288,7 +310,7 @@ function Navbar() {
       </header>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 px-2 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-xl md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-xl md:hidden"
         aria-label="Điều hướng dưới"
       >
         {[

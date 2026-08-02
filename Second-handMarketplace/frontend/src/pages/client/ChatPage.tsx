@@ -552,7 +552,7 @@ function ChatPage({
           </div>
         )}
 
-        <section className="grid min-h-0 flex-1 overflow-hidden rounded-3xl border border-border bg-card shadow-xl lg:grid-cols-[360px_1fr]">
+        <section className="grid min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card lg:grid-cols-[360px_1fr]">
           <aside className="flex min-h-0 flex-col border-b border-border bg-muted/30 lg:border-b-0 lg:border-r">
             <div className="shrink-0 border-b border-border p-4">
               <div className="mb-3 flex items-center justify-between">
@@ -609,6 +609,8 @@ function ChatPage({
                               <img
                                 src={itemPeer.profile.avatar_url}
                                 alt=""
+                                width="44"
+                                height="44"
                                 className="h-full w-full object-cover"
                               />
                             ) : (
@@ -662,6 +664,8 @@ function ChatPage({
                         <img
                           src={peer.profile.avatar_url}
                           alt=""
+                          width="44"
+                          height="44"
                           className="h-full w-full object-cover"
                         />
                       ) : (

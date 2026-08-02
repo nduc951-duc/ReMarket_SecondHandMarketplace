@@ -1,4 +1,4 @@
-import { ArrowRight, Recycle, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, Recycle, ShieldCheck } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -128,31 +128,27 @@ function ClientHomePage() {
 
   return (
     <MarketplaceLayout className="space-y-14">
-      <section className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/12 via-card to-secondary p-6 shadow-sm sm:p-10 lg:p-14">
-        <div className="absolute -right-20 -top-24 size-80 rounded-full bg-primary/10 blur-3xl" />
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card px-6 py-10 sm:px-10 sm:py-14 lg:px-14">
         <div className="relative max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 px-3 py-1.5 text-xs font-semibold text-primary backdrop-blur">
-            <Sparkles className="size-3.5" />
-            Marketplace đồ cũ đáng tin cậy
-          </span>
-          <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            Món đồ bạn cần có thể đang ở rất gần.
+          <p className="text-sm font-semibold text-primary">Mua bán đồ đã qua sử dụng</p>
+          <h1 className="mt-3 max-w-2xl text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+            Tìm món phù hợp. Trao đổi rõ ràng.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Khám phá sản phẩm còn tốt, trao đổi trực tiếp với người bán và theo dõi giao dịch minh
-            bạch trên ReMarket.
+            Khám phá sản phẩm còn tốt quanh bạn, nhắn trực tiếp với người bán và theo dõi từng bước
+            giao dịch trên ReMarket.
           </p>
           <SearchBar onSearch={handleSearch} className="mt-8 max-w-2xl bg-background/90" />
           <div className="mt-5 flex flex-wrap gap-3">
-            <Button render={<Link to="/products/new" />} size="lg" className="rounded-full">
-              Đăng tin miễn phí
+            <Button render={<Link to="/products/new" />} size="lg">
+              Đăng tin
               <ArrowRight />
             </Button>
             <Button
               render={<Link to="/search" />}
               variant="outline"
               size="lg"
-              className="rounded-full bg-background/70"
+              className="bg-background"
             >
               Xem tất cả sản phẩm
             </Button>
@@ -161,12 +157,16 @@ function ClientHomePage() {
 
         <div className="relative mt-10 grid gap-3 border-t border-border/70 pt-6 sm:grid-cols-3 lg:max-w-3xl">
           {[
-            { icon: ShieldCheck, title: 'Giao dịch rõ ràng', text: 'Trạng thái đơn minh bạch' },
-            { icon: Recycle, title: 'Tiêu dùng bền vững', text: 'Kéo dài vòng đời sản phẩm' },
-            { icon: Sparkles, title: 'Đăng tin đơn giản', text: 'Tiếp cận người mua nhanh' },
+            { icon: ShieldCheck, title: 'Trạng thái rõ ràng', text: 'Theo dõi đơn từ lúc đặt mua' },
+            { icon: Recycle, title: 'Dùng lại hợp lý', text: 'Đồ tốt tiếp tục được sử dụng' },
+            {
+              icon: ArrowRight,
+              title: 'Trao đổi trực tiếp',
+              text: 'Nhắn người bán ngay trong app',
+            },
           ].map(({ icon: Icon, title, text }) => (
             <div key={title} className="flex items-start gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
                 <Icon className="size-4" />
               </span>
               <div>
@@ -195,7 +195,7 @@ function ClientHomePage() {
 
           <section className="space-y-5">
             <div>
-              <p className="text-sm font-semibold text-primary">Khám phá nhanh</p>
+              <p className="text-sm font-semibold text-primary">Danh mục</p>
               <h2 className="mt-1 text-2xl font-bold tracking-tight md:text-3xl">
                 Danh mục nổi bật
               </h2>

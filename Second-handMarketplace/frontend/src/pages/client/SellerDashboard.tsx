@@ -126,7 +126,7 @@ function SellerDashboard() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-3xl border border-border bg-card p-6 shadow-sm lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-5 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Không gian người bán</p>
           <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Đơn hàng đang bán</h1>
@@ -222,6 +222,8 @@ function SellerDashboard() {
                       <img
                         src={transaction.product_image}
                         alt=""
+                        width="80"
+                        height="80"
                         className="size-full object-cover"
                       />
                     ) : (

@@ -29,6 +29,28 @@ test('health endpoint includes security and response-time headers', async () => 
   });
 });
 
+test('development CORS accepts both localhost frontend addresses', async () => {
+  await withServer(async (baseUrl) => {
+    for (const origin of ['http://localhost:5173', 'http://127.0.0.1:5173']) {
+      const response = await fetch(`${baseUrl}/api/health`, { headers: { origin } });
+
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('access-control-allow-origin'), origin);
+    }
+  });
+});
+
+test('development CORS does not allow an unrelated origin', async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/health`, {
+      headers: { origin: 'https://untrusted.example' },
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('access-control-allow-origin'), null);
+  });
+});
+
 test('readiness returns not-ready when a required dependency fails', async () => {
   const controller = loadWithMocks(require.resolve('../src/controllers/healthController'), {
     [require.resolve('../src/services/readinessService')]: {

@@ -26,7 +26,7 @@ function SystemStatusPage({
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-background px-4 text-foreground">
       <div className="absolute -left-24 top-1/3 size-72 rounded-full bg-primary/10 blur-3xl" />
-      <section className="relative w-full max-w-xl rounded-3xl border border-border bg-card p-8 text-center shadow-xl sm:p-12">
+      <section className="relative w-full max-w-xl rounded-2xl border border-border bg-card p-8 text-center shadow-lg sm:p-12">
         <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
           <Icon className="size-7" />
         </span>

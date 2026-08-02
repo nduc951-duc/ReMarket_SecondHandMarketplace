@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MarketplaceLayout } from '@/components/layout/MarketplaceLayout';
 import ProductSection from '@/components/marketplace/ProductSection';
 import { ProductGallery } from '@/components/product-detail/ProductGallery';
+import { ProductInformation } from '@/components/product-detail/ProductInformation';
 import { ProductPurchasePanel } from '@/components/product-detail/ProductPurchasePanel';
 import { PurchaseDialog } from '@/components/product-detail/PurchaseDialog';
 import { ReportDialog, type ProductReportInput } from '@/components/product-detail/ReportDialog';
@@ -327,18 +328,7 @@ function ProductDetailPage() {
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">Chi tiết sản phẩm</h2>
-          <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
-            {product.description || 'Người bán chưa bổ sung mô tả cho sản phẩm này.'}
-          </p>
-          {product.created_at && (
-            <p className="mt-6 flex items-center gap-2 border-t border-border pt-4 text-xs text-muted-foreground">
-              <CalendarDays className="size-4" />
-              Đăng ngày {new Date(product.created_at).toLocaleDateString('vi-VN')}
-            </p>
-          )}
-        </section>
+        <ProductInformation product={product} imageCount={productImages.length} />
         <ReviewList reviews={reviews} total={reviewTotal} loading={isLoadingReviews} />
       </div>
 

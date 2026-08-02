@@ -107,7 +107,7 @@ function MyProductsPage() {
 
   return (
     <MarketplaceLayout className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Kho sản phẩm</p>
           <h1 className="mt-2 text-3xl font-bold">Sản phẩm của tôi</h1>
@@ -177,7 +177,13 @@ function MyProductsPage() {
                 >
                   <Link to={`/products/${product.id}`} className="block aspect-[4/3] bg-muted">
                     {image ? (
-                      <img src={image} alt={product.title} className="size-full object-cover" />
+                      <img
+                        src={image}
+                        alt={product.title}
+                        width="640"
+                        height="480"
+                        className="size-full object-cover"
+                      />
                     ) : (
                       <span className="grid size-full place-items-center text-sm text-muted-foreground">
                         Chưa có ảnh

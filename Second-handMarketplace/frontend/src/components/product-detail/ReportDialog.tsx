@@ -83,7 +83,7 @@ function ReportDialog({
                 onChange={(event) => setDetails(event.target.value)}
                 maxLength={1000}
                 rows={4}
-                placeholder="Mô tả vấn đề..."
+                placeholder="Mô tả vấn đề…"
               />
             </FormField>
             <FormField label="Link bằng chứng" description="Không bắt buộc, sử dụng URL https.">
@@ -91,7 +91,7 @@ function ReportDialog({
                 type="url"
                 value={evidenceUrl}
                 onChange={(event) => setEvidenceUrl(event.target.value)}
-                placeholder="https://..."
+                placeholder="https://…"
               />
             </FormField>
             {feedback && (
@@ -106,7 +106,7 @@ function ReportDialog({
               Hủy
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Đang gửi...' : 'Gửi báo cáo'}
+              {submitting ? 'Đang gửi…' : 'Gửi báo cáo'}
             </Button>
           </DialogFooter>
         </form>
