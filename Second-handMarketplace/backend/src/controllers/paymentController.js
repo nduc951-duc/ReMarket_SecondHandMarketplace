@@ -88,6 +88,8 @@ async function createPaymentHandler(req, res) {
 
     const context = PaymentContext.create(payload.paymentMethod);
     const data = await context.createPayment(payload);
+    const publicPaymentData = { ...data };
+    delete publicPaymentData.signedPayload;
 
     upsertPayment(payload.orderId, {
       amount: payload.amount,
@@ -99,14 +101,17 @@ async function createPaymentHandler(req, res) {
       gatewayResponse: data.gatewayResponse,
     });
 
-    await markTransactionPaymentCreated({
+    const updatedTransaction = await markTransactionPaymentCreated({
       transactionId: payload.orderId,
       paymentMethod: payload.paymentMethod,
     });
 
     return res.status(201).json({
       ok: true,
-      data,
+      data: {
+        ...publicPaymentData,
+        expiresAt: updatedTransaction?.payment_expires_at || transaction.payment_expires_at,
+      },
     });
   } catch (error) {
     return sendError(res, error, 'Khong the tao thanh toan.');

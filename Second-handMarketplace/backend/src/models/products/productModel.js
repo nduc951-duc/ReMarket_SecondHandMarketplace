@@ -83,6 +83,145 @@ function parseBoolean(value, defaultValue = false) {
   return String(value).toLowerCase() === 'true';
 }
 
+function normalizeSearchText(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function bigrams(value) {
+  const text = ` ${normalizeSearchText(value)} `;
+  const result = [];
+  for (let index = 0; index < text.length - 1; index += 1) {
+    result.push(text.slice(index, index + 2));
+  }
+  return result;
+}
+
+function diceSimilarity(left, right) {
+  const leftPairs = bigrams(left);
+  const rightPairs = bigrams(right);
+  if (!leftPairs.length || !rightPairs.length) return 0;
+  const remaining = [...rightPairs];
+  let matches = 0;
+  leftPairs.forEach((pair) => {
+    const index = remaining.indexOf(pair);
+    if (index >= 0) {
+      matches += 1;
+      remaining.splice(index, 1);
+    }
+  });
+  return (2 * matches) / (leftPairs.length + rightPairs.length);
+}
+
+function searchTokens(value) {
+  return normalizeSearchText(value).split(' ').filter(Boolean);
+}
+
+function editDistance(left, right) {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      const substitutionCost = left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] + substitutionCost,
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[right.length];
+}
+
+function tokenSimilarity(left, right) {
+  if (left === right) return 1;
+  if (Math.min(left.length, right.length) < 4) return 0;
+
+  const distance = editDistance(left, right);
+  const longestLength = Math.max(left.length, right.length);
+  if (distance === 1) return 0.9;
+  if (distance / longestLength <= 0.25) return 0.75;
+
+  const similarity = diceSimilarity(left, right);
+  return similarity >= 0.72 ? similarity : 0;
+}
+
+const PRODUCT_SEARCH_SYNONYMS = {
+  camera: ['may anh', 'may chup anh'],
+  'dien thoai': ['smartphone', 'iphone', 'android'],
+  laptop: ['may tinh xach tay', 'notebook'],
+  'tai nghe': ['headphone', 'earphone'],
+  'xe may': ['motorbike', 'scooter'],
+};
+
+function searchAlternatives(search) {
+  const normalized = normalizeSearchText(search);
+  const alternatives = [normalized];
+  const normalizedTokens = searchTokens(normalized);
+  Object.entries(PRODUCT_SEARCH_SYNONYMS).forEach(([term, synonyms]) => {
+    const containsTerm = normalized.includes(term);
+    const containsSynonym = synonyms.some((synonym) => normalized.includes(synonym));
+    const nearSingleWordTerm =
+      !term.includes(' ') && normalizedTokens.some((token) => tokenSimilarity(token, term) >= 0.75);
+
+    if (containsTerm || nearSingleWordTerm) alternatives.push(...synonyms);
+    if (containsSynonym) alternatives.push(term);
+  });
+  return Array.from(new Set(alternatives));
+}
+
+function scoreProductMatch(search, product) {
+  const normalizedTitle = normalizeSearchText(product.title);
+  const normalizedDescription = normalizeSearchText(product.description);
+  const titleTokens = searchTokens(normalizedTitle);
+  const descriptionTokens = searchTokens(normalizedDescription);
+
+  return Math.max(
+    ...searchAlternatives(search).map((normalizedQuery) => {
+      const queryTokens = searchTokens(normalizedQuery).filter((token) => token.length >= 2);
+      if (!queryTokens.length) return 0;
+
+      const bestScores = (candidateTokens) =>
+        queryTokens.map((queryToken) =>
+          candidateTokens.reduce(
+            (best, candidateToken) => Math.max(best, tokenSimilarity(queryToken, candidateToken)),
+            0,
+          ),
+        );
+      const titleScores = bestScores(titleTokens);
+      const descriptionScores = bestScores(descriptionTokens);
+      const matchedTokenRatio =
+        queryTokens.filter(
+          (_token, index) => Math.max(titleScores[index], descriptionScores[index]) >= 0.75,
+        ).length / queryTokens.length;
+      const requiredRatio = queryTokens.length === 1 ? 1 : 0.75;
+
+      if (matchedTokenRatio < requiredRatio) return 0;
+
+      const average = (scores) =>
+        scores.reduce((total, score) => total + score, 0) / Math.max(1, scores.length);
+      const titleCoverage = average(titleScores);
+      const descriptionCoverage = average(descriptionScores);
+      const titleExactBonus = normalizedTitle.includes(normalizedQuery) ? 0.35 : 0;
+      const descriptionExactBonus = normalizedDescription.includes(normalizedQuery) ? 0.2 : 0;
+
+      return (
+        Math.max(titleCoverage, descriptionCoverage * 0.85) +
+        titleExactBonus +
+        descriptionExactBonus
+      );
+    }),
+  );
+}
+
 /**
  * Create a new product
  * @param {object} productData - { seller_id, title, description, price, category, condition, images, location }
@@ -347,9 +486,7 @@ async function searchProductsRPC(client, options, admin) {
     page_limit: limit,
   });
 
-  if (error) {
-    throw new Error(`Search failed: ${error.message}`);
-  }
+  if (error || !data?.length) return fuzzySearchProducts(client, options, admin);
 
   const profileMap = await fetchProfilesMap(
     admin,
@@ -373,15 +510,69 @@ async function searchProductsRPC(client, options, admin) {
   };
 }
 
+async function fuzzySearchProducts(client, options, admin) {
+  const page = Math.max(1, Number(options.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(options.limit) || 10));
+  const offset = (page - 1) * limit;
+  let query = client.from('products').select('*').eq('status', 'active').limit(150);
+
+  const categories = parseCsv(options.category);
+  const conditions = parseCsv(options.condition);
+  if (categories.length) query = query.in('category', categories);
+  if (conditions.length) query = query.in('condition', conditions);
+  if (options.min_price !== undefined && options.min_price !== '') {
+    query = query.gte('price', Number(options.min_price));
+  }
+  if (options.max_price !== undefined && options.max_price !== '') {
+    query = query.lte('price', Number(options.max_price));
+  }
+  if (options.city) query = query.ilike('location', `%${options.city}%`);
+
+  const { data, error } = await query;
+  if (error) throw new Error(`Fuzzy search failed: ${error.message}`);
+
+  const ranked = (data || [])
+    .map((product) => ({ ...product, relevance_score: scoreProductMatch(options.search, product) }))
+    .filter((product) => product.relevance_score >= 0.65)
+    .sort((left, right) => right.relevance_score - left.relevance_score);
+  const pageRows = ranked.slice(offset, offset + limit);
+  const profileMap = await fetchProfilesMap(
+    admin,
+    pageRows.map((item) => item.seller_id),
+  );
+
+  return {
+    products: pageRows.map((item) => ({
+      ...item,
+      profiles: profileMap.get(item.seller_id) || null,
+    })),
+    pagination: {
+      page,
+      limit,
+      total: ranked.length,
+      totalPages: Math.ceil(ranked.length / limit),
+      matchMode: 'fuzzy',
+    },
+  };
+}
+
 async function autocompleteProducts(query) {
   const client = getAdminClient();
-  const { data, error } = await client.rpc('autocomplete_products', {
+  let { data, error } = await client.rpc('smart_product_suggestions', {
     query_text: query,
     max_results: 6,
   });
 
-  if (error) throw new Error(`Autocomplete failed: ${error.message}`);
-  return data || [];
+  if (error) {
+    ({ data, error } = await client.rpc('autocomplete_products', {
+      query_text: query,
+      max_results: 6,
+    }));
+  }
+
+  if (!error && data?.length) return data;
+  const result = await fuzzySearchProducts(client, { search: query, limit: 6 }, client);
+  return result.products.map(({ id, title, category, price }) => ({ id, title, category, price }));
 }
 
 async function getProducts(options = {}) {
@@ -547,4 +738,5 @@ module.exports = {
   getPublicProductsBySeller,
   hasOpenTransactionsForProduct,
   autocompleteProducts,
+  scoreProductMatch,
 };

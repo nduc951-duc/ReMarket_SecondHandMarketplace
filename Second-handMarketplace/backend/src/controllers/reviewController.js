@@ -1,5 +1,6 @@
 const {
   createReview,
+  getReviewsByProduct,
   getReviewsByUser,
   getReviewForTransaction,
   getMyReviews,
@@ -60,6 +61,19 @@ async function getReviewsByUserHandler(req, res) {
   }
 }
 
+async function getReviewsByProductHandler(req, res) {
+  try {
+    const data = await getReviewsByProduct(req.params.productId, {
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+
+    return res.status(200).json({ ok: true, data });
+  } catch (error) {
+    return sendError(res, error, 'Khong the lay binh luan san pham.');
+  }
+}
+
 async function getReviewForTransactionHandler(req, res) {
   try {
     const review = await getReviewForTransaction(req.params.transactionId, req.user.id);
@@ -91,6 +105,7 @@ async function getMyReviewsHandler(req, res) {
 
 module.exports = {
   createReviewHandler,
+  getReviewsByProductHandler,
   getReviewsByUserHandler,
   getReviewForTransactionHandler,
   getMyReviewsHandler,

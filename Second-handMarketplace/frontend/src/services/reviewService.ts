@@ -61,6 +61,19 @@ export async function getReviewsByUser(
   );
 }
 
+export async function getReviewsByProduct(
+  productId: string,
+  options: ReviewOptions = {},
+): Promise<{ reviews: Review[]; total?: number }> {
+  const query = new URLSearchParams();
+  if (options.page) query.set('page', String(options.page));
+  if (options.limit) query.set('limit', String(options.limit));
+  return parse(
+    await fetch(`${backendUrl()}/api/reviews/product/${productId}?${query.toString()}`),
+    'Không thể tải bình luận về sản phẩm.',
+  );
+}
+
 export async function getMyReviewForTransaction(transactionId: string): Promise<Review | null> {
   const token = await getAccessToken();
   return parse(

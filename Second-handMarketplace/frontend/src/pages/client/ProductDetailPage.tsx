@@ -17,9 +17,10 @@ import { ErrorState } from '@/components/ui/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCategoryName } from '@/data/marketplaceConfig';
 import { createPayment } from '@/services/paymentService';
+import { getSellerFollowStatus, toggleSellerFollow } from '@/services/followService';
 import { getProductById, getProducts } from '@/services/productService';
 import { createProductReport } from '@/services/reportService';
-import { getReviewsByUser } from '@/services/reviewService';
+import { getReviewsByProduct } from '@/services/reviewService';
 import { createTransaction } from '@/services/transactionService';
 import { getWishlistStatus, toggleWishlist } from '@/services/wishlistService';
 import { useAuthStore } from '@/store/authStore';
@@ -101,6 +102,8 @@ function ProductDetailPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
   const [reportFeedback, setReportFeedback] = useState('');
+  const [followingSeller, setFollowingSeller] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const loadProduct = useCallback(async () => {
     if (!id) {
@@ -134,23 +137,28 @@ function ProductDetailPage() {
             .then(setWishlisted)
             .catch(() => setWishlisted(false)),
         );
+        if (data.seller_id && data.seller_id !== user.id) {
+          sideLoads.push(
+            getSellerFollowStatus(data.seller_id)
+              .then(setFollowingSeller)
+              .catch(() => setFollowingSeller(false)),
+          );
+        }
       }
 
-      if (data.seller_id) {
-        setIsLoadingReviews(true);
-        sideLoads.push(
-          getReviewsByUser(data.seller_id, { limit: 6 })
-            .then((reviewData: { reviews?: Review[]; total?: number }) => {
-              setReviews(reviewData.reviews || []);
-              setReviewTotal(reviewData.total || 0);
-            })
-            .catch(() => {
-              setReviews([]);
-              setReviewTotal(0);
-            })
-            .finally(() => setIsLoadingReviews(false)),
-        );
-      }
+      setIsLoadingReviews(true);
+      sideLoads.push(
+        getReviewsByProduct(data.id, { limit: 10 })
+          .then((reviewData: { reviews?: Review[]; total?: number }) => {
+            setReviews(reviewData.reviews || []);
+            setReviewTotal(reviewData.total || 0);
+          })
+          .catch(() => {
+            setReviews([]);
+            setReviewTotal(0);
+          })
+          .finally(() => setIsLoadingReviews(false)),
+      );
 
       const category = getCategoryName(data.category);
       if (category && category !== 'Khác') {
@@ -219,7 +227,7 @@ function ProductDetailPage() {
           orderId: transaction.id,
           amount: transaction.amount || product.price,
           orderInfo: `Thanh toán đơn hàng ${transaction.id}`,
-          returnUrl: `${window.location.origin}/transactions`,
+          returnUrl: `${window.location.origin}/payment/return/${paymentMethod}`,
           paymentMethod,
         });
         if (!payment.paymentUrl) {
@@ -258,6 +266,19 @@ function ProductDetailPage() {
       );
     } finally {
       setIsReporting(false);
+    }
+  };
+
+  const handleFollowSeller = async () => {
+    if (!product?.seller_id || !requireLogin()) return;
+    try {
+      setFollowLoading(true);
+      const result = await toggleSellerFollow(product.seller_id);
+      setFollowingSeller(result.following);
+    } catch (followError) {
+      setError(followError instanceof Error ? followError.message : 'Không thể cập nhật theo dõi.');
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -323,7 +344,13 @@ function ProductDetailPage() {
             onWishlist={() => void handleWishlist()}
             onReport={() => (requireLogin() ? setReportOpen(true) : undefined)}
           />
-          <SellerCard product={product} />
+          <SellerCard
+            product={product}
+            canFollow={Boolean(user && !owner)}
+            following={followingSeller}
+            followLoading={followLoading}
+            onToggleFollow={() => void handleFollowSeller()}
+          />
         </div>
       </div>
 

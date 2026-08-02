@@ -3,7 +3,31 @@ const DEFAULT_BACKEND_URL = 'http://localhost:4000';
 export interface AiSupportAnswer {
   answer: string;
   provider?: string;
-  sources?: string[];
+  sources?: Array<{
+    id: string;
+    sourceKey: string;
+    title: string;
+    category?: string;
+    score?: number;
+    excerpt?: string;
+  }>;
+  retrieval?: {
+    mode: 'hybrid_vector' | 'lexical_fallback';
+    model?: string;
+    version?: number;
+    latencyMs?: number;
+    fallbackReason?: string;
+  };
+  products?: Array<{
+    id: string;
+    title: string;
+    price: number;
+    condition?: string;
+    location?: string;
+    image_url?: string;
+    match_mode?: string;
+    citation_id?: string;
+  }>;
 }
 
 export async function askAiSupport(message: string): Promise<AiSupportAnswer> {

@@ -1,6 +1,6 @@
-import { Bot, Loader2, MessageCircle, Send, X } from 'lucide-react';
+import { BookOpen, Bot, Database, Loader2, MessageCircle, Send, X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { Button, Card, Textarea } from '@/components/ui';
 import { askAiSupport } from '@/services/aiSupportService';
@@ -9,6 +9,9 @@ interface SupportMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  products?: NonNullable<Awaited<ReturnType<typeof askAiSupport>>['products']>;
+  sources?: NonNullable<Awaited<ReturnType<typeof askAiSupport>>['sources']>;
+  retrieval?: Awaited<ReturnType<typeof askAiSupport>>['retrieval'];
 }
 
 const initialMessages: SupportMessage[] = [
@@ -20,11 +23,20 @@ const initialMessages: SupportMessage[] = [
   },
 ];
 
-function createMessage(role: SupportMessage['role'], content: string): SupportMessage {
+function createMessage(
+  role: SupportMessage['role'],
+  content: string,
+  products?: SupportMessage['products'],
+  sources?: SupportMessage['sources'],
+  retrieval?: SupportMessage['retrieval'],
+): SupportMessage {
   return {
     id: `${role}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     role,
     content,
+    products,
+    sources,
+    retrieval,
   };
 }
 
@@ -57,7 +69,13 @@ function AiSupportWidget() {
       const result = await askAiSupport(content);
       setMessages((current) => [
         ...current,
-        createMessage('assistant', result.answer || 'Mình chưa có câu trả lời phù hợp.'),
+        createMessage(
+          'assistant',
+          result.answer || 'Mình chưa có câu trả lời phù hợp.',
+          result.products,
+          result.sources,
+          result.retrieval,
+        ),
       ]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Không thể kết nối trợ lý AI.');
@@ -76,7 +94,7 @@ function AiSupportWidget() {
   if (hiddenOnCurrentRoute) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 hidden md:block">
+    <div className="fixed bottom-3 right-3 z-40 block sm:bottom-6 sm:right-6">
       {open && (
         <Card
           className="mb-3 flex h-[min(560px,calc(100dvh-9.5rem))] w-[min(380px,calc(100vw-1.5rem))] flex-col overflow-hidden border-border/80 shadow-xl"
@@ -116,7 +134,69 @@ function AiSupportWidget() {
                     : 'rounded-bl-md border border-border bg-card'
                 }`}
               >
-                {message.content}
+                <p className="whitespace-pre-line">{message.content}</p>
+                {message.products && message.products.length > 0 && (
+                  <div className="mt-3 space-y-2 border-t border-border pt-3">
+                    {message.products.slice(0, 3).map((product) => (
+                      <Link
+                        key={product.id}
+                        to={`/products/${product.id}`}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-2 transition-colors hover:bg-muted"
+                        onClick={() => setOpen(false)}
+                      >
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt=""
+                            width="44"
+                            height="44"
+                            className="size-11 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span className="grid size-11 place-items-center rounded-lg bg-muted">
+                            <Bot className="size-4 text-muted-foreground" />
+                          </span>
+                        )}
+                        <span className="min-w-0">
+                          <strong className="block truncate text-xs">
+                            {product.citation_id ? `[${product.citation_id}] ` : ''}
+                            {product.title}
+                          </strong>
+                          <span className="text-xs font-semibold text-primary">
+                            {new Intl.NumberFormat('vi-VN').format(product.price)}đ
+                          </span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {message.sources && message.sources.length > 0 && (
+                  <div className="mt-3 border-t border-border pt-3">
+                    <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      <BookOpen className="size-3.5" aria-hidden="true" />
+                      Nguồn tham khảo
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {message.sources.slice(0, 3).map((source) => (
+                        <span
+                          key={`${message.id}-${source.id}`}
+                          title={source.excerpt || source.title}
+                          className="rounded-full border border-border bg-muted px-2 py-1 text-[11px] text-muted-foreground"
+                        >
+                          [{source.id}] {source.title}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {message.role === 'assistant' && message.retrieval && (
+                  <p className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Database className="size-3" aria-hidden="true" />
+                    {message.retrieval.mode === 'hybrid_vector'
+                      ? 'Hybrid search · vector + từ khóa'
+                      : 'Tìm kiếm từ khóa dự phòng'}
+                  </p>
+                )}
               </article>
             ))}
             {sending && (
@@ -132,7 +212,7 @@ function AiSupportWidget() {
               <Textarea
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
-                placeholder="Hỏi về mua bán, hoàn tiền, thanh toán…"
+                placeholder="Ví dụ: Tìm camera cũ dưới 5 triệu…"
                 rows={2}
                 maxLength={1200}
                 className="min-h-12 resize-none"

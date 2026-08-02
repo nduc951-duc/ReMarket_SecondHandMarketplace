@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   createReviewHandler,
+  getReviewsByProductHandler,
   getReviewsByUserHandler,
   getReviewForTransactionHandler,
   getMyReviewsHandler,
@@ -12,6 +13,7 @@ const { createReview } = require('../validation/requestSchemas');
 const router = express.Router();
 
 router.get('/user/:userId', getReviewsByUserHandler);
+router.get('/product/:productId', getReviewsByProductHandler);
 
 router.use(requireAuth);
 

@@ -93,6 +93,7 @@ export interface ProductListResult {
     limit?: number;
     total?: number;
     totalPages?: number;
+    matchMode?: 'exact' | 'fuzzy' | string;
   };
 }
 
@@ -134,6 +135,7 @@ export interface Transaction {
 export interface Review {
   id: string;
   transaction_id: string;
+  product_id?: string | null;
   reviewer_id: string;
   reviewed_user_id?: string | null;
   rating: number;

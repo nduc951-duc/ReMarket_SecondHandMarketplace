@@ -38,6 +38,26 @@ function isRelationMissing(error, relationName) {
   );
 }
 
+async function attachReviewerProfiles(client, reviews) {
+  const rows = Array.isArray(reviews) ? reviews : reviews ? [reviews] : [];
+  const reviewerIds = Array.from(new Set(rows.map((review) => review.reviewer_id).filter(Boolean)));
+  if (!reviewerIds.length) return rows;
+
+  const { data, error } = await client
+    .from('profiles')
+    .select('id, full_name, avatar_url')
+    .in('id', reviewerIds);
+  if (error) {
+    throw buildServiceError(`Khong the lay nguoi binh luan: ${error.message}`, 500);
+  }
+
+  const profileMap = new Map((data || []).map((profile) => [profile.id, profile]));
+  return rows.map((review) => ({
+    ...review,
+    reviewer_profile: profileMap.get(review.reviewer_id) || null,
+  }));
+}
+
 async function createReview({ reviewerId, transactionId, rating, comment }) {
   const client = getAdminClient();
   const normalizedRating = Number(rating);
@@ -102,19 +122,7 @@ async function createReview({ reviewerId, transactionId, rating, comment }) {
     updated_at: now,
   };
 
-  const { data, error } = await client
-    .from('reviews')
-    .insert(insertPayload)
-    .select(
-      `
-      *,
-      reviewer_profile:reviewer_id (
-        full_name,
-        avatar_url
-      )
-    `,
-    )
-    .single();
+  const { data, error } = await client.from('reviews').insert(insertPayload).select('*').single();
 
   if (error) {
     if (isRelationMissing(error, 'reviews')) {
@@ -147,7 +155,8 @@ async function createReview({ reviewerId, transactionId, rating, comment }) {
     }
   }
 
-  return data;
+  const [review] = await attachReviewerProfiles(client, data);
+  return review;
 }
 
 async function getReviewsByUser(reviewedUserId, options = {}) {
@@ -169,10 +178,6 @@ async function getReviewsByUser(reviewedUserId, options = {}) {
       rating,
       comment,
       created_at,
-      reviewer_profile:reviewer_id (
-        full_name,
-        avatar_url
-      ),
       product:product_id (
         id,
         title,
@@ -199,12 +204,55 @@ async function getReviewsByUser(reviewedUserId, options = {}) {
     throw buildServiceError(`Khong the lay danh sach danh gia: ${error.message}`, 500);
   }
 
+  const reviews = await attachReviewerProfiles(client, data || []);
   return {
-    reviews: data || [],
+    reviews,
     total: count || 0,
     page,
     limit,
     totalPages: Math.ceil((count || 0) / limit),
+  };
+}
+
+async function getReviewsByProduct(productId, options = {}) {
+  const client = getAdminClient();
+  const page = Math.max(1, Number(options.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(options.limit) || 10));
+  const offset = (page - 1) * limit;
+
+  const { data, error, count } = await client
+    .from('reviews')
+    .select(
+      `
+      id,
+      transaction_id,
+      product_id,
+      reviewer_id,
+      rating,
+      comment,
+      created_at
+    `,
+      { count: 'exact' },
+    )
+    .eq('product_id', productId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    if (isRelationMissing(error, 'reviews')) {
+      return { reviews: [], total: 0, page, limit, totalPages: 0 };
+    }
+
+    throw buildServiceError(`Khong the lay binh luan san pham: ${error.message}`, 500);
+  }
+
+  const reviews = await attachReviewerProfiles(client, data || []);
+  return {
+    reviews,
+    total: count ?? data?.length ?? 0,
+    page,
+    limit,
+    totalPages: Math.ceil((count ?? data?.length ?? 0) / limit),
   };
 }
 
@@ -268,6 +316,7 @@ async function getMyReviews(reviewerId, options = {}) {
 
 module.exports = {
   createReview,
+  getReviewsByProduct,
   getReviewsByUser,
   getReviewForTransaction,
   getMyReviews,

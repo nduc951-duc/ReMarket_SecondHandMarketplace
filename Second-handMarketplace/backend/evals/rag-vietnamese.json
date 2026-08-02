@@ -1,0 +1,67 @@
+[
+  {
+    "id": "policy-safe-trade",
+    "query": "Làm sao giao dịch đồ cũ an toàn và tránh lừa đảo?",
+    "expectedSourceKeys": ["safe-trading"]
+  },
+  {
+    "id": "policy-refund",
+    "query": "Sản phẩm nhận được khác mô tả thì có thể hoàn tiền không?",
+    "expectedSourceKeys": ["refund-policy"]
+  },
+  {
+    "id": "policy-payment-failed",
+    "query": "Tiền đã bị trừ nhưng đơn chưa cập nhật phải làm gì?",
+    "expectedSourceKeys": ["payment-help"]
+  },
+  {
+    "id": "policy-account",
+    "query": "Tôi không đăng nhập được tài khoản",
+    "expectedSourceKeys": ["account-help"]
+  },
+  {
+    "id": "policy-product-quality",
+    "query": "Cần kiểm tra gì khi sản phẩm cũ có giá trị cao?",
+    "expectedSourceKeys": ["product-quality", "buying-guide"]
+  },
+  {
+    "id": "policy-selling",
+    "query": "Đăng bán đồ cũ cần mô tả những thông tin nào?",
+    "expectedSourceKeys": ["selling-guide"]
+  },
+  {
+    "id": "product-camera-budget",
+    "query": "Tìm camera cũ dưới 5 triệu",
+    "productIntent": true,
+    "maxPrice": 5000000
+  },
+  {
+    "id": "product-laptop-range",
+    "query": "Tư vấn laptop học IT từ 10 đến 20 triệu",
+    "productIntent": true,
+    "minPrice": 10000000,
+    "maxPrice": 20000000
+  },
+  {
+    "id": "product-phone-location",
+    "query": "Điện thoại chụp ảnh tốt dưới 8 triệu ở TP HCM",
+    "productIntent": true,
+    "maxPrice": 8000000
+  },
+  {
+    "id": "product-like-new",
+    "query": "Máy tính bảng như mới để học online",
+    "productIntent": true
+  },
+  {
+    "id": "product-semantic",
+    "query": "Thiết bị nhỏ gọn để chụp ảnh khi đi du lịch",
+    "productIntent": true
+  },
+  {
+    "id": "product-no-hallucination",
+    "query": "Tìm kính thiên văn cũ dưới 2 triệu",
+    "productIntent": true,
+    "maxPrice": 2000000
+  }
+]
