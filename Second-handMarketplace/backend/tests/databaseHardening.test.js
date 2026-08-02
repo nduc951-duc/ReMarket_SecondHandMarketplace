@@ -188,8 +188,6 @@ test('review and wishlist mutations derive user identity from access token', asy
 });
 
 test('concurrent wishlist inserts are idempotent at the unique constraint', async () => {
-  process.env.SUPABASE_URL = 'http://supabase.test';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
   const memory = createInMemorySupabase({
     products: [
       {
@@ -204,6 +202,10 @@ test('concurrent wishlist inserts are idempotent at the unique constraint', asyn
   const service = loadWithMocks(require.resolve('../src/services/wishlistService'), {
     [require.resolve('@supabase/supabase-js')]: {
       createClient: () => memory.client,
+    },
+    [require.resolve('../src/config/env')]: {
+      SUPABASE_URL: 'http://supabase.test',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
     },
   });
 
@@ -220,8 +222,6 @@ test('concurrent wishlist inserts are idempotent at the unique constraint', asyn
 });
 
 test('concurrent reviews return conflict instead of creating duplicates', async () => {
-  process.env.SUPABASE_URL = 'http://supabase.test';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
   const memory = createInMemorySupabase({
     transactions: [
       {
@@ -238,6 +238,10 @@ test('concurrent reviews return conflict instead of creating duplicates', async 
   const service = loadWithMocks(require.resolve('../src/services/reviewService'), {
     [require.resolve('@supabase/supabase-js')]: {
       createClient: () => memory.client,
+    },
+    [require.resolve('../src/config/env')]: {
+      SUPABASE_URL: 'http://supabase.test',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
     },
     [require.resolve('../src/services/notificationService')]: {
       createNotification: async () => null,
