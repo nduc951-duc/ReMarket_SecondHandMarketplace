@@ -1,4 +1,5 @@
 const PaymentStrategy = require('./PaymentStrategy');
+const crypto = require('crypto');
 const {
   buildVnpayHashData,
   buildVnpayQuery,
@@ -34,6 +35,32 @@ function formatVnpayDate(date = new Date()) {
 
 function getClientIp(input = {}) {
   return input.ipAddress || input.ip || '127.0.0.1';
+}
+
+function createQueryRequestId() {
+  return `${Date.now()}${crypto.randomBytes(6).toString('hex')}`;
+}
+
+function buildQueryResponseSignaturePayload(payload = {}) {
+  return [
+    'vnp_ResponseId',
+    'vnp_Command',
+    'vnp_ResponseCode',
+    'vnp_Message',
+    'vnp_TmnCode',
+    'vnp_TxnRef',
+    'vnp_Amount',
+    'vnp_BankCode',
+    'vnp_PayDate',
+    'vnp_TransactionNo',
+    'vnp_TransactionType',
+    'vnp_TransactionStatus',
+    'vnp_OrderInfo',
+    'vnp_PromotionCode',
+    'vnp_PromotionAmount',
+  ]
+    .map((field) => payload[field] ?? '')
+    .join('|');
 }
 
 class VnpayStrategy extends PaymentStrategy {
@@ -138,8 +165,66 @@ class VnpayStrategy extends PaymentStrategy {
     };
   }
 
-  async queryStatus() {
-    throw new Error('VNPAY querydr chua duoc kich hoat trong module nay.');
+  async queryStatus({ orderId, requestId, transactionDate, orderInfo, ipAddress } = {}) {
+    requireConfig(this.config);
+
+    if (!orderId) {
+      throw new Error('orderId la bat buoc khi truy van VNPAY.');
+    }
+    if (!transactionDate || !/^\d{14}$/.test(String(transactionDate))) {
+      throw new Error('transactionDate VNPAY phai co dinh dang yyyyMMddHHmmss.');
+    }
+
+    const normalizedRequestId = String(requestId || '').trim();
+    const payload = {
+      vnp_RequestId:
+        normalizedRequestId && normalizedRequestId.length <= 32
+          ? normalizedRequestId
+          : createQueryRequestId(),
+      vnp_Version: this.config.version,
+      vnp_Command: 'querydr',
+      vnp_TmnCode: this.config.tmnCode,
+      vnp_TxnRef: orderId,
+      vnp_OrderInfo: orderInfo || `Truy van giao dich ${orderId}`,
+      vnp_TransactionDate: String(transactionDate),
+      vnp_CreateDate: formatVnpayDate(),
+      vnp_IpAddr: getClientIp({ ipAddress }),
+    };
+    const signatureData = [
+      payload.vnp_RequestId,
+      payload.vnp_Version,
+      payload.vnp_Command,
+      payload.vnp_TmnCode,
+      payload.vnp_TxnRef,
+      payload.vnp_TransactionDate,
+      payload.vnp_CreateDate,
+      payload.vnp_IpAddr,
+      payload.vnp_OrderInfo,
+    ].join('|');
+    payload.vnp_SecureHash = createHmacSignature(signatureData, this.config.hashSecret, 'sha512');
+
+    const response = await fetch(this.config.queryEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result.vnp_Message || 'Khong the truy van giao dich VNPAY.');
+    }
+
+    const isValid = verifyHmacSignature(
+      buildQueryResponseSignaturePayload(result),
+      result.vnp_SecureHash || '',
+      this.config.hashSecret,
+      'sha512',
+    );
+    if (!isValid) {
+      throw new Error('Chu ky phan hoi truy van VNPAY khong hop le.');
+    }
+
+    return { ...result, isValid: true };
   }
 }
 
