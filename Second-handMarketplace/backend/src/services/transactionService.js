@@ -406,7 +406,7 @@ async function createTransaction(transactionData) {
 
   const { data: existingOpenOrders, error: existingError } = await client
     .from('transactions')
-    .select('id')
+    .select('*')
     .eq('product_id', transactionData.product_id)
     .in('status', OPEN_ORDER_STATUSES)
     .limit(1);
@@ -416,7 +416,82 @@ async function createTransaction(transactionData) {
   }
 
   if (existingOpenOrders && existingOpenOrders.length > 0) {
-    throw buildServiceError('Sản phẩm đã có đơn hàng pending/confirmed.', 409);
+    const existingOrder = existingOpenOrders[0];
+    const requestedPaymentMethod = String(transactionData.payment_method || '').toLowerCase();
+    const existingPaymentMethod = String(existingOrder.payment_method || '').toLowerCase();
+    const paymentExpiry = existingOrder.payment_expires_at
+      ? new Date(existingOrder.payment_expires_at).getTime()
+      : null;
+    const paymentExpired = Number.isFinite(paymentExpiry) && paymentExpiry < Date.now();
+    const resumableAwaitingPayment =
+      existingOrder.status === 'awaiting_payment' && existingOrder.payment_status === 'pending';
+
+    if (
+      existingOrder.buyer_id === transactionData.buyer_id &&
+      resumableAwaitingPayment &&
+      !paymentExpired
+    ) {
+      if (existingPaymentMethod === requestedPaymentMethod) {
+        return existingOrder;
+      }
+
+      const { data: resumedOrder, error: resumeError } = await client
+        .from('transactions')
+        .update({
+          payment_method: requestedPaymentMethod,
+          payment_gateway_transaction_id: '',
+          payment_response_code: '',
+          rejection_reason: '',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingOrder.id)
+        .eq('buyer_id', transactionData.buyer_id)
+        .eq('status', 'awaiting_payment')
+        .eq('payment_status', 'pending')
+        .select()
+        .maybeSingle();
+
+      if (resumeError) {
+        throw buildServiceError(`Khong the tiep tuc don thanh toan: ${resumeError.message}`, 500);
+      }
+
+      if (resumedOrder) {
+        return resumedOrder;
+      }
+    }
+
+    if (resumableAwaitingPayment && paymentExpired) {
+      const expiredAt = new Date().toISOString();
+      const { data: expiredOrder, error: expireError } = await client
+        .from('transactions')
+        .update({
+          status: 'cancelled',
+          payment_status: 'expired',
+          payment_failed_at: expiredAt,
+          cancelled_at: expiredAt,
+          rejection_reason: 'Qua 15 phut chua thanh toan.',
+          updated_at: expiredAt,
+        })
+        .eq('id', existingOrder.id)
+        .eq('status', 'awaiting_payment')
+        .eq('payment_status', 'pending')
+        .lt('payment_expires_at', expiredAt)
+        .select()
+        .maybeSingle();
+
+      if (expireError) {
+        throw buildServiceError(
+          `Khong the dong don thanh toan het han: ${expireError.message}`,
+          500,
+        );
+      }
+
+      if (!expiredOrder) {
+        throw buildServiceError('Don thanh toan vua duoc cap nhat. Vui long thu lai.', 409);
+      }
+    } else {
+      throw buildServiceError('Sản phẩm đã có đơn hàng đang xử lý.', 409);
+    }
   }
 
   const now = new Date().toISOString();
@@ -437,7 +512,7 @@ async function createTransaction(transactionData) {
 
   if (error) {
     if (error.code === '23505') {
-      throw buildServiceError('Sản phẩm đã có đơn hàng pending/confirmed.', 409);
+      throw buildServiceError('Sản phẩm đã có đơn hàng đang xử lý.', 409);
     }
     throw buildServiceError(`Không thể tạo giao dịch: ${error.message}`, 500);
   }
