@@ -231,6 +231,9 @@ async function queryPaymentStatusHandler(req, res) {
       gatewayResult = await context.queryStatus({
         orderId,
         requestId: req.query.requestId || localPayment?.requestId,
+        transactionDate: req.query.transactionDate || localPayment?.gatewayResponse?.vnp_CreateDate,
+        orderInfo: localPayment?.orderInfo,
+        ipAddress: getClientIp(req),
       });
     }
 
