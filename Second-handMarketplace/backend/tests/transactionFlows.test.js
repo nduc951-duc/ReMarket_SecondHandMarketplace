@@ -73,6 +73,73 @@ test('online order starts awaiting payment and gets an expiry', async () => {
   assert.ok(Date.parse(created.payment_expires_at) > Date.now());
 });
 
+test('same buyer can resume an unexpired awaiting payment order', async () => {
+  const awaitingOrder = transaction({
+    status: 'awaiting_payment',
+    payment_status: 'pending',
+    payment_method: 'momo',
+    payment_expires_at: new Date(Date.now() + 60_000).toISOString(),
+  });
+  const { service, database } = createFixture({ transactions: [awaitingOrder] });
+
+  const resumed = await service.createTransaction(order({ payment_method: 'momo' }));
+
+  assert.equal(resumed.id, awaitingOrder.id);
+  assert.equal(database.tables.transactions.length, 1);
+});
+
+test('same buyer can switch gateway while an awaiting payment order is still valid', async () => {
+  const awaitingOrder = transaction({
+    status: 'awaiting_payment',
+    payment_status: 'pending',
+    payment_method: 'momo',
+    payment_expires_at: new Date(Date.now() + 60_000).toISOString(),
+  });
+  const { service, database } = createFixture({ transactions: [awaitingOrder] });
+
+  const resumed = await service.createTransaction(order({ payment_method: 'vnpay' }));
+
+  assert.equal(resumed.id, awaitingOrder.id);
+  assert.equal(resumed.payment_method, 'vnpay');
+  assert.equal(database.tables.transactions.length, 1);
+});
+
+test('expired awaiting payment order is closed before creating a replacement', async () => {
+  const expiredOrder = transaction({
+    status: 'awaiting_payment',
+    payment_status: 'pending',
+    payment_method: 'vnpay',
+    payment_expires_at: new Date(Date.now() - 60_000).toISOString(),
+  });
+  const { service, database } = createFixture({ transactions: [expiredOrder] });
+
+  const replacement = await service.createTransaction(order({ payment_method: 'vnpay' }));
+
+  assert.notEqual(replacement.id, expiredOrder.id);
+  assert.equal(replacement.status, 'awaiting_payment');
+  assert.equal(database.tables.transactions[0].status, 'cancelled');
+  assert.equal(database.tables.transactions[0].payment_status, 'expired');
+  assert.equal(database.tables.transactions.length, 2);
+});
+
+test('awaiting payment order is not reusable by another buyer', async () => {
+  const { service } = createFixture({
+    transactions: [
+      transaction({
+        status: 'awaiting_payment',
+        payment_status: 'pending',
+        payment_method: 'momo',
+        payment_expires_at: new Date(Date.now() + 60_000).toISOString(),
+      }),
+    ],
+  });
+
+  await assert.rejects(
+    () => service.createTransaction(order({ buyer_id: 'buyer-b', payment_method: 'momo' })),
+    (error) => error.statusCode === 409,
+  );
+});
+
 test('existing open order rejects another buyer', async () => {
   const { service } = createFixture({
     transactions: [transaction()],

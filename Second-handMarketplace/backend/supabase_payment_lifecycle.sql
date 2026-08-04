@@ -21,7 +21,8 @@ ALTER TABLE public.transactions
   ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS payment_failed_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS payment_gateway_transaction_id TEXT DEFAULT '',
-  ADD COLUMN IF NOT EXISTS payment_response_code TEXT DEFAULT '';
+  ADD COLUMN IF NOT EXISTS payment_response_code TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';
 
 ALTER TABLE public.transactions
   DROP CONSTRAINT IF EXISTS transactions_payment_status_check;
@@ -42,3 +43,5 @@ CREATE INDEX IF NOT EXISTS idx_transactions_payment_status
 
 CREATE INDEX IF NOT EXISTS idx_transactions_payment_expires_at
   ON public.transactions(payment_expires_at);
+
+NOTIFY pgrst, 'reload schema';

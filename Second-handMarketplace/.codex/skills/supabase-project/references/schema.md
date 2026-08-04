@@ -4,6 +4,11 @@
 
 Migration: `backend/supabase_transaction_invariants.sql`
 
+Legacy databases must also apply
+`backend/supabase_transaction_rejection_reason.sql`. It adds the
+`transactions.rejection_reason` column used by seller cancellation and payment
+failure/expiry flows, then asks PostgREST to reload its schema cache.
+
 The database must enforce:
 
 - At most one transaction in `awaiting_payment`, `pending`, or `confirmed` for
