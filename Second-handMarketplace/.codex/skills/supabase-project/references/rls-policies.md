@@ -32,7 +32,9 @@ Migration: `backend/supabase_database_hardening.sql`
 | `notifications` | Recipient SELECT under RLS for realtime | Express service-role client |
 | `wishlists`, `product_views` | No direct browser table access | Express service-role client |
 | `payment_callback_events`, `transaction_status_audit_log` | No browser access | Payment callback RPC/service role |
+| `payment_attempts` | No browser access | Express payment service/service role |
 | `reports`, `report_audit_log` | No direct browser access | Authenticated Express moderation routes/service role |
+| `rag_retrieval_logs` | No browser access | Express RAG observability service/service role |
 
 All application tables in `public` have RLS enabled. `anon` and
 `authenticated` receive no direct `INSERT`, `UPDATE`, or `DELETE` privileges.

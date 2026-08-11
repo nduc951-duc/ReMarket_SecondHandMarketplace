@@ -164,25 +164,25 @@ function AdminDashboardPage() {
     () => [
       {
         label: 'Người dùng',
-        value: overview?.users.total || 0,
-        detail: `${overview?.users.emailConfirmed || 0} email đã xác nhận`,
+        value: overview?.users?.total || 0,
+        detail: `${overview?.users?.emailConfirmed || 0} email đã xác nhận`,
         icon: Users,
       },
       {
         label: 'Sản phẩm đang bán',
-        value: overview?.products.byStatus.active || 0,
-        detail: `${overview?.products.total || 0} sản phẩm`,
+        value: overview?.products?.byStatus?.active || 0,
+        detail: `${overview?.products?.total || 0} sản phẩm`,
         icon: Store,
       },
       {
         label: 'Đơn hoàn tất',
-        value: overview?.transactions.byStatus.completed || 0,
-        detail: `${overview?.transactions.total || 0} giao dịch`,
+        value: overview?.transactions?.byStatus?.completed || 0,
+        detail: `${overview?.transactions?.total || 0} giao dịch`,
         icon: ClipboardList,
       },
       {
         label: 'Doanh thu hoàn tất',
-        value: formatCurrency(overview?.transactions.totalRevenue),
+        value: formatCurrency(overview?.transactions?.totalRevenue),
         detail: 'Tổng giá trị giao dịch',
         icon: BarChart3,
       },
@@ -292,14 +292,14 @@ function AdminDashboardPage() {
               <section className="grid gap-4 lg:grid-cols-2">
                 <StatusOverview
                   title="Sản phẩm theo trạng thái"
-                  total={overview?.products.total || 0}
-                  data={overview?.products.byStatus || {}}
+                  total={overview?.products?.total || 0}
+                  data={overview?.products?.byStatus || {}}
                   labels={productLabels}
                 />
                 <StatusOverview
                   title="Giao dịch theo trạng thái"
-                  total={overview?.transactions.total || 0}
-                  data={overview?.transactions.byStatus || {}}
+                  total={overview?.transactions?.total || 0}
+                  data={overview?.transactions?.byStatus || {}}
                 />
               </section>
             </div>

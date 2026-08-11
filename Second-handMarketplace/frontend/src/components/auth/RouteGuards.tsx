@@ -17,10 +17,7 @@ function AuthLoadingScreen() {
 }
 
 export function RootRedirect() {
-  const user = useAuthStore((state) => state.user);
-  const loading = useAuthStore((state) => state.isLoading);
-  if (loading) return <AuthLoadingScreen />;
-  return <Navigate to={user ? '/app' : '/login'} replace />;
+  return <Navigate to="/app" replace />;
 }
 
 export function AuthOnlyRoute({ children }: PropsWithChildren) {

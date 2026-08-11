@@ -1,5 +1,5 @@
 import { BookOpen, Bot, Database, Loader2, MessageCircle, Send, X } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { Button, Card, Textarea } from '@/components/ui';
@@ -91,16 +91,23 @@ function AiSupportWidget() {
     }
   };
 
+  const handleComposerKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  };
+
   if (hiddenOnCurrentRoute) return null;
 
   return (
-    <div className="fixed bottom-3 right-3 z-40 block sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-3 right-3 z-40 flex flex-col items-end sm:bottom-6 sm:right-6">
       {open && (
         <Card
           className="mb-3 flex h-[min(560px,calc(100dvh-9.5rem))] w-[min(380px,calc(100vw-1.5rem))] flex-col overflow-hidden border-border/80 shadow-xl"
           aria-label="Trợ lý AI ReMarket"
         >
-          <header className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 text-primary-foreground">
+          <header className="flex items-center border-b border-border bg-primary px-4 py-3 text-primary-foreground">
             <div className="flex items-center gap-3">
               <span className="grid size-9 place-items-center rounded-xl bg-primary-foreground/15">
                 <Bot className="size-5" />
@@ -110,15 +117,6 @@ function AiSupportWidget() {
                 <p className="text-xs text-primary-foreground/75">FAQ và chính sách ReMarket</p>
               </div>
             </div>
-            <Button
-              size="icon"
-              variant="ghost"
-              aria-label="Đóng trợ lý AI"
-              className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              onClick={() => setOpen(false)}
-            >
-              <X className="size-4" />
-            </Button>
           </header>
 
           <div
@@ -212,6 +210,7 @@ function AiSupportWidget() {
               <Textarea
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={handleComposerKeyDown}
                 placeholder="Ví dụ: Tìm camera cũ dưới 5 triệu…"
                 rows={2}
                 maxLength={1200}
@@ -234,7 +233,7 @@ function AiSupportWidget() {
 
       <Button
         size="icon"
-        className="ml-auto size-12 rounded-full border border-primary-foreground/15 shadow-md"
+        className="size-12 self-end rounded-full border border-primary-foreground/15 shadow-md"
         aria-label={open ? 'Đóng trợ lý AI' : 'Mở trợ lý AI'}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}

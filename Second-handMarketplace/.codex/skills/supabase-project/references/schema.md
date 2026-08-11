@@ -41,6 +41,14 @@ Migration: `backend/supabase_payment_idempotency.sql`
 Both callback/audit tables have RLS enabled. The callback RPC is executable only
 by the backend service role.
 
+## Outbound payment attempts
+
+Migration: `backend/supabase_payment_attempts.sql`
+
+- `payment_attempts` persists provider request identifiers, status-query metadata,
+  and sanitized gateway responses by transaction so Render restarts do not lose them.
+- The table is backend-only under RLS; `anon` and `authenticated` have no privileges.
+
 ## Realtime chat
 
 Migration: `backend/supabase_realtime_chat.sql`
@@ -117,6 +125,12 @@ Migration: `backend/supabase_vector_rag.sql`
   detection so an old vector cannot overwrite newer content.
 - Hybrid RPCs use reciprocal-rank fusion over full-text and vector rankings.
   Lexical/fuzzy retrieval remains the runtime fallback until backfill completes.
+- `rag_retrieval_logs` from `backend/supabase_rag_observability.sql` stores only
+  sanitized query text, source/product identifiers, scores, models, latency and
+  token counts. It never stores prompt context, provider responses or credentials.
+- Knowledge sync marks removed managed documents inactive and skips unchanged
+  content hashes. `npm run rag:reindex` queues the active corpus after an embedding
+  model/version change.
 
 ## Moderation reports
 

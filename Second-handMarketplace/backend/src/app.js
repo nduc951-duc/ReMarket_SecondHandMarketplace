@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const { FRONTEND_ORIGIN, NODE_ENV } = require('./config/env');
+const { FRONTEND_ORIGIN, FRONTEND_ORIGINS, NODE_ENV } = require('./config/env');
+const AppError = require('./errors/AppError');
 const authRoutes = require('./routes/authRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const profileRoutes = require('./routes/profileRoutes');
@@ -28,7 +29,12 @@ const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware
 
 const app = express();
 
-const configuredFrontendOrigin = FRONTEND_ORIGIN.replace(/\/$/, '');
+const configuredFrontendOrigins = new Set(
+  (FRONTEND_ORIGINS || FRONTEND_ORIGIN)
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean),
+);
 const localDevelopmentOrigins = new Set(['http://localhost:5173', 'http://127.0.0.1:5173']);
 
 function allowCorsOrigin(origin, callback) {
@@ -38,11 +44,21 @@ function allowCorsOrigin(origin, callback) {
   }
 
   const normalizedOrigin = origin.replace(/\/$/, '');
-  const isConfiguredOrigin = normalizedOrigin === configuredFrontendOrigin;
+  const isConfiguredOrigin = configuredFrontendOrigins.has(normalizedOrigin);
   const isLocalDevelopmentOrigin =
     NODE_ENV !== 'production' && localDevelopmentOrigins.has(normalizedOrigin);
 
-  callback(null, isConfiguredOrigin || isLocalDevelopmentOrigin);
+  if (isConfiguredOrigin || isLocalDevelopmentOrigin) {
+    callback(null, true);
+    return;
+  }
+
+  callback(
+    new AppError('Origin is not allowed by CORS policy.', {
+      statusCode: 403,
+      code: 'CORS_ORIGIN_DENIED',
+    }),
+  );
 }
 
 if (NODE_ENV === 'production') {
@@ -52,7 +68,22 @@ if (NODE_ENV === 'production') {
 app.use(requestContextMiddleware);
 app.use(observabilityMiddleware);
 app.use(errorResponseMiddleware);
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'none'"],
+        baseUri: ["'none'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+      },
+    },
+  }),
+);
 app.use(
   cors({
     origin: allowCorsOrigin,

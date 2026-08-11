@@ -9,7 +9,8 @@ SQL Editor. Không đưa service-role key hoặc thông tin kết nối database
 2. Chạy toàn bộ `supabase_seller_follows.sql`.
 3. Chạy toàn bộ `supabase_smart_product_search.sql`.
 4. Chạy toàn bộ `supabase_vector_rag.sql`.
-5. Chạy `NOTIFY pgrst, 'reload schema';` nếu schema cache chưa tự reload.
+5. Chạy toàn bộ `supabase_rag_observability.sql`.
+6. Chạy `NOTIFY pgrst, 'reload schema';` nếu schema cache chưa tự reload.
 
 ## Chức năng của từng migration
 
@@ -19,6 +20,8 @@ SQL Editor. Không đưa service-role key hoặc thông tin kết nối database
 - Smart search thêm unaccent/pg_trgm cho lỗi chính tả và gần đúng.
 - Vector RAG thêm pgvector, HNSW, knowledge chunks, product embeddings, queue có
   lock/retry/version và hybrid RPC kết hợp full-text với semantic similarity.
+- RAG observability lưu query đã loại PII, intent, source/product ID, score, model,
+  latency và token usage; bảng chỉ cho service role truy cập.
 
 ## Kiểm tra schema live
 
@@ -28,7 +31,7 @@ Từ thư mục `backend` chạy:
 npm run supabase:verify-marketplace
 ```
 
-Lệnh phải in năm dòng `PASS`. Nó chỉ đọc schema, không in credentials hoặc dữ
+Lệnh phải in sáu dòng `PASS`. Nó chỉ đọc schema, không in credentials hoặc dữ
 liệu người dùng.
 
 ## Khởi tạo vector RAG
@@ -43,6 +46,11 @@ EMBEDDING_DIMENSIONS=1536
 EMBEDDING_VERSION=1
 EMBEDDING_BATCH_SIZE=10
 EMBEDDING_WORKER_INTERVAL_MS=5000
+RAG_MIN_RETRIEVAL_SCORE=0.12
+RAG_RERANK_ENABLED=true
+RAG_RERANK_CANDIDATES=18
+RAG_RERANK_TOP_K=5
+RAG_RETRIEVAL_LOG_ENABLED=true
 ```
 
 Đồng bộ knowledge base, backfill embeddings và chạy evaluation:
@@ -50,8 +58,14 @@ EMBEDDING_WORKER_INTERVAL_MS=5000
 ```bash
 npm run rag:sync-knowledge
 npm run worker:embeddings:once
-npm run rag:evaluate -- --require-vector
+npm run rag:evaluate
+npm run rag:evaluate -- --live --require-vector
 ```
+
+`rag:evaluate` chạy bộ 50 câu offline và fail khi Intent Accuracy, Recall@5, MRR
+hoặc filter accuracy thấp hơn `evals/rag-baseline.json`. Chế độ `--live` kiểm tra
+thêm pipeline Supabase/vector. Khi đổi embedding model hoặc version, cập nhật biến
+môi trường rồi chạy `npm run rag:reindex` và worker cho đến khi không còn job pending.
 
 Nếu còn nhiều job pending, tiếp tục chạy `worker:embeddings:once` hoặc khởi động
 worker dài hạn:

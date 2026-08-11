@@ -205,22 +205,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/app"
-            element={
-              <ProtectedRoute>
-                <ClientHomePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <ProtectedRoute>
-                <SearchResultsPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/app" element={<ClientHomePage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

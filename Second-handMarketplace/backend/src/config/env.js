@@ -14,6 +14,7 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: Number(process.env.PORT || 4000),
   FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  FRONTEND_ORIGINS: process.env.FRONTEND_ORIGINS || '',
   SIGNUP_CONFIRM_PATH: process.env.SIGNUP_CONFIRM_PATH || '/login',
   RESET_PASSWORD_PATH: process.env.RESET_PASSWORD_PATH || '/reset-password',
   GMAIL_USER: process.env.GMAIL_USER || '',
@@ -49,4 +50,9 @@ module.exports = {
   EMBEDDING_VERSION: Number(process.env.EMBEDDING_VERSION || 1),
   EMBEDDING_BATCH_SIZE: Number(process.env.EMBEDDING_BATCH_SIZE || 10),
   EMBEDDING_WORKER_INTERVAL_MS: Number(process.env.EMBEDDING_WORKER_INTERVAL_MS || 5000),
+  RAG_MIN_RETRIEVAL_SCORE: Number(process.env.RAG_MIN_RETRIEVAL_SCORE || 0.12),
+  RAG_RERANK_ENABLED: parseBoolean(process.env.RAG_RERANK_ENABLED, true),
+  RAG_RERANK_CANDIDATES: Number(process.env.RAG_RERANK_CANDIDATES || 18),
+  RAG_RERANK_TOP_K: Number(process.env.RAG_RERANK_TOP_K || 5),
+  RAG_RETRIEVAL_LOG_ENABLED: parseBoolean(process.env.RAG_RETRIEVAL_LOG_ENABLED, true),
 };

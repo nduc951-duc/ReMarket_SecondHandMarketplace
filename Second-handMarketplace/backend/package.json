@@ -12,6 +12,7 @@
     "worker:embeddings:once": "node src/workers/runVectorEmbeddingOnce.js",
     "supabase:verify-marketplace": "node scripts/verifyMarketplaceUpgrade.js",
     "rag:sync-knowledge": "node scripts/syncAiKnowledge.js",
+    "rag:reindex": "node scripts/syncAiKnowledge.js --reindex",
     "rag:evaluate": "node scripts/evaluateRag.js",
     "seed:users": "node scripts/seedUsers.js",
     "lint": "eslint . --ext .js,.cjs",

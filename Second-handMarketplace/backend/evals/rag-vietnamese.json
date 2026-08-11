@@ -1,67 +1,252 @@
 [
   {
-    "id": "policy-safe-trade",
-    "query": "Làm sao giao dịch đồ cũ an toàn và tránh lừa đảo?",
-    "expectedSourceKeys": ["safe-trading"]
-  },
-  {
-    "id": "policy-refund",
-    "query": "Sản phẩm nhận được khác mô tả thì có thể hoàn tiền không?",
+    "id": "k01",
+    "query": "Sản phẩm khác mô tả thì hoàn tiền sao?",
+    "expectedIntent": "KNOWLEDGE",
     "expectedSourceKeys": ["refund-policy"]
   },
   {
-    "id": "policy-payment-failed",
-    "query": "Tiền đã bị trừ nhưng đơn chưa cập nhật phải làm gì?",
+    "id": "k02",
+    "query": "Chính sách đổi trả hàng lỗi thế nào?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["refund-policy", "product-quality"]
+  },
+  {
+    "id": "k03",
+    "query": "Làm sao giao dịch đồ cũ an toàn?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["safe-trading"]
+  },
+  {
+    "id": "k04",
+    "query": "Mình nghi người bán lừa đảo",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["safe-trading", "contact-agent"]
+  },
+  {
+    "id": "k05",
+    "query": "Tiền bị trừ nhưng đơn chưa cập nhật phải làm gì?",
+    "expectedIntent": "KNOWLEDGE",
     "expectedSourceKeys": ["payment-help"]
   },
   {
-    "id": "policy-account",
-    "query": "Tôi không đăng nhập được tài khoản",
+    "id": "k06",
+    "query": "VNPAY thất bại thì xử lý sao?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["payment-help"]
+  },
+  {
+    "id": "k07",
+    "query": "Tui ko đăng nhập dc tài khoản",
+    "expectedIntent": "KNOWLEDGE",
     "expectedSourceKeys": ["account-help"]
   },
   {
-    "id": "policy-product-quality",
-    "query": "Cần kiểm tra gì khi sản phẩm cũ có giá trị cao?",
-    "expectedSourceKeys": ["product-quality", "buying-guide"]
+    "id": "k08",
+    "query": "Quên mật khẩu và chưa xác minh email",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["account-help"]
   },
   {
-    "id": "policy-selling",
-    "query": "Đăng bán đồ cũ cần mô tả những thông tin nào?",
+    "id": "k09",
+    "query": "Đăng bán đồ cũ cần mô tả gì?",
+    "expectedIntent": "KNOWLEDGE",
     "expectedSourceKeys": ["selling-guide"]
   },
   {
-    "id": "product-camera-budget",
-    "query": "Tìm camera cũ dưới 5 triệu",
-    "productIntent": true,
-    "maxPrice": 5000000
+    "id": "k10",
+    "query": "Người mua cần kiểm tra gì trước khi đặt hàng?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["buying-guide", "product-quality"]
   },
   {
-    "id": "product-laptop-range",
-    "query": "Tư vấn laptop học IT từ 10 đến 20 triệu",
-    "productIntent": true,
+    "id": "k11",
+    "query": "Hàng giá trị cao cần xin thêm ảnh không?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["product-quality"]
+  },
+  {
+    "id": "k12",
+    "query": "Khi nào cần liên hệ nhân viên hỗ trợ?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["contact-agent"]
+  },
+  {
+    "id": "k13",
+    "query": "Có được chia sẻ mã OTP cho người bán không?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["safe-trading"]
+  },
+  {
+    "id": "k14",
+    "query": "Không nhận được hàng thì khiếu nại sao?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["refund-policy", "contact-agent"]
+  },
+  {
+    "id": "k15",
+    "query": "sp ko giống ảnh, hòan tìn đc ko",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["refund-policy"]
+  },
+
+  {
+    "id": "p01",
+    "query": "tìm iPhone dưới 8 triệu",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 8000000,
+    "category": "electronics",
+    "semanticQuery": "iphone"
+  },
+  {
+    "id": "p02",
+    "query": "laptop từ 10–15 triệu ở HCM",
+    "expectedIntent": "PRODUCT_SEARCH",
     "minPrice": 10000000,
-    "maxPrice": 20000000
+    "maxPrice": 15000000,
+    "location": "Hồ Chí Minh",
+    "category": "electronics",
+    "semanticQuery": "laptop"
   },
   {
-    "id": "product-phone-location",
-    "query": "Điện thoại chụp ảnh tốt dưới 8 triệu ở TP HCM",
-    "productIntent": true,
-    "maxPrice": 8000000
+    "id": "p03",
+    "query": "camera du lịch dưới 5tr",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 5000000,
+    "semanticQuery": "camera du lich"
   },
   {
-    "id": "product-like-new",
-    "query": "Máy tính bảng như mới để học online",
-    "productIntent": true
+    "id": "p04",
+    "query": "tìm máy ảnh dưới 5 triệu",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 5000000,
+    "category": "electronics",
+    "semanticQuery": "may anh"
   },
   {
-    "id": "product-semantic",
-    "query": "Thiết bị nhỏ gọn để chụp ảnh khi đi du lịch",
-    "productIntent": true
+    "id": "p05",
+    "query": "camera dưới 5.000.000",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 5000000,
+    "semanticQuery": "camera"
   },
   {
-    "id": "product-no-hallucination",
-    "query": "Tìm kính thiên văn cũ dưới 2 triệu",
-    "productIntent": true,
+    "id": "p06",
+    "query": "điện thoại từ 3tr đến 7tr ở Hà Nội",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "minPrice": 3000000,
+    "maxPrice": 7000000,
+    "location": "Hà Nội",
+    "category": "electronics"
+  },
+  {
+    "id": "p07",
+    "query": "gợi ý tablet như mới để học online",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "condition": "like_new",
+    "category": "electronics"
+  },
+  {
+    "id": "p08",
+    "query": "mua laptop mới 100% ở Đà Nẵng",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "condition": "new",
+    "location": "Đà Nẵng",
+    "category": "electronics"
+  },
+  {
+    "id": "p09",
+    "query": "cần túi đeo chéo dưới 500k",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 500000,
+    "category": "fashion"
+  },
+  {
+    "id": "p10",
+    "query": "tìm giày như mới ở Cần Thơ",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "condition": "like_new",
+    "location": "Cần Thơ",
+    "category": "fashion"
+  },
+  {
+    "id": "p11",
+    "query": "mua xe đạp từ 2 đến 4 triệu",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "minPrice": 2000000,
+    "maxPrice": 4000000,
+    "category": "vehicles"
+  },
+  {
+    "id": "p12",
+    "query": "gợi ý đồ gia dụng dưới 2tr",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 2000000,
+    "category": "home"
+  },
+  {
+    "id": "p13",
+    "query": "thiết bị nhỏ gọn để chụp ảnh khi đi du lịch",
+    "expectedIntent": "PRODUCT_SEARCH"
+  },
+  {
+    "id": "p14",
+    "query": "có tai nghe nào bán không?",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "category": "electronics"
+  },
+  {
+    "id": "p15",
+    "query": "tìm kính thiên văn cũ dưới 2 triệu",
+    "expectedIntent": "PRODUCT_SEARCH",
     "maxPrice": 2000000
+  },
+
+  { "id": "t01", "query": "đơn hàng của tôi đang ở đâu?", "expectedIntent": "TRANSACTION" },
+  { "id": "t02", "query": "kiểm tra trạng thái đơn giúp mình", "expectedIntent": "TRANSACTION" },
+  { "id": "t03", "query": "người bán xác nhận đơn của em chưa?", "expectedIntent": "TRANSACTION" },
+  { "id": "t04", "query": "đơn #abc-123 đã giao chưa?", "expectedIntent": "TRANSACTION" },
+  { "id": "t05", "query": "xem lịch sử giao dịch của tôi", "expectedIntent": "TRANSACTION" },
+  { "id": "t06", "query": "đơn của mình bị hủy vì sao?", "expectedIntent": "TRANSACTION" },
+  { "id": "t07", "query": "theo dõi đơn hàng của anh", "expectedIntent": "TRANSACTION" },
+  { "id": "t08", "query": "giao dịch của tôi hoàn tất chưa?", "expectedIntent": "TRANSACTION" },
+
+  { "id": "o01", "query": "thời tiết hôm nay thế nào?", "expectedIntent": "OUT_OF_SCOPE" },
+  { "id": "o02", "query": "viết cho tôi một bài thơ", "expectedIntent": "OUT_OF_SCOPE" },
+  { "id": "o03", "query": "ai là tổng thống Mỹ?", "expectedIntent": "OUT_OF_SCOPE" },
+  { "id": "o04", "query": "giải phương trình bậc hai", "expectedIntent": "OUT_OF_SCOPE" },
+  { "id": "o05", "query": "kể chuyện cười đi", "expectedIntent": "OUT_OF_SCOPE" },
+  { "id": "o06", "query": "dịch câu này sang tiếng Anh", "expectedIntent": "OUT_OF_SCOPE" },
+  { "id": "o07", "query": "cho tôi công thức nấu phở", "expectedIntent": "OUT_OF_SCOPE" },
+
+  {
+    "id": "a01",
+    "query": "mình cần biết chính sách nếu mua camera mà hàng khác mô tả",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["refund-policy"]
+  },
+  {
+    "id": "a02",
+    "query": "tìm laptop 15 triệu nhưng mua sao cho an toàn?",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["safe-trading", "buying-guide"]
+  },
+  {
+    "id": "a03",
+    "query": "đơn của tôi thanh toán VNPAY rồi chưa?",
+    "expectedIntent": "TRANSACTION"
+  },
+  {
+    "id": "a04",
+    "query": "đt chụp hình đẹp tầm 6tr ở sài gòn",
+    "expectedIntent": "PRODUCT_SEARCH",
+    "maxPrice": 6000000,
+    "location": "Hồ Chí Minh"
+  },
+  {
+    "id": "a05",
+    "query": "hướg dẫn lấy lại mk tài khoản",
+    "expectedIntent": "KNOWLEDGE",
+    "expectedSourceKeys": ["account-help"]
   }
 ]

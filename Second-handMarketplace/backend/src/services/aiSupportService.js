@@ -1,6 +1,11 @@
 const aiKnowledgeBase = require('../data/aiKnowledgeBase');
 const { getProducts, scoreProductMatch } = require('../models/products/productModel');
 const { retrieveHybridRag } = require('./vectorRagService');
+const { INTENTS, routeIntent } = require('../rag/retrieval/intentRouter');
+const { locationMatches, parseProductQuery } = require('../rag/retrieval/queryParser');
+const { rerankCandidates } = require('../rag/retrieval/reranker');
+const { assessRetrievalConfidence } = require('../rag/retrieval/confidence');
+const { validateCitations } = require('../rag/generation/citationValidator');
 
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -94,7 +99,7 @@ function buildFallbackAnswer(question, contexts, products = []) {
     const recommendations = products
       .map(
         (product, index) =>
-          `${index + 1}. ${product.title} — ${Number(product.price).toLocaleString('vi-VN')}đ — /products/${product.id}`,
+          `${index + 1}. ${product.title} — ${Number(product.price).toLocaleString('vi-VN')}đ — /products/${product.id} [${product.citation_id || `P${index + 1}`}]`,
       )
       .join('\n');
     return [
@@ -109,7 +114,11 @@ function buildFallbackAnswer(question, contexts, products = []) {
     return 'Mình chưa có đủ dữ liệu để trả lời chắc chắn câu này. Bạn nên liên hệ nhân viên hỗ trợ để được kiểm tra kỹ hơn.';
   }
 
-  const summary = contexts.map((item) => `- ${item.title}: ${item.content}`).join('\n');
+  const summary = contexts
+    .map(
+      (item, index) => `- ${item.title}: ${item.content} [${item.citationId || `D${index + 1}`}]`,
+    )
+    .join('\n');
 
   return [
     'Mình tìm được một số thông tin liên quan trong phần hỗ trợ của ReMarket:',
@@ -243,27 +252,6 @@ function parseBudget(message) {
   return parsePriceFilters(message).maxPrice;
 }
 
-function parseLocation(message) {
-  const normalized = normalizeText(message);
-  const locations = [
-    ['ho chi minh', 'hcm'],
-    ['tp hcm', 'hcm'],
-    ['sai gon', 'hcm'],
-    ['ha noi', 'ha noi'],
-    ['da nang', 'da nang'],
-    ['can tho', 'can tho'],
-    ['hai phong', 'hai phong'],
-  ];
-  return locations.find(([phrase]) => normalized.includes(phrase))?.[1];
-}
-
-function parseConditions(message) {
-  const normalized = normalizeText(message);
-  if (/(nhu moi|like new)/.test(normalized)) return ['like_new'];
-  if (/(hang moi|moi 100|nguyen seal)/.test(normalized)) return ['new'];
-  return undefined;
-}
-
 function looksLikeProductRequest(message) {
   const normalized = normalizeText(message);
   return /(tim|mua|san pham|goi y|tu van|camera|dien thoai|may tinh bang|laptop|tui|giay|quan ao|do gia dung|do cu|thiet bi|chup anh|xe)/.test(
@@ -306,27 +294,37 @@ function extractProductSearchQuery(message) {
 
 async function retrieveProductRecommendations(message, options = {}) {
   if (!looksLikeProductRequest(message)) return [];
-  const { minPrice, maxPrice } = parsePriceFilters(message);
+  const parsedQuery = parseProductQuery(message);
+  const { category, condition, location, minPrice, maxPrice, semanticQuery } = parsedQuery;
+  const prefersLowPrice = /\b(gia re|re nhat|tiet kiem)\b/.test(normalizeText(message));
 
   try {
-    const search = extractProductSearchQuery(message) || message;
+    const search = semanticQuery || extractProductSearchQuery(message) || message;
     const result = await getProducts({
       search,
+      category,
+      condition,
       min_price: minPrice,
       max_price: maxPrice,
       limit: options.limit || 5,
-      sort: 'relevance',
+      sort: prefersLowPrice ? 'price_asc' : 'relevance',
     });
     const matchMode = result.pagination?.matchMode || 'exact';
     return (result.products || [])
       .filter((product) => minPrice === undefined || Number(product.price) >= minPrice)
       .filter((product) => maxPrice === undefined || Number(product.price) <= maxPrice)
+      .filter((product) => !category || product.category === category)
+      .filter((product) => !condition || product.condition === condition)
+      .filter((product) => locationMatches(product.location, location))
       .map((product) => ({
         ...product,
         relevance_score: scoreProductMatch(search, product),
       }))
       .filter((product) => product.relevance_score >= 0.65)
-      .sort((left, right) => right.relevance_score - left.relevance_score)
+      .sort((left, right) => {
+        if (prefersLowPrice) return Number(left.price) - Number(right.price);
+        return right.relevance_score - left.relevance_score;
+      })
       .slice(0, options.limit || 5)
       .map((product) => ({
         id: product.id,
@@ -413,7 +411,13 @@ async function callOpenAI({ message, contexts, products, provider }) {
     throw buildServiceError('OpenAI API khong tra ve noi dung hop le.', 502);
   }
 
-  return answer;
+  return {
+    answer,
+    usage: {
+      inputTokens: Number(result.usage?.input_tokens || 0),
+      outputTokens: Number(result.usage?.output_tokens || 0),
+    },
+  };
 }
 
 async function callGroq({ message, contexts, products, provider }) {
@@ -450,7 +454,13 @@ async function callGroq({ message, contexts, products, provider }) {
     throw buildServiceError('Groq API khong tra ve noi dung hop le.', 502);
   }
 
-  return answer;
+  return {
+    answer,
+    usage: {
+      inputTokens: Number(result.usage?.prompt_tokens || 0),
+      outputTokens: Number(result.usage?.completion_tokens || 0),
+    },
+  };
 }
 
 async function callGemini({ message, contexts, products, provider }) {
@@ -491,25 +501,58 @@ async function callGemini({ message, contexts, products, provider }) {
     throw buildServiceError('Gemini API khong tra ve noi dung hop le.', 502);
   }
 
-  return answer;
+  return {
+    answer,
+    usage: {
+      inputTokens: Number(result.usageMetadata?.promptTokenCount || 0),
+      outputTokens: Number(result.usageMetadata?.candidatesTokenCount || 0),
+    },
+  };
 }
 
-async function retrieveAdvisorContext(cleanMessage) {
-  const lexicalContexts = retrieveKnowledge(cleanMessage);
-  const productRequest = looksLikeProductRequest(cleanMessage);
-  const productSearch = extractProductSearchQuery(cleanMessage) || cleanMessage;
-  const { minPrice, maxPrice } = parsePriceFilters(cleanMessage);
+async function retrieveAdvisorContext(cleanMessage, options = {}) {
+  const routed = routeIntent(cleanMessage);
+  const parsedQuery = parseProductQuery(cleanMessage);
+  const productRequest = routed.intent === INTENTS.PRODUCT_SEARCH;
+  if ([INTENTS.OUT_OF_SCOPE, INTENTS.TRANSACTION].includes(routed.intent)) {
+    return {
+      contexts: [],
+      intent: routed.intent,
+      intentConfidence: routed.confidence,
+      parsedQuery,
+      productRequest: false,
+      products: [],
+      sources: [],
+      confidence: 'low',
+      shouldAnswer: false,
+      retrieval: {
+        mode: 'skipped',
+        confidence: 'low',
+        bestScore: 0,
+        threshold: Number(options.threshold ?? process.env.RAG_MIN_RETRIEVAL_SCORE ?? 0.12),
+        queries: { knowledge: routed.normalized, product: null },
+      },
+    };
+  }
+  const lexicalContexts =
+    routed.intent === INTENTS.OUT_OF_SCOPE
+      ? []
+      : rerankCandidates(routed.normalized, retrieveKnowledge(cleanMessage, { limit: 18 }), {
+          enabled: options.rerankEnabled ?? true,
+        });
   const [vectorResult, lexicalProducts] = await Promise.all([
     retrieveHybridRag({
       message: cleanMessage,
+      knowledgeQuery: routed.normalized,
       productRequest,
-      productSearch,
-      minPrice,
-      maxPrice,
-      conditions: parseConditions(cleanMessage),
-      location: parseLocation(cleanMessage),
+      productSearch: parsedQuery.semanticQuery,
+      minPrice: parsedQuery.minPrice,
+      maxPrice: parsedQuery.maxPrice,
+      categories: parsedQuery.category ? [parsedQuery.category] : undefined,
+      conditions: parsedQuery.condition ? [parsedQuery.condition] : undefined,
+      location: parsedQuery.location,
     }),
-    retrieveProductRecommendations(cleanMessage),
+    productRequest ? retrieveProductRecommendations(cleanMessage) : Promise.resolve([]),
   ]);
   const contexts =
     vectorResult.available && vectorResult.contexts.length
@@ -529,12 +572,35 @@ async function retrieveAdvisorContext(cleanMessage) {
     version: vectorResult.version,
     latencyMs: vectorResult.latencyMs,
     fallbackReason: vectorResult.reason || undefined,
+    queries: vectorResult.queries || {
+      knowledge: routed.normalized,
+      product: productRequest ? parsedQuery.semanticQuery : null,
+    },
   };
+  const confidenceResult = assessRetrievalConfidence(productRequest ? products : contexts, {
+    threshold: options.threshold,
+  });
 
-  return { contexts, productRequest, products, sources, retrieval };
+  return {
+    contexts: productRequest ? contexts : confidenceResult.accepted,
+    intent: routed.intent,
+    intentConfidence: routed.confidence,
+    parsedQuery,
+    productRequest,
+    products: productRequest ? confidenceResult.accepted : products,
+    sources,
+    confidence: confidenceResult.confidence,
+    shouldAnswer: confidenceResult.shouldAnswer,
+    retrieval: {
+      ...retrieval,
+      confidence: confidenceResult.confidence,
+      bestScore: confidenceResult.bestScore,
+      threshold: confidenceResult.threshold,
+    },
+  };
 }
 
-async function answerAiSupportQuestion({ message }) {
+async function answerAiSupportQuestion({ message }, options = {}) {
   const cleanMessage = String(message || '').trim();
 
   if (!cleanMessage) {
@@ -545,8 +611,43 @@ async function answerAiSupportQuestion({ message }) {
     throw buildServiceError(`Cau hoi toi da ${MAX_MESSAGE_LENGTH} ky tu.`, 400);
   }
 
-  const { contexts, productRequest, products, sources, retrieval } =
-    await retrieveAdvisorContext(cleanMessage);
+  const {
+    confidence,
+    contexts,
+    intent,
+    parsedQuery,
+    productRequest,
+    products,
+    shouldAnswer,
+    sources,
+    retrieval,
+  } = await (options.retrieveContext || retrieveAdvisorContext)(cleanMessage);
+
+  if (intent === INTENTS.OUT_OF_SCOPE) {
+    return {
+      answer:
+        'Mình chỉ hỗ trợ chính sách, giao dịch và tìm sản phẩm trên ReMarket. Bạn có thể hỏi về mua bán đồ cũ, thanh toán hoặc đổi trả.',
+      mode: 'out_of_scope',
+      intent,
+      confidence: 'low',
+      products: [],
+      sources: [],
+      retrieval,
+    };
+  }
+
+  if (intent === INTENTS.TRANSACTION) {
+    return {
+      answer:
+        'Mình không truy cập dữ liệu đơn hàng riêng trong cuộc trò chuyện này. Bạn hãy mở mục Giao dịch để xem trạng thái; nếu thanh toán hoặc trạng thái bất thường, hãy liên hệ hỗ trợ và cung cấp mã đơn trong kênh bảo mật.',
+      mode: 'transaction_safe_handoff',
+      intent,
+      confidence,
+      products: [],
+      sources,
+      retrieval,
+    };
+  }
 
   if (productRequest && products.length === 0) {
     return {
@@ -554,12 +655,29 @@ async function answerAiSupportQuestion({ message }) {
       mode: 'product_search_no_match',
       products: [],
       sources,
+      intent,
+      confidence,
+      parsedQuery,
       retrieval,
       matched: contexts.map(({ id, title, category, score }) => ({ id, title, category, score })),
     };
   }
 
-  const provider = selectProvider();
+  if (!shouldAnswer) {
+    return {
+      answer: buildFallbackAnswer(cleanMessage, [], []),
+      mode: 'no_answer',
+      intent,
+      confidence: 'low',
+      products: [],
+      sources: [],
+      parsedQuery,
+      retrieval,
+      matched: [],
+    };
+  }
+
+  const provider = options.provider === undefined ? selectProvider() : options.provider;
 
   if (!provider) {
     return {
@@ -567,20 +685,54 @@ async function answerAiSupportQuestion({ message }) {
       mode: 'retrieval_fallback',
       products,
       sources,
+      intent,
+      confidence,
+      parsedQuery,
       retrieval,
       matched: contexts.map(({ id, title, category, score }) => ({ id, title, category, score })),
     };
   }
 
   try {
-    const rawAnswer = await provider.call({ message: cleanMessage, contexts, products, provider });
-    const answer = sanitizeGroundedAnswer(rawAnswer, products, sources);
+    const providerResult = await provider.call({
+      message: cleanMessage,
+      contexts,
+      products,
+      provider,
+    });
+    const rawAnswer =
+      typeof providerResult === 'string' ? providerResult : String(providerResult?.answer || '');
+    const groundedAnswer = sanitizeGroundedAnswer(rawAnswer, products, sources);
+    const citationResult = validateCitations(groundedAnswer, { products, sources });
+
+    if (!citationResult.valid) {
+      return {
+        answer: buildFallbackAnswer(cleanMessage, contexts, products),
+        mode: 'citation_fallback',
+        provider: provider.id,
+        model: provider.model,
+        intent,
+        confidence,
+        products,
+        sources,
+        parsedQuery,
+        retrieval,
+        citationIssues: {
+          invalid: citationResult.invalidCitations.length,
+          unsupported: citationResult.unsupportedClaims.length,
+        },
+      };
+    }
 
     return {
-      answer,
+      answer: citationResult.answer,
       mode: `${provider.id}_rag`,
       provider: provider.id,
       model: provider.model,
+      usage: typeof providerResult === 'string' ? undefined : providerResult.usage,
+      intent,
+      confidence,
+      parsedQuery,
       products,
       sources,
       retrieval,
@@ -592,6 +744,9 @@ async function answerAiSupportQuestion({ message }) {
       mode: `${provider.id}_error_fallback`,
       provider: provider.id,
       model: provider.model,
+      intent,
+      confidence,
+      parsedQuery,
       products,
       sources,
       retrieval,

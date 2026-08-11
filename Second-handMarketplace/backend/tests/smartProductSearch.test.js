@@ -89,6 +89,7 @@ test('AI product advisor parses a Vietnamese budget and returns live products', 
             {
               id: 'camera-1',
               title: 'Camera Sony cũ',
+              category: 'electronics',
               price: 4_500_000,
               condition: 'good',
               location: 'TP.HCM',
@@ -97,11 +98,13 @@ test('AI product advisor parses a Vietnamese budget and returns live products', 
             {
               id: 'camera-too-expensive',
               title: 'Camera Leica cũ',
+              category: 'electronics',
               price: 45_000_000,
             },
             {
               id: 'unrelated',
               title: 'Máy lạnh Daikin',
+              category: 'home',
               price: 3_000_000,
             },
           ],
@@ -119,6 +122,43 @@ test('AI product advisor parses a Vietnamese budget and returns live products', 
     ['camera-1'],
   );
   assert.equal(products[0].match_mode, 'fuzzy');
+});
+
+test('AI product advisor keeps the only matching camera for a conversational cheap query', async () => {
+  let receivedFilters = null;
+  const service = loadWithMocks(require.resolve('../src/services/aiSupportService'), {
+    [require.resolve('../src/models/products/productModel')]: {
+      scoreProductMatch,
+      getProducts: async (filters) => {
+        receivedFilters = filters;
+        return {
+          products: [
+            {
+              id: 'camera-only',
+              title: 'Camera Canon cũ',
+              category: 'electronics',
+              price: 2_500_000,
+              condition: 'good',
+              location: 'TP.HCM',
+            },
+          ],
+          pagination: { matchMode: 'fuzzy' },
+        };
+      },
+    },
+  });
+
+  const products = await service.retrieveProductRecommendations(
+    'Gợi ý mẫu camera giá rẻ cho tôi đi',
+  );
+
+  assert.equal(receivedFilters.search, 'camera');
+  assert.equal(receivedFilters.category, 'electronics');
+  assert.equal(receivedFilters.sort, 'price_asc');
+  assert.deepEqual(
+    products.map((product) => product.id),
+    ['camera-only'],
+  );
 });
 
 test('AI product advisor never asks a provider to invent products when search is empty', async () => {

@@ -1,6 +1,5 @@
 import type { PaymentMethod } from '@/types/domain';
-
-const DEFAULT_BACKEND_URL = 'http://localhost:4000';
+import { apiRequest, getBackendUrl } from '@/services/apiClient';
 
 export interface CreatePaymentInput {
   orderId: string;
@@ -29,49 +28,24 @@ export interface VerifyPaymentReturnResult {
 }
 
 export async function createPayment(payload: CreatePaymentInput): Promise<CreatePaymentResult> {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
-  const { supabase } = await import('@/lib/supabaseClient');
-  if (!supabase) throw new Error('Supabase chưa được cấu hình.');
-  const { data } = await supabase.auth.getSession();
-  const token = data?.session?.access_token;
-  if (!token) throw new Error('Bạn cần đăng nhập để tạo thanh toán.');
-
-  const response = await fetch(`${backendUrl}/api/payment/create`, {
+  const backendUrl = getBackendUrl();
+  return apiRequest<CreatePaymentResult>('/api/payment/create', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    auth: true,
     body: JSON.stringify({
       ...payload,
       notifyUrl: payload.notifyUrl || `${backendUrl}/api/payment/ipn/${payload.paymentMethod}`,
     }),
+    fallbackMessage: 'Không thể tạo thanh toán.',
   });
-  const result = (await response.json().catch(() => ({}))) as {
-    data?: CreatePaymentResult;
-    message?: string;
-    error?: { message?: string };
-  };
-  if (!response.ok) {
-    throw new Error(result.error?.message || result.message || 'Không thể tạo thanh toán.');
-  }
-  return result.data || {};
 }
 
 export async function verifyPaymentReturn(
   paymentMethod: string,
   searchParams: URLSearchParams,
 ): Promise<VerifyPaymentReturnResult> {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
-  const response = await fetch(
-    `${backendUrl}/api/payment/return/${encodeURIComponent(paymentMethod)}?${searchParams.toString()}`,
+  return apiRequest<VerifyPaymentReturnResult>(
+    `/api/payment/return/${encodeURIComponent(paymentMethod)}?${searchParams.toString()}`,
+    { fallbackMessage: 'Không thể xác minh kết quả thanh toán.' },
   );
-  const result = (await response.json().catch(() => ({}))) as {
-    data?: VerifyPaymentReturnResult;
-    message?: string;
-    error?: { message?: string };
-  };
-  if (!response.ok) {
-    throw new Error(
-      result.error?.message || result.message || 'Không thể xác minh kết quả thanh toán.',
-    );
-  }
-  return result.data || { isValid: false, status: 'failed' };
 }

@@ -1,7 +1,5 @@
-import { supabase } from '@/lib/supabaseClient';
 import type { Profile } from '@/types/domain';
-
-const DEFAULT_BACKEND_URL = 'http://localhost:4000';
+import { apiRequest } from '@/services/apiClient';
 
 export interface ProfileUpdateInput {
   full_name: string;
@@ -10,34 +8,12 @@ export interface ProfileUpdateInput {
   bio: string;
 }
 
-async function getAccessToken() {
-  if (!supabase) throw new Error('Supabase chưa được cấu hình.');
-  const { data, error } = await supabase.auth.getSession();
-  if (error || !data.session) throw new Error('Bạn chưa đăng nhập.');
-  return data.session.access_token;
-}
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = await getAccessToken();
-  const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL}${path}`,
-    {
-      ...init,
-      headers: {
-        ...(init.body && !(init.body instanceof FormData)
-          ? { 'Content-Type': 'application/json' }
-          : {}),
-        ...init.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  const result = (await response.json().catch(() => ({}))) as {
-    data?: T;
-    message?: string;
-  };
-  if (!response.ok) throw new Error(result.message || 'Không thể xử lý hồ sơ.');
-  return result.data as T;
+  return apiRequest<T>(path, {
+    ...init,
+    auth: true,
+    fallbackMessage: 'Không thể xử lý hồ sơ.',
+  });
 }
 
 export function getProfile(): Promise<Profile> {

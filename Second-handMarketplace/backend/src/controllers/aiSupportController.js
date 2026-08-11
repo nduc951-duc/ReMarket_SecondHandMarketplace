@@ -1,4 +1,5 @@
 const { answerAiSupportQuestion } = require('../services/aiSupportService');
+const { logRetrieval } = require('../services/ragRetrievalLogService');
 
 function sendError(res, error, fallbackMessage) {
   const statusCode = Number(error?.statusCode) || 500;
@@ -13,6 +14,11 @@ async function askAiSupportHandler(req, res) {
   try {
     const data = await answerAiSupportQuestion({
       message: req.body?.message,
+    });
+    await logRetrieval({
+      requestId: req.requestId,
+      query: req.body?.message,
+      result: data,
     });
 
     return res.status(200).json({

@@ -5,6 +5,7 @@ const {
   chunkDocument,
   contentHash,
   enqueueEmbeddingReindex,
+  syncKnowledgeDocuments,
 } = require('../src/services/ragDocumentService');
 
 test('RAG chunking is deterministic, bounded and keeps overlap', () => {
@@ -44,4 +45,57 @@ test('RAG reindex queues stale model versions explicitly', async () => {
     name: 'enqueue_embedding_reindex',
     args: { target_model: 'embedding-model-v2', target_version: 2 },
   });
+});
+
+test('knowledge sync skips unchanged hashes and deactivates deleted documents', async () => {
+  const unchanged = {
+    id: 'doc-1',
+    source_key: 'safe-trading',
+    content_hash: contentHash('An toàn\nKhông chia sẻ OTP.'),
+    active: true,
+    metadata: { source: 'aiKnowledgeBase' },
+  };
+  const deleted = {
+    id: 'doc-2',
+    source_key: 'removed-policy',
+    content_hash: 'old',
+    active: true,
+    metadata: { source: 'aiKnowledgeBase' },
+  };
+  const updates = [];
+  const client = {
+    from(table) {
+      assert.equal(table, 'ai_documents');
+      return {
+        async select() {
+          return { data: [unchanged, deleted], error: null };
+        },
+        update(patch) {
+          return {
+            async eq(field, value) {
+              updates.push({ patch, field, value });
+              return { error: null };
+            },
+          };
+        },
+      };
+    },
+  };
+
+  const result = await syncKnowledgeDocuments(
+    [
+      {
+        id: 'safe-trading',
+        title: 'An toàn',
+        content: 'Không chia sẻ OTP.',
+        category: 'policy',
+      },
+    ],
+    { client },
+  );
+
+  assert.equal(result.unchanged, 1);
+  assert.equal(result.deactivated, 1);
+  assert.equal(updates[0].value, 'doc-2');
+  assert.equal(updates[0].patch.active, false);
 });

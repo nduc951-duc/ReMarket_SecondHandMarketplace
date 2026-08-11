@@ -5,8 +5,7 @@ import type {
   TransactionStats,
   TransactionStatus,
 } from '@/types/domain';
-
-const DEFAULT_BACKEND_URL = 'http://localhost:4000';
+import { apiRequest } from '@/services/apiClient';
 
 interface TransactionFilters {
   type?: 'buy' | 'sell';
@@ -24,37 +23,12 @@ interface CreateTransactionInput {
   note?: string;
 }
 
-async function getAccessToken() {
-  const { supabase } = await import('@/lib/supabaseClient');
-  if (!supabase) throw new Error('Supabase chưa được cấu hình.');
-  const { data } = await supabase.auth.getSession();
-  const token = data?.session?.access_token;
-  if (!token) throw new Error('Bạn cần đăng nhập để tiếp tục.');
-  return token;
-}
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = await getAccessToken();
-  const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL}${path}`,
-    {
-      ...init,
-      headers: {
-        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-        ...init.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  const result = (await response.json().catch(() => ({}))) as {
-    data?: T;
-    message?: string;
-    error?: { message?: string };
-  };
-  if (!response.ok) {
-    throw new Error(result.error?.message || result.message || 'Không thể xử lý giao dịch.');
-  }
-  return result.data as T;
+  return apiRequest<T>(path, {
+    ...init,
+    auth: true,
+    fallbackMessage: 'Không thể xử lý giao dịch.',
+  });
 }
 
 export async function getTransactions(
