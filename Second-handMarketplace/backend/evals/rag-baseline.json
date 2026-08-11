@@ -1,0 +1,6 @@
+{
+  "intentAccuracy": 0.9,
+  "recallAt5": 0.85,
+  "mrr": 0.75,
+  "filterAccuracy": 0.95
+}

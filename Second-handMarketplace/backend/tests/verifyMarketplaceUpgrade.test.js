@@ -30,6 +30,7 @@ test('marketplace upgrade verifier checks marketplace and vector capabilities', 
     'seller_follows',
     'smart_product_suggestions',
     'product_embeddings',
+    'rag_retrieval_logs',
     'hybrid_search_ai_documents',
   ]);
   assert.equal(

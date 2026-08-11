@@ -40,14 +40,33 @@ test('development CORS accepts both localhost frontend addresses', async () => {
   });
 });
 
-test('development CORS does not allow an unrelated origin', async () => {
+test('development CORS rejects an unrelated origin with a clear error', async () => {
   await withServer(async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/health`, {
       headers: { origin: 'https://untrusted.example' },
     });
 
-    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(response.status, 403);
     assert.equal(response.headers.get('access-control-allow-origin'), null);
+    assert.equal(body.error.code, 'CORS_ORIGIN_DENIED');
+  });
+});
+
+test('CORS handles an allowed preflight before authentication middleware', async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/notifications/unread-count`, {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://localhost:5173',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers': 'authorization',
+      },
+    });
+
+    assert.equal(response.status, 204);
+    assert.equal(response.headers.get('access-control-allow-origin'), 'http://localhost:5173');
+    assert.match(response.headers.get('access-control-allow-headers'), /authorization/i);
   });
 });
 

@@ -91,14 +91,14 @@ async function createPaymentHandler(req, res) {
     const publicPaymentData = { ...data };
     delete publicPaymentData.signedPayload;
 
-    upsertPayment(payload.orderId, {
+    await upsertPayment(payload.orderId, {
       amount: payload.amount,
       orderInfo: payload.orderInfo,
       paymentMethod: payload.paymentMethod,
       requestId: data.requestId,
       status: 'pending',
       paymentUrl: data.paymentUrl,
-      gatewayResponse: data.gatewayResponse,
+      gatewayResponse: sanitizeGatewayPayload(data.gatewayResponse),
     });
 
     const updatedTransaction = await markTransactionPaymentCreated({
@@ -154,7 +154,7 @@ async function handleVerifiedResult(res, paymentMethod, result, isIpn = false) {
   if (result.isValid) {
     const sanitizedPayload = sanitizeGatewayPayload(result.raw);
     processingResult = await syncTransactionPaymentResult(paymentMethod, result);
-    updatePaymentFromGateway(paymentMethod, sanitizedPayload);
+    await updatePaymentFromGateway(paymentMethod, sanitizedPayload);
   }
 
   if (isIpn) {
@@ -219,7 +219,7 @@ async function queryPaymentStatusHandler(req, res) {
       throw new Error('orderId la bat buoc.');
     }
 
-    const localPayment = getPayment(orderId);
+    const localPayment = await getPayment(orderId);
     await expireUnpaidTransactions().catch((error) => {
       console.error('Expire unpaid transactions error:', error);
     });

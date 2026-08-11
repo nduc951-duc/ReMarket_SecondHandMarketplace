@@ -1,8 +1,8 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient';
+import { apiRequest } from '@/services/apiClient';
 
-const DEFAULT_BACKEND_URL = 'http://localhost:4000';
 const SESSION_CHECK_TIMEOUT_MS = 8000;
 const SUPABASE_NOT_CONFIGURED_MESSAGE =
   'Thiếu cấu hình Supabase. Hãy thêm VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY vào file .env.';
@@ -25,10 +25,6 @@ interface LoginInput {
 interface ChangePasswordInput {
   currentPassword: string;
   newPassword: string;
-}
-
-interface AuthApiResponse {
-  message?: string;
 }
 
 export class AuthenticationError extends Error {
@@ -61,13 +57,14 @@ function ensureSupabase() {
   return supabase;
 }
 
-function backendUrl() {
-  return import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL;
-}
-
-async function parseResponse(response: Response, fallback: string): Promise<AuthFeedback> {
-  const result = (await response.json().catch(() => ({}))) as AuthApiResponse;
-  if (!response.ok) throw new Error(result.message || fallback);
+async function authRequest(path: string, body: unknown, fallback: string, auth = false) {
+  const result = await apiRequest<{ message?: string }>(path, {
+    method: 'POST',
+    auth,
+    body: JSON.stringify(body),
+    fallbackMessage: fallback,
+    unwrapData: false,
+  });
   return { message: result.message || fallback };
 }
 
@@ -81,24 +78,16 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMes
   });
 }
 
-async function getAccessToken() {
-  const client = ensureSupabase();
-  const { data, error } = await client.auth.getSession();
-  if (error || !data.session) throw new Error('Bạn chưa đăng nhập.');
-  return data.session.access_token;
-}
-
 export function isAuthAvailable() {
   return Boolean(isSupabaseConfigured && supabase);
 }
 
 export async function registerWithEmail(input: RegisterInput): Promise<AuthFeedback> {
-  const response = await fetch(`${backendUrl()}/api/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-  return parseResponse(response, 'Đăng ký thành công. Hãy kiểm tra email để xác nhận tài khoản.');
+  return authRequest(
+    '/api/auth/register',
+    input,
+    'Đăng ký thành công. Hãy kiểm tra email để xác nhận tài khoản.',
+  );
 }
 
 export async function loginWithEmail({ email, password }: LoginInput) {
@@ -130,12 +119,11 @@ export async function loginWithGoogle() {
 }
 
 export async function requestPasswordReset(email: string) {
-  const response = await fetch(`${backendUrl()}/api/auth/forgot-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
-  return parseResponse(response, 'Nếu email tồn tại, liên kết đặt lại mật khẩu đã được gửi.');
+  return authRequest(
+    '/api/auth/forgot-password',
+    { email },
+    'Nếu email tồn tại, liên kết đặt lại mật khẩu đã được gửi.',
+  );
 }
 
 export async function updatePassword(newPassword: string) {
@@ -146,25 +134,15 @@ export async function updatePassword(newPassword: string) {
 }
 
 export async function resendVerificationEmail(email: string) {
-  const response = await fetch(`${backendUrl()}/api/auth/resend-verification`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
-  return parseResponse(response, 'Đã gửi lại email xác nhận. Vui lòng kiểm tra hộp thư.');
+  return authRequest(
+    '/api/auth/resend-verification',
+    { email },
+    'Đã gửi lại email xác nhận. Vui lòng kiểm tra hộp thư.',
+  );
 }
 
 export async function changePassword(input: ChangePasswordInput) {
-  const token = await getAccessToken();
-  const response = await fetch(`${backendUrl()}/api/auth/change-password`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(input),
-  });
-  return parseResponse(response, 'Đổi mật khẩu thành công.');
+  return authRequest('/api/auth/change-password', input, 'Đổi mật khẩu thành công.', true);
 }
 
 export async function getCurrentSession(): Promise<Session | null> {

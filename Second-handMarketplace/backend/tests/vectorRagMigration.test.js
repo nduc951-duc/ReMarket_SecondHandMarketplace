@@ -21,7 +21,18 @@ test('vector RAG queue claims jobs atomically and prevents stale writes', () => 
   assert.match(migration, /NEW\.content_hash := OLD\.content_hash/i);
   assert.match(migration, /THEN 'completed' ELSE 'stale'/i);
   assert.match(migration, /attempts >= target_job\.max_attempts/i);
+  assert.match(migration, /THEN 'failed'/i);
+  assert.match(migration, /next_attempt_at/i);
   assert.match(migration, /enqueue_embedding_reindex/i);
+  assert.match(migration, /embedding_model IS DISTINCT FROM target_model/i);
+  assert.match(migration, /embedding_version IS DISTINCT FROM target_version/i);
+});
+
+test('backend exposes a full model reindex command', () => {
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'),
+  );
+  assert.match(packageJson.scripts['rag:reindex'], /syncAiKnowledge\.js --reindex/);
   assert.match(migration, /embedding_model IS DISTINCT FROM target_model/i);
   assert.match(migration, /embedding_version IS DISTINCT FROM target_version/i);
 });

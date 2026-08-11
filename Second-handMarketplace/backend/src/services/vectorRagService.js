@@ -5,6 +5,9 @@ const {
   getEmbeddingConfig,
   isEmbeddingConfigured,
 } = require('./embeddingService');
+const { RAG_RERANK_CANDIDATES, RAG_RERANK_ENABLED, RAG_RERANK_TOP_K } = require('../config/env');
+const { rerankCandidates } = require('../rag/retrieval/reranker');
+const { locationMatches } = require('../rag/retrieval/queryParser');
 
 let adminClient = null;
 
@@ -71,10 +74,7 @@ function mapProductRows(rows = [], filters = {}) {
     )
     .filter((row) => !categories || categories.includes(String(row.category)))
     .filter((row) => !conditions || conditions.includes(String(row.condition)))
-    .filter(
-      (row) =>
-        !normalizedLocation || normalizeComparable(row.location).includes(normalizedLocation),
-    )
+    .filter((row) => !normalizedLocation || locationMatches(row.location, filters.location))
     .map((row, index) => ({
       id: row.id,
       citation_id: `P${index + 1}`,
@@ -102,9 +102,18 @@ function buildSources(contexts) {
   }));
 }
 
+function assignKnowledgeCitations(contexts) {
+  return contexts.map((context, index) => ({ ...context, citationId: `D${index + 1}` }));
+}
+
+function assignProductCitations(products) {
+  return products.map((product, index) => ({ ...product, citation_id: `P${index + 1}` }));
+}
+
 async function retrieveHybridRag(
   {
     message,
+    knowledgeQuery = message,
     productRequest = false,
     productSearch = message,
     minPrice,
@@ -112,8 +121,8 @@ async function retrieveHybridRag(
     categories,
     conditions,
     location,
-    documentLimit = 6,
-    productLimit = 8,
+    documentLimit = RAG_RERANK_CANDIDATES,
+    productLimit = RAG_RERANK_CANDIDATES,
   },
   options = {},
 ) {
@@ -130,14 +139,18 @@ async function retrieveHybridRag(
   }
 
   try {
-    const query = await (options.generateQueryEmbedding || generateQueryEmbedding)(message, {
+    const embed = options.generateQueryEmbedding || generateQueryEmbedding;
+    const knowledgeEmbedding = await embed(knowledgeQuery, {
       config,
       fetchImpl: options.fetchImpl,
     });
+    const productEmbedding = productRequest
+      ? await embed(productSearch, { config, fetchImpl: options.fetchImpl })
+      : knowledgeEmbedding;
     const client = options.client || getAdminClient();
     const documentPromise = client.rpc('hybrid_search_ai_documents', {
-      query_text: message,
-      query_embedding: query.embedding,
+      query_text: knowledgeQuery,
+      query_embedding: knowledgeEmbedding.embedding,
       match_threshold: 0.35,
       match_count: documentLimit,
       keyword_weight: 0.55,
@@ -147,12 +160,13 @@ async function retrieveHybridRag(
     const productPromise = productRequest
       ? client.rpc('hybrid_search_products', {
           query_text: productSearch,
-          query_embedding: query.embedding,
+          query_embedding: productEmbedding.embedding,
           filter_min_price: minPrice ?? null,
           filter_max_price: maxPrice ?? null,
           filter_categories: normalizeFilterList(categories),
           filter_conditions: normalizeFilterList(conditions),
-          filter_location: location || null,
+          filter_location:
+            normalizeComparable(location) === 'ho chi minh' ? null : location || null,
           match_threshold: 0.35,
           match_count: productLimit,
           keyword_weight: 0.6,
@@ -173,24 +187,41 @@ async function retrieveHybridRag(
       };
     }
 
-    const contexts = mapKnowledgeRows(documentResult.data || []);
-    const products = mapProductRows(productResult.data || [], {
-      minPrice,
-      maxPrice,
-      categories,
-      conditions,
-      location,
-    });
+    const contexts = assignKnowledgeCitations(
+      rerankCandidates(knowledgeQuery, mapKnowledgeRows(documentResult.data || []), {
+        enabled: options.rerankEnabled ?? RAG_RERANK_ENABLED,
+        candidateLimit: documentLimit,
+        topK: options.rerankTopK || RAG_RERANK_TOP_K,
+      }),
+    );
+    const products = assignProductCitations(
+      rerankCandidates(
+        productSearch,
+        mapProductRows(productResult.data || [], {
+          minPrice,
+          maxPrice,
+          categories,
+          conditions,
+          location,
+        }),
+        {
+          enabled: options.rerankEnabled ?? RAG_RERANK_ENABLED,
+          candidateLimit: productLimit,
+          topK: options.rerankTopK || RAG_RERANK_TOP_K,
+        },
+      ),
+    );
     return {
       available: true,
       reason: null,
       mode: 'hybrid_vector',
-      model: query.model,
-      version: query.version,
+      model: knowledgeEmbedding.model,
+      version: knowledgeEmbedding.version,
       latencyMs: Date.now() - startedAt,
       contexts,
       products,
       sources: buildSources(contexts),
+      queries: { knowledge: knowledgeQuery, product: productRequest ? productSearch : null },
     };
   } catch (error) {
     return {

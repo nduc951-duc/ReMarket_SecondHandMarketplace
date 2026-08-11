@@ -31,6 +31,10 @@ async function verifyMarketplaceUpgrade(client) {
       run: () => client.from('product_embeddings').select('product_id, content_hash').limit(1),
     },
     {
+      name: 'RAG retrieval observability',
+      run: () => client.from('rag_retrieval_logs').select('request_id, intent').limit(1),
+    },
+    {
       name: 'hybrid RAG RPC',
       run: () =>
         client.rpc('hybrid_search_ai_documents', {

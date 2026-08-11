@@ -1,6 +1,5 @@
 import type { Report, ReportStatus } from '@/types/domain';
-
-const DEFAULT_BACKEND_URL = 'http://localhost:4000';
+import { apiRequest } from '@/services/apiClient';
 
 export type ModerationAction = 'none' | 'warn' | 'hide_listing' | 'suspend_user';
 
@@ -10,33 +9,12 @@ export interface ModerateReportInput {
   note: string;
 }
 
-async function getAccessToken() {
-  const { supabase } = await import('@/lib/supabaseClient');
-  if (!supabase) throw new Error('Supabase chưa được cấu hình.');
-  const { data } = await supabase.auth.getSession();
-  if (!data?.session?.access_token) throw new Error('Bạn cần đăng nhập để xử lý báo cáo.');
-  return data.session.access_token;
-}
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = await getAccessToken();
-  const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL}${path}`,
-    {
-      ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        ...init.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  const result = (await response.json().catch(() => ({}))) as {
-    data?: T;
-    message?: string;
-  };
-  if (!response.ok) throw new Error(result.message || 'Không thể xử lý báo cáo.');
-  return result.data as T;
+  return apiRequest<T>(path, {
+    ...init,
+    auth: true,
+    fallbackMessage: 'Không thể xử lý báo cáo.',
+  });
 }
 
 export function createProductReport(

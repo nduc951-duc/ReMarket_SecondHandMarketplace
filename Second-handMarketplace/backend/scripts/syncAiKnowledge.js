@@ -7,7 +7,7 @@ syncKnowledgeDocuments()
   .then(async (result) => {
     const queued = await enqueueEmbeddingReindex();
     console.log(
-      `Synced ${result.documents} documents into ${result.chunks} chunks; queued ${queued} embeddings.`,
+      `Synced ${result.documents} documents (${result.unchanged} unchanged, ${result.deactivated} inactive) into ${result.chunks} changed chunks; queued ${queued} embeddings${process.argv.includes('--reindex') ? ' for full model reindex' : ''}.`,
     );
   })
   .catch((error) => {
